@@ -25,10 +25,6 @@ const Hero: React.FC = () => {
             <span className="text-nextrend-500"> In Your Brand Voice</span> for Mortgage Professionals
           </h1>
           
-          <p className="text-xl text-gray-700 mb-6 max-w-3xl mx-auto">
-            Your Brand. Your Voice. Your Growth.
-          </p>
-          
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10 mb-16">
             <Button 
               onClick={handleGetStarted}
