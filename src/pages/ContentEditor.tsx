@@ -378,8 +378,8 @@ const ContentEditor: React.FC = () => {
   const { title, icon } = optionDetails[option as keyof typeof optionDetails];
   const filteredNews = activeTab === 'all' ? newsFeed : newsFeed.filter(item => item.category.toLowerCase() === activeTab);
   
-  // If we're showing the editor for a selected article
-  if (showEditor && (option === 'this-week' || option === 'trending')) {
+  // If we're showing the editor for a selected article from any category (now including 'general')
+  if (showEditor && (option === 'this-week' || option === 'trending' || option === 'general')) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
@@ -421,7 +421,7 @@ const ContentEditor: React.FC = () => {
                 {icon}
               </div>
               <h1 className="text-2xl font-bold">
-                Edit Article Content
+                {option === 'general' ? 'Edit Mortgage Term Content' : 'Edit Article Content'}
               </h1>
             </motion.div>
             
@@ -753,6 +753,7 @@ const ContentEditor: React.FC = () => {
                                   variant="default"
                                   size="sm"
                                   className="text-xs bg-nextrend-500 hover:bg-nextrend-600"
+                                  onClick={() => handleUseArticle(article.id)}
                                 >
                                   Use This
                                 </Button>
