@@ -25,6 +25,18 @@ const Hero: React.FC = () => {
             <span className="text-nextrend-500"> In Your Brand Voice</span> for Mortgage Professionals
           </h1>
           
+          <div className="mt-6 mb-10 max-w-3xl mx-auto">
+            <p className="text-lg text-gray-600 mb-3">
+              Your brand needs visibility, but writing content can take too much time.
+            </p>
+            <p className="text-lg text-gray-600 mb-3">
+              What if three clicks could instantly generate a full suite of engaging, on-brand content?
+            </p>
+            <p className="text-lg text-gray-600 mb-3">
+              <span className="font-semibold">With NexTrend.AI, it does.</span>
+            </p>
+          </div>
+          
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10 mb-16">
             <Button 
               onClick={handleGetStarted}
