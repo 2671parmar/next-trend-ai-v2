@@ -53,7 +53,7 @@ const Index = () => {
             className="button-hover inline-flex items-center justify-center px-8 py-4 bg-white text-nextrend-600 rounded-lg font-medium text-lg animate-fade-up shadow-xl shadow-nextrend-700/20"
             style={{ animationDelay: '0.2s' }}
           >
-            Join the Waitlist Now
+            Start Today
             <ArrowRight className="ml-2 h-5 w-5" />
           </button>
         </div>
