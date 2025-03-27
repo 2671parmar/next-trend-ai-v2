@@ -21,12 +21,11 @@ const Hero: React.FC = () => {
             className="mb-6"
           >
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-              AI-Powered Content Creation for 
-              <span className="text-nextrend-500"> Mortgage Professionals</span>
+              AI-Partnered Content Creation 
+              <span className="text-nextrend-500"> In Your Brand Voice</span> for Mortgage Professionals
             </h1>
             <p className="text-xl text-gray-700 mb-8">
-              Create personalized, engaging content in your authentic voice. 
-              Save hours each week while staying top-of-mind with your clients and prospects.
+              Your Brand. Your Voice. Your Growth.
             </p>
           </motion.div>
           
