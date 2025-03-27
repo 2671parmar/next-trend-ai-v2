@@ -2,12 +2,15 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Newspaper, BarChart, FileText, MessageSquare, ArrowLeft, Save, ExternalLink } from 'lucide-react';
+import { Newspaper, BarChart, FileText, MessageSquare, ArrowLeft, Save, ExternalLink, Send } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import TextEditor from '@/components/TextEditor';
 
 // List of mortgage terms for the General Mortgage section
 const mortgageTerms = [
@@ -168,12 +171,25 @@ const optionDetails = {
   'custom': { title: 'Custom Content', icon: <MessageSquare className="w-6 h-6" /> }
 };
 
+// Chat message type for custom content
+interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: Date;
+}
+
 const ContentEditor: React.FC = () => {
   const { option } = useParams<{ option: string }>();
   const navigate = useNavigate();
   
   const [newsFeed, setNewsFeed] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState('all');
+  
+  // State for custom chat interface
+  const [userInput, setUserInput] = useState('');
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedContent, setGeneratedContent] = useState('');
   
   useEffect(() => {
     if (option) {
@@ -209,6 +225,34 @@ const ContentEditor: React.FC = () => {
     }, 1500);
   };
   
+  const handleSendMessage = () => {
+    if (!userInput.trim()) return;
+    
+    // Add user message to chat
+    const userMessage: ChatMessage = {
+      role: 'user',
+      content: userInput,
+      timestamp: new Date()
+    };
+    
+    setChatMessages(prev => [...prev, userMessage]);
+    setUserInput('');
+    setIsGenerating(true);
+    
+    // Simulate AI response after a delay
+    setTimeout(() => {
+      const assistantMessage: ChatMessage = {
+        role: 'assistant',
+        content: `Here's some content about "${userInput}" that you can share with your clients:\n\nThe current mortgage market is seeing significant changes due to recent economic developments. This presents both challenges and opportunities for homebuyers and those looking to refinance.`,
+        timestamp: new Date()
+      };
+      
+      setChatMessages(prev => [...prev, assistantMessage]);
+      setGeneratedContent(`Here's some content about "${userInput}" that you can share with your clients:\n\nThe current mortgage market is seeing significant changes due to recent economic developments. This presents both challenges and opportunities for homebuyers and those looking to refinance.`);
+      setIsGenerating(false);
+    }, 2000);
+  };
+  
   const handleSave = () => {
     // In a real app, this would save the content to the database
     navigate('/dashboard');
@@ -220,6 +264,150 @@ const ContentEditor: React.FC = () => {
   
   const { title, icon } = optionDetails[option as keyof typeof optionDetails];
   const filteredNews = activeTab === 'all' ? newsFeed : newsFeed.filter(item => item.category.toLowerCase() === activeTab);
+  
+  // Custom content chat interface
+  if (option === 'custom') {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        
+        <main className="pt-24 pb-16 px-6">
+          <div className="max-w-6xl mx-auto">
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center justify-between mb-6"
+            >
+              <Button 
+                variant="ghost" 
+                className="flex items-center text-gray-600"
+                onClick={() => navigate('/dashboard')}
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Dashboard
+              </Button>
+              
+              <Button 
+                variant="default" 
+                className="bg-nextrend-500 hover:bg-nextrend-600"
+                onClick={handleSave}
+                disabled={!generatedContent}
+              >
+                <Save className="w-4 h-4 mr-2" />
+                Save Content
+              </Button>
+            </motion.div>
+            
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="flex items-center mb-6"
+            >
+              <div className="w-10 h-10 rounded-lg bg-nextrend-50 text-nextrend-500 flex items-center justify-center mr-3">
+                {icon}
+              </div>
+              <h1 className="text-2xl font-bold">
+                Your Custom Content
+              </h1>
+            </motion.div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Chat Interface */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Card className="overflow-hidden">
+                  <CardContent className="p-6">
+                    <h2 className="text-lg font-semibold mb-4">Tell me what you want to write about</h2>
+                    
+                    <div className="bg-gray-50 border border-gray-100 rounded-lg p-4 mb-4 h-[300px] overflow-y-auto flex flex-col gap-3">
+                      {chatMessages.length === 0 ? (
+                        <div className="text-center text-gray-500 my-auto">
+                          <MessageSquare className="w-10 h-10 mx-auto mb-2 opacity-20" />
+                          <p>Type a topic or question below to generate content</p>
+                        </div>
+                      ) : (
+                        chatMessages.map((msg, index) => (
+                          <div 
+                            key={index}
+                            className={`p-3 rounded-lg max-w-[80%] ${
+                              msg.role === 'user' 
+                                ? 'bg-nextrend-500 text-white ml-auto' 
+                                : 'bg-gray-200 text-gray-800'
+                            }`}
+                          >
+                            {msg.content}
+                          </div>
+                        ))
+                      )}
+                      
+                      {isGenerating && (
+                        <div className="bg-gray-200 text-gray-800 p-3 rounded-lg max-w-[80%] flex items-center gap-2">
+                          <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
+                          <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                          <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <Input
+                        placeholder="Type your topic here... (e.g., 'Current mortgage rates' or 'First-time homebuyer tips')"
+                        value={userInput}
+                        onChange={(e) => setUserInput(e.target.value)}
+                        className="flex-1"
+                        onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                      />
+                      <Button 
+                        onClick={handleSendMessage} 
+                        disabled={isGenerating || !userInput.trim()} 
+                        className="bg-nextrend-500 hover:bg-nextrend-600"
+                      >
+                        <Send className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+              
+              {/* Generated Content Editor */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: 0.1 }}
+              >
+                <Card className="overflow-hidden h-full">
+                  <CardContent className="p-6 h-full flex flex-col">
+                    <h2 className="text-lg font-semibold mb-4">Edit Generated Content</h2>
+                    
+                    <TextEditor
+                      content={generatedContent}
+                      onContentChange={setGeneratedContent}
+                      onRegenerateClick={chatMessages.length > 0 ? handleSendMessage : undefined}
+                      loading={isGenerating}
+                      placeholder="Your generated content will appear here..."
+                      className="flex-1"
+                    />
+                    
+                    {generatedContent && (
+                      <div className="mt-4 flex justify-end">
+                        <Button className="bg-nextrend-500 hover:bg-nextrend-600">
+                          Use This Content
+                        </Button>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
   
   // Custom tabs for the General Mortgage section
   const tabsContent = option === 'general' 
