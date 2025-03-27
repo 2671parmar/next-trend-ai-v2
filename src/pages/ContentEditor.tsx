@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Newspaper, BarChart, FileText, MessageSquare, ArrowLeft, Save, ExternalLink, Send } from 'lucide-react';
+import { Newspaper, BarChart, FileText, MessageSquare, ArrowLeft, Save, ExternalLink, Send, RefreshCw } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -196,10 +197,16 @@ const ContentEditor: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedContent, setGeneratedContent] = useState('');
   const [dragActive, setDragActive] = useState(false);
+  const [selectedArticle, setSelectedArticle] = useState<any | null>(null);
+  const [showEditor, setShowEditor] = useState(false);
   
   useEffect(() => {
     if (option) {
       setNewsFeed(generateNewsFeedData(option));
+      // Reset states when changing options
+      setSelectedArticle(null);
+      setShowEditor(false);
+      setGeneratedContent('');
     }
   }, [option]);
   
@@ -241,18 +248,34 @@ const ContentEditor: React.FC = () => {
   };
 
   const handleUseArticle = (articleId: number) => {
-    console.log(`Using article with ID: ${articleId}`);
-    setNewsFeed(prev => 
-      prev.map(article => 
-        article.id === articleId 
-          ? { 
-              ...article, 
-              isSelected: true,
-              generatedContent: article.generatedContent || `Generated content for "${article.title}" that explains this topic in a way that's easy for clients to understand.`
-            }
-          : article
-      )
-    );
+    const article = newsFeed.find(item => item.id === articleId);
+    if (article) {
+      setSelectedArticle(article);
+      setShowEditor(true);
+      
+      // Generate initial content based on the article
+      let initialContent = '';
+      if (article.generatedContent) {
+        initialContent = article.generatedContent;
+      } else {
+        initialContent = `${article.title}\n\n${article.content}\n\nFurther analysis and context can be added here...`;
+      }
+      
+      setGeneratedContent(initialContent);
+    }
+  };
+  
+  const handleRegenerateContent = () => {
+    if (!selectedArticle) return;
+    
+    setIsGenerating(true);
+    
+    // Simulate content regeneration
+    setTimeout(() => {
+      const updatedContent = `${selectedArticle.title} - Regenerated\n\n${selectedArticle.content}\n\nThis is a newly generated version with additional insights and information about this topic that would be valuable to share with clients.`;
+      setGeneratedContent(updatedContent);
+      setIsGenerating(false);
+    }, 1500);
   };
   
   const handleSendMessage = () => {
@@ -354,6 +377,88 @@ const ContentEditor: React.FC = () => {
   
   const { title, icon } = optionDetails[option as keyof typeof optionDetails];
   const filteredNews = activeTab === 'all' ? newsFeed : newsFeed.filter(item => item.category.toLowerCase() === activeTab);
+  
+  // If we're showing the editor for a selected article
+  if (showEditor && (option === 'this-week' || option === 'trending')) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        
+        <main className="pt-24 pb-16 px-6">
+          <div className="max-w-6xl mx-auto">
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center justify-between mb-6"
+            >
+              <Button 
+                variant="ghost" 
+                className="flex items-center text-gray-600"
+                onClick={() => setShowEditor(false)}
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to {title}
+              </Button>
+              
+              <Button 
+                variant="default" 
+                className="bg-nextrend-500 hover:bg-nextrend-600"
+                onClick={handleSave}
+                disabled={!generatedContent}
+              >
+                <Save className="w-4 h-4 mr-2" />
+                Save Content
+              </Button>
+            </motion.div>
+            
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="flex items-center mb-6"
+            >
+              <div className="w-10 h-10 rounded-lg bg-nextrend-50 text-nextrend-500 flex items-center justify-center mr-3">
+                {icon}
+              </div>
+              <h1 className="text-2xl font-bold">
+                Edit Article Content
+              </h1>
+            </motion.div>
+            
+            <div className="grid grid-cols-1 gap-6">
+              {selectedArticle && (
+                <Card className="mb-4">
+                  <CardContent className="p-5">
+                    <div className="flex justify-between items-center mb-3">
+                      <Badge variant="outline" className="bg-nextrend-50 text-nextrend-500 hover:bg-nextrend-100">
+                        {selectedArticle.category}
+                      </Badge>
+                      <span className="text-sm text-gray-500">{selectedArticle.date}</span>
+                    </div>
+                    <h3 className="text-lg font-semibold mb-2">{selectedArticle.title}</h3>
+                    <p className="text-gray-600 text-sm">{selectedArticle.content}</p>
+                  </CardContent>
+                </Card>
+              )}
+              
+              <Card>
+                <CardContent className="p-6">
+                  <TextEditor
+                    content={generatedContent}
+                    onContentChange={setGeneratedContent}
+                    onRegenerateClick={handleRegenerateContent}
+                    loading={isGenerating}
+                    label="Content Editor"
+                    placeholder="Edit the content to make it your own..."
+                  />
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
   
   if (option === 'custom') {
     return (

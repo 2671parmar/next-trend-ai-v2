@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -135,7 +134,7 @@ const TextEditor: React.FC<TextEditorProps> = ({
               ) : (
                 <RefreshCw className="h-3 w-3 mr-1" />
               )}
-              Regenerate
+              Generate Content
             </Button>
           )}
         </div>
