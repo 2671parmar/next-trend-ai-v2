@@ -202,7 +202,6 @@ const ContentEditor: React.FC = () => {
   useEffect(() => {
     if (option) {
       setNewsFeed(generateNewsFeedData(option));
-      // Reset states when changing options
       setSelectedArticle(null);
       setShowEditor(false);
       setGeneratedContent('');
@@ -219,19 +218,35 @@ const ContentEditor: React.FC = () => {
     );
     
     setTimeout(() => {
-      setNewsFeed(prev => 
-        prev.map(article => 
-          article.id === articleId 
-            ? { 
-                ...article, 
-                isGenerating: false,
-                generatedContent: option === 'general'
-                  ? `${article.title}: A key mortgage concept that helps borrowers understand the lending process. This term is important for clients to know when navigating their home financing journey.`
-                  : `Generated content for "${article.title}" that explains this topic in a way that's easy for clients to understand. This content is tailored for mortgage professionals to share with their clients.`
-              }
-            : article
-        )
-      );
+      const article = newsFeed.find(item => item.id === articleId);
+      if (article && option === 'general') {
+        const generatedContent = `${article.title}: A key mortgage concept that helps borrowers understand the lending process. This term is important for clients to know when navigating their home financing journey.`;
+        
+        setSelectedArticle({
+          ...article,
+          isGenerating: false,
+          generatedContent: generatedContent
+        });
+        
+        const initialContent = `# ${article.title}\n\n${article.title} is an important mortgage concept that your clients should understand.\n\nKey points about this term:\n- This term relates to the mortgage process\n- Understanding this can help clients make better decisions\n- You can customize this explanation for your specific audience`;
+        
+        setGeneratedContent(initialContent);
+        setShowEditor(true);
+      } else {
+        setNewsFeed(prev => 
+          prev.map(article => 
+            article.id === articleId 
+              ? { 
+                  ...article, 
+                  isGenerating: false,
+                  generatedContent: option === 'general'
+                    ? `${article.title}: A key mortgage concept that helps borrowers understand the lending process. This term is important for clients to know when navigating their home financing journey.`
+                    : `Generated content for "${article.title}" that explains this topic in a way that's easy for clients to understand. This content is tailored for mortgage professionals to share with their clients.`
+                }
+              : article
+          )
+        );
+      }
     }, 1500);
   };
   
@@ -252,12 +267,10 @@ const ContentEditor: React.FC = () => {
       setSelectedArticle(article);
       setShowEditor(true);
       
-      // Generate initial content based on the article
       let initialContent = '';
       if (article.generatedContent) {
         initialContent = article.generatedContent;
       } else if (option === 'general') {
-        // For mortgage terminology, create a structured template
         initialContent = `# ${article.title}\n\n${article.title} is an important mortgage concept that your clients should understand.\n\nKey points about this term:\n- This term relates to the mortgage process\n- Understanding this can help clients make better decisions\n- You can customize this explanation for your specific audience`;
       } else {
         initialContent = `${article.title}\n\n${article.content}\n\nFurther analysis and context can be added here...`;
@@ -272,7 +285,6 @@ const ContentEditor: React.FC = () => {
     
     setIsGenerating(true);
     
-    // Simulate content regeneration
     setTimeout(() => {
       let updatedContent;
       
@@ -707,7 +719,7 @@ const ContentEditor: React.FC = () => {
                             {article.content}
                           </div>
                           
-                          {article.generatedContent && (
+                          {article.generatedContent && option !== 'general' && (
                             <div className="mt-4 p-3 bg-gray-50 rounded-md border border-gray-100 text-sm">
                               <p className="font-medium mb-1 text-nextrend-600">Generated Content:</p>
                               <p className="text-gray-600">{article.generatedContent}</p>
@@ -736,6 +748,16 @@ const ContentEditor: React.FC = () => {
                                 Use Article
                               </Button>
                             </div>
+                          ) : option === 'general' ? (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleGenerateContent(article.id)}
+                              disabled={article.isGenerating}
+                              className="text-xs w-full"
+                            >
+                              {article.isGenerating ? 'Generating...' : 'Use this Mortgage Term'}
+                            </Button>
                           ) : (
                             !article.generatedContent ? (
                               <Button
@@ -745,7 +767,7 @@ const ContentEditor: React.FC = () => {
                                 disabled={article.isGenerating}
                                 className="text-xs w-full"
                               >
-                                {article.isGenerating ? 'Generating...' : 'Use this Mortgage Term'}
+                                Generate Content
                               </Button>
                             ) : (
                               <div className="flex w-full justify-between">
