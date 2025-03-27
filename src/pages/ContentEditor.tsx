@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -223,6 +222,36 @@ const ContentEditor: React.FC = () => {
         )
       );
     }, 1500);
+  };
+  
+  const handleReadArticle = (articleId: number) => {
+    // In a real app, this would open the full article
+    console.log(`Opening full article with ID: ${articleId}`);
+    // For now, just simulate selecting the article
+    setNewsFeed(prev => 
+      prev.map(article => 
+        article.id === articleId 
+          ? { ...article, isSelected: true }
+          : article
+      )
+    );
+  };
+
+  const handleUseArticle = (articleId: number) => {
+    // In a real app, this would select the article for use
+    console.log(`Using article with ID: ${articleId}`);
+    // For now, just mark it as selected and generate content if not already generated
+    setNewsFeed(prev => 
+      prev.map(article => 
+        article.id === articleId 
+          ? { 
+              ...article, 
+              isSelected: true,
+              generatedContent: article.generatedContent || `Generated content for "${article.title}" that explains this topic in a way that's easy for clients to understand.`
+            }
+          : article
+      )
+    );
   };
   
   const handleSendMessage = () => {
@@ -506,34 +535,57 @@ const ContentEditor: React.FC = () => {
                         </div>
                         
                         <div className="mt-auto border-t border-gray-100 p-4 flex justify-between items-center bg-gray-50">
-                          {!article.generatedContent ? (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleGenerateContent(article.id)}
-                              disabled={article.isGenerating}
-                              className="text-xs w-full"
-                            >
-                              {article.isGenerating ? 'Generating...' : 'Generate Content'}
-                            </Button>
-                          ) : (
-                            <div className="flex w-full justify-between">
+                          {(option === 'this-week' || option === 'trending') ? (
+                            <div className="flex w-full gap-2">
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => handleGenerateContent(article.id)}
-                                className="text-xs"
+                                onClick={() => handleReadArticle(article.id)}
+                                className="text-xs flex-1"
                               >
-                                Regenerate
+                                <ExternalLink className="h-3 w-3 mr-1" />
+                                Read Article
                               </Button>
                               <Button
                                 variant="default"
                                 size="sm"
-                                className="text-xs bg-nextrend-500 hover:bg-nextrend-600"
+                                onClick={() => handleUseArticle(article.id)}
+                                className="text-xs flex-1 bg-nextrend-500 hover:bg-nextrend-600"
                               >
-                                Use This
+                                Use Article
                               </Button>
                             </div>
+                          ) : (
+                            // Keep the original Generate Content button for General Mortgage terms
+                            !article.generatedContent ? (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleGenerateContent(article.id)}
+                                disabled={article.isGenerating}
+                                className="text-xs w-full"
+                              >
+                                {article.isGenerating ? 'Generating...' : 'Generate Content'}
+                              </Button>
+                            ) : (
+                              <div className="flex w-full justify-between">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleGenerateContent(article.id)}
+                                  className="text-xs"
+                                >
+                                  Regenerate
+                                </Button>
+                                <Button
+                                  variant="default"
+                                  size="sm"
+                                  className="text-xs bg-nextrend-500 hover:bg-nextrend-600"
+                                >
+                                  Use This
+                                </Button>
+                              </div>
+                            )
                           )}
                         </div>
                       </CardContent>
