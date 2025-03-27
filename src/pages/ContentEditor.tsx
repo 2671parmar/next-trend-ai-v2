@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -137,9 +136,24 @@ const generateNewsFeedData = (option: string) => {
   ];
   
   if (option === 'this-week') {
-    return commonData;
+    return commonData.slice(0, 3);
   } else if (option === 'trending') {
-    return commonData.filter(item => item.id % 2 === 0);
+    const extendedTrending = [...commonData];
+    for (let i = 0; i < 3; i++) {
+      extendedTrending.push({
+        ...commonData[i],
+        id: i + 7,
+        title: `${commonData[i].title} - Updated`,
+      });
+    }
+    for (let i = 0; i < 3; i++) {
+      extendedTrending.push({
+        ...commonData[i + 3],
+        id: i + 10,
+        title: `${commonData[i + 3].title} - New Analysis`,
+      });
+    }
+    return extendedTrending.slice(0, 9);
   } else if (option === 'general') {
     const shuffled = [...mortgageTerms].sort(() => 0.5 - Math.random());
     const selectedTerms = shuffled.slice(0, 25);
