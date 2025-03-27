@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -28,9 +27,13 @@ const Hero: React.FC = () => {
               Your Brand. Your Voice. Your Growth.
             </p>
             <p className="text-lg text-gray-600 mb-8">
-              Your brand needs visibility, but writing content takes too much time.
+              Your brand needs visibility, but writing content can take too much time.
+            </p>
+            <p className="text-lg text-gray-600 mb-8">
               What if three clicks could instantly generate a full suite of engaging, on-brand content?
-              <span className="font-semibold"> With NexTrend.AI, it does.</span>
+            </p>
+            <p className="text-lg text-gray-600 mb-8">
+              <span className="font-semibold">With NexTrend.AI, it does.</span>
             </p>
           </motion.div>
           
@@ -72,7 +75,6 @@ const Hero: React.FC = () => {
         </div>
         
         <div className="hidden md:block absolute right-6 top-1/2 transform -translate-y-1/2 w-2/5">
-          {/* Placeholder for hero image/illustration */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -87,7 +89,6 @@ const Hero: React.FC = () => {
         </div>
       </div>
       
-      {/* Background elements */}
       <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-nextrend-100 rounded-bl-full opacity-50 -z-10"></div>
       <div className="absolute bottom-0 left-0 w-1/4 h-1/4 bg-nextrend-100 rounded-tr-full opacity-50 -z-10"></div>
     </section>
