@@ -396,13 +396,17 @@ const ContentEditor: React.FC = () => {
                   <CardContent className="p-6">
                     <h2 className="text-lg font-semibold mb-4">Upload an article or document</h2>
                     
-                    <div className="bg-gray-50 border border-gray-100 rounded-lg p-4 mb-4 h-[300px] overflow-y-auto flex flex-col gap-3">
+                    <div 
+                      className={`bg-gray-50 border border-gray-100 rounded-lg p-4 mb-4 h-[300px] overflow-y-auto flex flex-col gap-3 ${
+                        dragActive ? 'border-nextrend-500 bg-nextrend-50' : ''
+                      }`}
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      onDrop={handleDrop}
+                    >
                       {chatMessages.length === 0 ? (
                         <div 
-                          className={`text-center border-2 border-dashed ${dragActive ? 'border-nextrend-500 bg-nextrend-50' : 'border-gray-300'} rounded-lg flex flex-col items-center justify-center h-full cursor-pointer`}
-                          onDragOver={handleDragOver}
-                          onDragLeave={handleDragLeave}
-                          onDrop={handleDrop}
+                          className="text-center border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center h-full cursor-pointer"
                           onClick={() => document.getElementById('file-upload')?.click()}
                         >
                           <FileText className="w-16 h-16 text-gray-400 mb-3" />
@@ -463,23 +467,21 @@ const ContentEditor: React.FC = () => {
               >
                 <Card className="overflow-hidden h-full">
                   <CardContent className="p-6 h-full flex flex-col">
-                    <h2 className="text-lg font-semibold mb-4">Edit Generated Content</h2>
+                    <h2 className="text-lg font-semibold mb-4">Chat About Anything Below</h2>
                     
                     <TextEditor
                       content={generatedContent}
                       onContentChange={setGeneratedContent}
                       loading={isGenerating}
-                      placeholder="Your generated content will appear here after uploading a document..."
+                      placeholder="Type your message to get started..."
                       className="flex-1"
+                      chatMode={true}
+                      userInput={userInput}
+                      onUserInputChange={setUserInput}
+                      onSendMessage={handleSendMessage}
+                      chatMessages={chatMessages}
+                      label=""
                     />
-                    
-                    {generatedContent && (
-                      <div className="mt-4 flex justify-end">
-                        <Button className="bg-nextrend-500 hover:bg-nextrend-600">
-                          Use This Content
-                        </Button>
-                      </div>
-                    )}
                   </CardContent>
                 </Card>
               </motion.div>
