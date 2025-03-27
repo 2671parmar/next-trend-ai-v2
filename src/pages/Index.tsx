@@ -39,17 +39,17 @@ const Index = () => {
       <section className="py-20 px-6 bg-gradient-to-br from-nextrend-500 to-nextrend-700 text-white">
         <div className="max-w-5xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6 animate-fade-up">
-            Ready to Transform Your Content Strategy?
+            Your Personal Content Machine. One Click Away.
           </h2>
           <p className="text-xl text-white/80 mb-10 max-w-2xl mx-auto animate-fade-up" style={{ animationDelay: '0.1s' }}>
-            Join loan officers across the country who are saving hours each week while creating more engaging content.
+            Start building your brand authority without wasting time. Get early access to NexTrend.AI today!
           </p>
           <button 
             onClick={() => navigate('/dashboard')}
             className="button-hover inline-flex items-center justify-center px-8 py-4 bg-white text-nextrend-600 rounded-lg font-medium text-lg animate-fade-up shadow-xl shadow-nextrend-700/20"
             style={{ animationDelay: '0.2s' }}
           >
-            Get Started Now
+            Join the Waitlist Now
             <ArrowRight className="ml-2 h-5 w-5" />
           </button>
         </div>

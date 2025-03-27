@@ -1,7 +1,8 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Check, Zap, Shield, Sparkles, Layers, Users } from 'lucide-react';
+import { Check, Zap, Shield, Sparkles, Layers, Users, Linkedin, FileText, Video, Mail, MessageSquare, X, TrendingUp } from 'lucide-react';
 
 const Features = () => {
   const navigate = useNavigate();
@@ -72,6 +73,107 @@ const Features = () => {
             </motion.div>
           ))}
         </div>
+        
+        {/* Content Formats Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="mt-24 mb-16 text-center"
+        >
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">1 Click = 7 Ready-to-Post Content Pieces</h2>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            More engagement. More visibility. More business.
+          </p>
+        </motion.div>
+        
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-16">
+          {[
+            {
+              icon: <Linkedin className="w-6 h-6" />,
+              title: "LinkedIn Post",
+              description: "Build authority & start conversations."
+            },
+            {
+              icon: <FileText className="w-6 h-6" />,
+              title: "Blog Post",
+              description: "SEO-friendly articles that drive traffic."
+            },
+            {
+              icon: <Video className="w-6 h-6" />,
+              title: "Video Script",
+              description: "Ready-to-use scripts for YouTube, reels & shorts."
+            },
+            {
+              icon: <Mail className="w-6 h-6" />,
+              title: "Email",
+              description: "Personalized emails that nurture leads."
+            },
+            {
+              icon: <MessageSquare className="w-6 h-6" />,
+              title: "Social Post",
+              description: "Content for Facebook, Instagram & beyond."
+            },
+            {
+              icon: <X className="w-6 h-6" />,
+              title: "X (Twitter) Post",
+              description: "Short, impactful tweets that engage."
+            },
+            {
+              icon: <TrendingUp className="w-6 h-6" />,
+              title: "SMS Broadcast",
+              description: "Quick, effective texts for instant response."
+            }
+          ].map((format, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.1 * index }}
+              className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
+            >
+              <div className="rounded-full bg-nextrend-50 w-12 h-12 flex items-center justify-center text-nextrend-500 mb-4">
+                {format.icon}
+              </div>
+              <h3 className="text-lg font-semibold mb-2">{format.title}</h3>
+              <p className="text-gray-600 text-sm">{format.description}</p>
+            </motion.div>
+          ))}
+        </div>
+        
+        {/* How It Works Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="bg-nextrend-50 rounded-2xl p-8 md:p-12 mb-16"
+        >
+          <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center">How It Works</h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="rounded-full bg-nextrend-500 text-white w-12 h-12 flex items-center justify-center mx-auto mb-4 text-xl font-bold">1</div>
+              <h3 className="font-semibold mb-2">Enter your idea or topic</h3>
+              <p className="text-gray-600">Start with a simple idea or industry topic.</p>
+            </div>
+            <div className="text-center">
+              <div className="rounded-full bg-nextrend-500 text-white w-12 h-12 flex items-center justify-center mx-auto mb-4 text-xl font-bold">2</div>
+              <h3 className="font-semibold mb-2">Click once</h3>
+              <p className="text-gray-600">Watch NexTrend.AI generate 7 formats instantly.</p>
+            </div>
+            <div className="text-center">
+              <div className="rounded-full bg-nextrend-500 text-white w-12 h-12 flex items-center justify-center mx-auto mb-4 text-xl font-bold">3</div>
+              <h3 className="font-semibold mb-2">Copy, tweak & publish</h3>
+              <p className="text-gray-600">Use immediately or make small adjustments before posting.</p>
+            </div>
+          </div>
+          <div className="mt-8 text-center">
+            <p className="text-lg font-medium text-nextrend-700">Need daily posts? A week's worth of content?</p>
+            <p className="text-lg font-bold text-nextrend-700">Create it all in under 10 minutes.</p>
+          </div>
+        </motion.div>
         
         <motion.div
           initial={{ opacity: 0, y: 20 }}

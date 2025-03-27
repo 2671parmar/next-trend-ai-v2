@@ -27,6 +27,11 @@ const Hero: React.FC = () => {
             <p className="text-xl text-gray-700 mb-8">
               Your Brand. Your Voice. Your Growth.
             </p>
+            <p className="text-lg text-gray-600 mb-8">
+              Your brand needs visibility, but writing content takes too much time.
+              What if one click could instantly generate a full suite of engaging, on-brand content?
+              <span className="font-semibold"> With NexTrend.AI, it does.</span>
+            </p>
           </motion.div>
           
           <motion.div
@@ -47,6 +52,22 @@ const Hero: React.FC = () => {
             >
               See Demo
             </button>
+          </motion.div>
+          
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="mt-12"
+          >
+            <div className="flex flex-wrap gap-4 items-center">
+              <p className="text-gray-500 font-medium">Why Loan Officers Love NexTrend.AI:</p>
+              <div className="flex flex-wrap gap-3">
+                <span className="inline-block px-3 py-1 bg-nextrend-50 text-nextrend-700 rounded-full text-sm font-medium">No more blank screens</span>
+                <span className="inline-block px-3 py-1 bg-nextrend-50 text-nextrend-700 rounded-full text-sm font-medium">Mortgage focused</span>
+                <span className="inline-block px-3 py-1 bg-nextrend-50 text-nextrend-700 rounded-full text-sm font-medium">Time-saving</span>
+              </div>
+            </div>
           </motion.div>
         </div>
         
