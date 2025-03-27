@@ -26,16 +26,16 @@ export default {
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
 				nextrend: {
-					50: '#f0f7ff',
-					100: '#e0effe',
-					200: '#bae0fd',
-					300: '#7cc8fb',
-					400: '#38aaf5',
-					500: '#0e93e8',
-					600: '#0075c5',
-					700: '#005da0',
-					800: '#004f85',
-					900: '#00426f',
+					50: '#eefbf3',
+					100: '#d8f6e3',
+					200: '#b2edcb',
+					300: '#84e2ad',
+					400: '#62da8a', // Main color
+					500: '#3bcb68',
+					600: '#27a450',
+					700: '#228342',
+					800: '#1f6838',
+					900: '#1c5630',
 				},
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
@@ -138,3 +138,4 @@ export default {
 	},
 	plugins: [require("tailwindcss-animate")],
 } satisfies Config;
+
