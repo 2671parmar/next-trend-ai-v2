@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FileText, Video, MessageSquare, Mail, Linkedin, Facebook } from 'lucide-react';
+import { FileText, Video, MessageSquare, Mail, Linkedin, Facebook, Film } from 'lucide-react';
 
 interface ContentFormProps {
   icon: React.ReactNode;
@@ -50,6 +50,12 @@ export const contentFormOptions = [
     icon: <Video className="w-5 h-5" />,
     title: 'Video Script',
     description: 'Create a script with hook & intro/outro',
+  },
+  {
+    id: 'reel-script',
+    icon: <Film className="w-5 h-5" />,
+    title: 'Reel/Short Script',
+    description: 'Attention-grabbing scripts for social media',
   },
   {
     id: 'blog-post',

@@ -1,7 +1,8 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Check, Zap, Shield, Sparkles, Layers, Users, Linkedin, FileText, Video, Mail, MessageSquare, X, TrendingUp } from 'lucide-react';
+import { Check, Zap, Shield, Sparkles, Layers, Users, Linkedin, FileText, Video, Mail, MessageSquare, X, TrendingUp, Film } from 'lucide-react';
 
 const Features = () => {
   const navigate = useNavigate();
@@ -80,7 +81,7 @@ const Features = () => {
           transition={{ duration: 0.5 }}
           className="mt-24 mb-16 text-center"
         >
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">1 Click = 7 Ready-to-Post Content Pieces</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">1 Click = 8 Ready-to-Post Content Pieces</h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             More engagement. More visibility. More business.
           </p>
@@ -102,6 +103,11 @@ const Features = () => {
               icon: <Video className="w-6 h-6" />,
               title: "Video Script",
               description: "Ready-to-use scripts for YouTube, reels & shorts."
+            },
+            {
+              icon: <Film className="w-6 h-6" />,
+              title: "Reel/Short Script",
+              description: "Attention-grabbing scripts for Instagram & TikTok."
             },
             {
               icon: <Mail className="w-6 h-6" />,
@@ -158,7 +164,7 @@ const Features = () => {
             <div className="text-center">
               <div className="rounded-full bg-nextrend-500 text-white w-12 h-12 flex items-center justify-center mx-auto mb-4 text-xl font-bold">2</div>
               <h3 className="font-semibold mb-2">Click once</h3>
-              <p className="text-gray-600">Watch NexTrend.AI generate 7 formats instantly.</p>
+              <p className="text-gray-600">Watch NexTrend.AI generate 8 formats instantly.</p>
             </div>
             <div className="text-center">
               <div className="rounded-full bg-nextrend-500 text-white w-12 h-12 flex items-center justify-center mx-auto mb-4 text-xl font-bold">3</div>
