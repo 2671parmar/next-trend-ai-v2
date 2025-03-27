@@ -50,9 +50,6 @@ const Hero: React.FC = () => {
           transition={{ duration: 0.5, delay: 0.4 }}
           className="mt-24 text-center"
         >
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            All-in-One Content Solution
-          </h2>
           <p className="text-xl text-gray-700 max-w-3xl mx-auto">
             Your Brand. Your Voice. Your Growth.
           </p>
