@@ -21,12 +21,12 @@ const Hero: React.FC = () => {
           className="text-center max-w-4xl mx-auto"
         >
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-            Generate Multi-Platform Content 
-            <span className="text-nextrend-500"> in Seconds</span>
+            AI-Partnered Content Creation 
+            <span className="text-nextrend-500"> In Your Brand Voice</span> for Mortgage Professionals
           </h1>
           
           <p className="text-xl text-gray-700 mb-6 max-w-3xl mx-auto">
-            NexTrend.AI helps loan officers create tailored content for LinkedIn, blogs, videos, emails, social media, and more — all from a single news item.
+            Your Brand. Your Voice. Your Growth.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10 mb-16">
