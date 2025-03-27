@@ -1,99 +1,74 @@
-
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 const Hero: React.FC = () => {
+  const navigate = useNavigate();
+
+  const handleGetStarted = () => {
+    navigate('/dashboard');
+  };
+
   return (
-    <section className="relative min-h-screen pt-24 pb-16 px-6 overflow-hidden">
-      {/* Background Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white via-blue-50 to-white -z-10" />
-      
-      {/* Abstract Shape - Top Right */}
-      <div className="absolute top-0 right-0 w-2/3 h-2/3 bg-nextrend-100 rounded-bl-full opacity-40 -z-10" />
-      
-      {/* Subtle Grid Pattern */}
-      <div className="absolute inset-0 bg-grid-pattern opacity-[0.03] -z-10" />
-      
-      <div className="max-w-7xl mx-auto">
-        <div className="grid md:grid-cols-2 gap-12 md:gap-6 items-center">
-          <div className="flex flex-col animate-fade-up">
-            <div className="mb-6">
-              <span className="inline-block px-3 py-1 text-sm font-medium bg-nextrend-100 text-nextrend-700 rounded-full">
-                Simplify Your Content Creation
-              </span>
-            </div>
-            
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
-              Content creation <span className="text-nextrend-500">in your voice</span>, at scale.
+    <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 bg-gradient-to-br from-nextrend-50 to-white">
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+        <div className="max-w-3xl mx-auto md:mx-0">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="mb-6"
+          >
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+              AI-Powered Content Creation for 
+              <span className="text-nextrend-500"> Mortgage Professionals</span>
             </h1>
-            
-            <p className="text-lg text-gray-600 mb-8 max-w-lg">
-              NexTrend.AI helps loan officers create engaging, personalized content in minutes. Stay on top of mortgage trends, rates, and terms with AI-powered content generation.
+            <p className="text-xl text-gray-700 mb-8">
+              Create personalized, engaging content in your authentic voice. 
+              Save hours each week while staying top-of-mind with your clients and prospects.
             </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link 
-                to="/dashboard" 
-                className="button-hover inline-flex items-center justify-center px-6 py-3 text-white bg-nextrend-500 rounded-lg font-medium"
-              >
-                Get Started
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-              
-              <Link 
-                to="#features" 
-                className="button-hover inline-flex items-center justify-center px-6 py-3 text-nextrend-600 bg-nextrend-50 rounded-lg font-medium border border-nextrend-200"
-              >
-                Learn More
-              </Link>
-            </div>
-          </div>
+          </motion.div>
           
-          <div className="relative animate-fade-in" style={{ animationDelay: '0.2s' }}>
-            <div className="relative z-10 rounded-xl overflow-hidden shadow-2xl">
-              <div className="aspect-video bg-white">
-                {/* Dashboard Preview Image */}
-                <div className="w-full h-full bg-gradient-to-br from-nextrend-500 to-nextrend-700 p-8 flex flex-col justify-center items-center">
-                  <div className="glass p-6 rounded-lg w-full max-w-md">
-                    <h3 className="text-xl font-semibold text-gray-800 mb-4">Generate Content</h3>
-                    <div className="space-y-3">
-                      <div className="bg-white p-3 rounded shadow-sm">
-                        <div className="h-2 w-3/4 bg-nextrend-100 rounded"></div>
-                      </div>
-                      <div className="bg-white p-3 rounded shadow-sm">
-                        <div className="h-2 w-1/2 bg-nextrend-100 rounded"></div>
-                      </div>
-                      <div className="bg-white p-3 rounded shadow-sm">
-                        <div className="h-2 w-5/6 bg-nextrend-100 rounded"></div>
-                      </div>
-                    </div>
-                    <div className="mt-4 flex justify-end">
-                      <div className="h-8 w-24 bg-nextrend-500 rounded"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            {/* Decorative Elements */}
-            <div className="absolute top-1/2 -right-12 w-24 h-24 bg-nextrend-200 rounded-full opacity-60 animate-pulse-soft" style={{ animationDelay: '0.5s' }}></div>
-            <div className="absolute -bottom-8 left-1/4 w-16 h-16 bg-nextrend-300 rounded-full opacity-40 animate-pulse-soft" style={{ animationDelay: '1.2s' }}></div>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="flex flex-col sm:flex-row gap-4"
+          >
+            <button 
+              onClick={handleGetStarted}
+              className="button-hover bg-nextrend-500 text-white px-8 py-3 rounded-lg font-medium text-lg shadow-lg shadow-nextrend-500/20"
+            >
+              Get Started
+            </button>
+            <button 
+              onClick={() => navigate('/dashboard')}
+              className="button-hover px-8 py-3 rounded-lg font-medium text-lg border border-gray-300 hover:border-gray-400 bg-white"
+            >
+              See Demo
+            </button>
+          </motion.div>
         </div>
         
-        {/* Social Proof */}
-        <div className="mt-20 border-t border-gray-200 pt-12">
-          <p className="text-center text-gray-500 mb-8">Trusted by loan officers across the country</p>
-          <div className="flex flex-wrap justify-center gap-8 md:gap-16">
-            {['Bank of Trust', 'Lender Prime', 'HomeQuest', 'FutureMortgage', 'LoanStar'].map((company) => (
-              <div key={company} className="text-gray-400 font-semibold text-lg">
-                {company}
-              </div>
-            ))}
-          </div>
+        <div className="hidden md:block absolute right-6 top-1/2 transform -translate-y-1/2 w-2/5">
+          {/* Placeholder for hero image/illustration */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="bg-white p-6 rounded-xl shadow-xl"
+          >
+            <div className="aspect-video bg-gray-100 rounded-lg mb-4"></div>
+            <div className="h-8 bg-gray-100 rounded-md w-3/4 mb-3"></div>
+            <div className="h-4 bg-gray-100 rounded-md w-full mb-2"></div>
+            <div className="h-4 bg-gray-100 rounded-md w-5/6"></div>
+          </motion.div>
         </div>
       </div>
+      
+      {/* Background elements */}
+      <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-nextrend-100 rounded-bl-full opacity-50 -z-10"></div>
+      <div className="absolute bottom-0 left-0 w-1/4 h-1/4 bg-nextrend-100 rounded-tr-full opacity-50 -z-10"></div>
     </section>
   );
 };

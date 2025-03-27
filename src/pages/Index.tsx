@@ -1,13 +1,14 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import Features from '@/components/Features';
-import { Link } from 'react-router-dom';
 import { ArrowRight, ArrowUp } from 'lucide-react';
 
 const Index = () => {
   const [showScrollTop, setShowScrollTop] = React.useState(false);
+  const navigate = useNavigate();
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -43,14 +44,14 @@ const Index = () => {
           <p className="text-xl text-white/80 mb-10 max-w-2xl mx-auto animate-fade-up" style={{ animationDelay: '0.1s' }}>
             Join loan officers across the country who are saving hours each week while creating more engaging content.
           </p>
-          <Link 
-            to="/dashboard" 
+          <button 
+            onClick={() => navigate('/dashboard')}
             className="button-hover inline-flex items-center justify-center px-8 py-4 bg-white text-nextrend-600 rounded-lg font-medium text-lg animate-fade-up shadow-xl shadow-nextrend-700/20"
             style={{ animationDelay: '0.2s' }}
           >
             Get Started Now
             <ArrowRight className="ml-2 h-5 w-5" />
-          </Link>
+          </button>
         </div>
       </section>
       
@@ -72,19 +73,39 @@ const Index = () => {
             <div>
               <h3 className="text-lg font-semibold mb-4">Product</h3>
               <ul className="space-y-2">
-                <li><Link to="/dashboard" className="text-gray-400 hover:text-white transition-colors">Dashboard</Link></li>
-                <li><Link to="#features" className="text-gray-400 hover:text-white transition-colors">Features</Link></li>
-                <li><Link to="#" className="text-gray-400 hover:text-white transition-colors">Pricing</Link></li>
+                <li>
+                  <button 
+                    onClick={() => navigate('/dashboard')} 
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    Dashboard
+                  </button>
+                </li>
+                <li>
+                  <button 
+                    onClick={() => {
+                      document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
+                    }} 
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    Features
+                  </button>
+                </li>
+                <li>
+                  <button className="text-gray-400 hover:text-white transition-colors">
+                    Pricing
+                  </button>
+                </li>
               </ul>
             </div>
             
             <div>
               <h3 className="text-lg font-semibold mb-4">Company</h3>
               <ul className="space-y-2">
-                <li><Link to="#" className="text-gray-400 hover:text-white transition-colors">About</Link></li>
-                <li><Link to="#" className="text-gray-400 hover:text-white transition-colors">Contact</Link></li>
-                <li><Link to="#" className="text-gray-400 hover:text-white transition-colors">Privacy</Link></li>
-                <li><Link to="#" className="text-gray-400 hover:text-white transition-colors">Terms</Link></li>
+                <li><button className="text-gray-400 hover:text-white transition-colors">About</button></li>
+                <li><button className="text-gray-400 hover:text-white transition-colors">Contact</button></li>
+                <li><button className="text-gray-400 hover:text-white transition-colors">Privacy</button></li>
+                <li><button className="text-gray-400 hover:text-white transition-colors">Terms</button></li>
               </ul>
             </div>
           </div>
