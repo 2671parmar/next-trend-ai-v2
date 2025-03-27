@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -17,7 +16,7 @@ const Features = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">Everything You Need to Grow Your Mortgage Business</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-6">Built for Loan Officers Who Want to Scale FAST Online</h2>
             <p className="text-xl text-gray-600">
               NexTrend.AI provides mortgage professionals with the tools to create engaging, personalized content that resonates with clients.
             </p>
