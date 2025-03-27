@@ -9,10 +9,82 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 
+// List of mortgage terms for the General Mortgage section
+const mortgageTerms = [
+  "Adjustable-Rate Mortgage (ARM)",
+  "Amortization",
+  "Annual Percentage Rate (APR)",
+  "Appraisal",
+  "Balloon Mortgage",
+  "Borrower",
+  "Broker",
+  "Closing Costs",
+  "Co-Borrower",
+  "Collateral",
+  "Conforming Loan",
+  "Conventional Loan",
+  "Credit Score",
+  "Debt-to-Income Ratio (DTI)",
+  "Default",
+  "Down Payment",
+  "Earnest Money Deposit",
+  "Equity",
+  "Escrow",
+  "Fannie Mae (FNMA)",
+  "FHA Loan",
+  "Fixed-Rate Mortgage",
+  "Foreclosure",
+  "Freddie Mac (FHLMC)",
+  "Good Faith Estimate (GFE)",
+  "Government-Backed Loan",
+  "Hard Money Loan",
+  "Hazard Insurance",
+  "Home Equity Line of Credit (HELOC)",
+  "Homeowners Association (HOA) Fees",
+  "Homeowners Insurance",
+  "Housing Ratio",
+  "Interest Rate",
+  "Jumbo Loan",
+  "Lender",
+  "Lien",
+  "Loan Estimate (LE)",
+  "Loan-to-Value Ratio (LTV)",
+  "Lock-In Rate",
+  "Margin (for ARMs)",
+  "Maturity Date",
+  "Mortgage",
+  "Mortgage Banker",
+  "Mortgage Broker",
+  "Mortgage Insurance (MI)",
+  "Mortgage Note",
+  "Mortgage Underwriting",
+  "Negative Amortization",
+  "Non-Conforming Loan",
+  "Origination Fee",
+  "Pre-Approval",
+  "Private Mortgage Insurance (PMI)",
+  "Rate Lock",
+  "Refinance",
+  "Reverse Mortgage",
+  "Title Insurance",
+  "VA Loan",
+  "Balloon Payment",
+  "Cash-Out Refinance",
+  "Escrow Account",
+  "Forbearance",
+  "Loan Modification",
+  "Construction Loan",
+  "Discount Points",
+  "Gift Funds",
+  "Home Inspection",
+  "Interest-Only Loan"
+];
+
 // Mock news feed data
 const generateNewsFeedData = (option: string) => {
   const today = new Date().toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' });
   
+  // Common data for MBS Commentary and Trending Topics
   const commonData = [
     {
       id: 1,
@@ -64,13 +136,25 @@ const generateNewsFeedData = (option: string) => {
     }
   ];
   
-  // Return all news for 'this-week' option, or a filtered subset for other options
+  // Return MBS Commentary or Trending Topics data
   if (option === 'this-week') {
     return commonData;
   } else if (option === 'trending') {
     return commonData.filter(item => item.id % 2 === 0);
   } else if (option === 'general') {
-    return commonData.filter(item => item.id % 3 === 0);
+    // Randomly select 25 unique mortgage terms
+    const shuffled = [...mortgageTerms].sort(() => 0.5 - Math.random());
+    const selectedTerms = shuffled.slice(0, 25);
+    
+    // Generate mortgage term data
+    return selectedTerms.map((term, index) => ({
+      id: index + 1,
+      category: 'Term',
+      date: today,
+      title: term,
+      content: `Description for ${term} will appear here when you generate content.`,
+      isGenerating: false,
+    }));
   } else {
     return commonData.slice(0, 3);
   }
@@ -115,7 +199,9 @@ const ContentEditor: React.FC = () => {
             ? { 
                 ...article, 
                 isGenerating: false,
-                generatedContent: `Generated content for "${article.title}" that explains this topic in a way that's easy for clients to understand. This content is tailored for mortgage professionals to share with their clients.`
+                generatedContent: option === 'general'
+                  ? `${article.title}: A key mortgage concept that helps borrowers understand the lending process. This term is important for clients to know when navigating their home financing journey.`
+                  : `Generated content for "${article.title}" that explains this topic in a way that's easy for clients to understand. This content is tailored for mortgage professionals to share with their clients.`
               }
             : article
         )
@@ -134,6 +220,22 @@ const ContentEditor: React.FC = () => {
   
   const { title, icon } = optionDetails[option as keyof typeof optionDetails];
   const filteredNews = activeTab === 'all' ? newsFeed : newsFeed.filter(item => item.category.toLowerCase() === activeTab);
+  
+  // Custom tabs for the General Mortgage section
+  const tabsContent = option === 'general' 
+    ? (
+      <TabsList className="mb-6">
+        <TabsTrigger value="all">All Terms</TabsTrigger>
+      </TabsList>
+    )
+    : (
+      <TabsList className="mb-6">
+        <TabsTrigger value="all">All</TabsTrigger>
+        <TabsTrigger value="mortgage">Mortgage</TabsTrigger>
+        <TabsTrigger value="housing">Housing</TabsTrigger>
+        <TabsTrigger value="economy">Economy</TabsTrigger>
+      </TabsList>
+    );
   
   return (
     <div className="min-h-screen bg-gray-50">
@@ -174,16 +276,13 @@ const ContentEditor: React.FC = () => {
             <div className="w-10 h-10 rounded-lg bg-nextrend-50 text-nextrend-500 flex items-center justify-center mr-3">
               {icon}
             </div>
-            <h1 className="text-2xl font-bold">News Feed</h1>
+            <h1 className="text-2xl font-bold">
+              {option === 'general' ? 'Mortgage Terminology' : 'News Feed'}
+            </h1>
           </motion.div>
           
           <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="mb-6">
-              <TabsTrigger value="all">All</TabsTrigger>
-              <TabsTrigger value="mortgage">Mortgage</TabsTrigger>
-              <TabsTrigger value="housing">Housing</TabsTrigger>
-              <TabsTrigger value="economy">Economy</TabsTrigger>
-            </TabsList>
+            {tabsContent}
             
             <TabsContent value={activeTab} className="mt-0">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
