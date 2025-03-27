@@ -37,7 +37,7 @@ const Hero: React.FC = () => {
             </p>
           </div>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10 mb-16">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10 mb-8">
             <Button 
               onClick={handleGetStarted}
               size="lg"
@@ -54,6 +54,10 @@ const Hero: React.FC = () => {
               Learn More
             </Button>
           </div>
+          
+          <p className="text-xl text-gray-700 mt-10 mb-16">
+            Your Brand. Your Voice. Your Growth.
+          </p>
         </motion.div>
         
         <motion.div
@@ -62,9 +66,6 @@ const Hero: React.FC = () => {
           transition={{ duration: 0.5, delay: 0.4 }}
           className="mt-24 text-center"
         >
-          <p className="text-xl text-gray-700 max-w-3xl mx-auto">
-            Your Brand. Your Voice. Your Growth.
-          </p>
           <div className="mt-10 max-w-2xl mx-auto">
             <p className="text-lg text-gray-600 mb-5">
               Your brand needs visibility, but writing content can take too much time.
