@@ -11,7 +11,6 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import TextEditor from '@/components/TextEditor';
 
-// List of mortgage terms for the General Mortgage section
 const mortgageTerms = [
   "Adjustable-Rate Mortgage (ARM)",
   "Amortization",
@@ -82,11 +81,9 @@ const mortgageTerms = [
   "Interest-Only Loan"
 ];
 
-// Mock news feed data
 const generateNewsFeedData = (option: string) => {
   const today = new Date().toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' });
   
-  // Common data for MBS Commentary and Trending Topics
   const commonData = [
     {
       id: 1,
@@ -138,17 +135,14 @@ const generateNewsFeedData = (option: string) => {
     }
   ];
   
-  // Return MBS Commentary or Trending Topics data
   if (option === 'this-week') {
     return commonData;
   } else if (option === 'trending') {
     return commonData.filter(item => item.id % 2 === 0);
   } else if (option === 'general') {
-    // Randomly select 25 unique mortgage terms
     const shuffled = [...mortgageTerms].sort(() => 0.5 - Math.random());
     const selectedTerms = shuffled.slice(0, 25);
     
-    // Generate mortgage term data
     return selectedTerms.map((term, index) => ({
       id: index + 1,
       category: 'Term',
@@ -162,7 +156,6 @@ const generateNewsFeedData = (option: string) => {
   }
 };
 
-// Option titles and icons
 const optionDetails = {
   'this-week': { title: 'MBS Commentary Today', icon: <Newspaper className="w-6 h-6" /> },
   'trending': { title: 'Trending Topics', icon: <BarChart className="w-6 h-6" /> },
@@ -170,7 +163,6 @@ const optionDetails = {
   'custom': { title: 'Custom Content', icon: <MessageSquare className="w-6 h-6" /> }
 };
 
-// Chat message type for custom content
 interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
@@ -184,15 +176,14 @@ const ContentEditor: React.FC = () => {
   const [newsFeed, setNewsFeed] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState('all');
   
-  // State for custom chat interface
   const [userInput, setUserInput] = useState('');
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedContent, setGeneratedContent] = useState('');
+  const [dragActive, setDragActive] = useState(false);
   
   useEffect(() => {
     if (option) {
-      // Initialize with news feed data
       setNewsFeed(generateNewsFeedData(option));
     }
   }, [option]);
@@ -206,7 +197,6 @@ const ContentEditor: React.FC = () => {
       )
     );
     
-    // Simulate content generation
     setTimeout(() => {
       setNewsFeed(prev => 
         prev.map(article => 
@@ -225,9 +215,7 @@ const ContentEditor: React.FC = () => {
   };
   
   const handleReadArticle = (articleId: number) => {
-    // In a real app, this would open the full article
     console.log(`Opening full article with ID: ${articleId}`);
-    // For now, just simulate selecting the article
     setNewsFeed(prev => 
       prev.map(article => 
         article.id === articleId 
@@ -238,9 +226,7 @@ const ContentEditor: React.FC = () => {
   };
 
   const handleUseArticle = (articleId: number) => {
-    // In a real app, this would select the article for use
     console.log(`Using article with ID: ${articleId}`);
-    // For now, just mark it as selected and generate content if not already generated
     setNewsFeed(prev => 
       prev.map(article => 
         article.id === articleId 
@@ -257,7 +243,6 @@ const ContentEditor: React.FC = () => {
   const handleSendMessage = () => {
     if (!userInput.trim()) return;
     
-    // Add user message to chat
     const userMessage: ChatMessage = {
       role: 'user',
       content: userInput,
@@ -268,7 +253,6 @@ const ContentEditor: React.FC = () => {
     setUserInput('');
     setIsGenerating(true);
     
-    // Simulate AI response after a delay
     setTimeout(() => {
       const assistantMessage: ChatMessage = {
         role: 'assistant',
@@ -282,8 +266,70 @@ const ContentEditor: React.FC = () => {
     }, 2000);
   };
   
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement> | React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    setDragActive(false);
+    
+    let files: FileList | null = null;
+    
+    if ('dataTransfer' in event) {
+      files = event.dataTransfer.files;
+    } else if ('target' in event && event.target) {
+      files = (event.target as HTMLInputElement).files;
+    }
+    
+    if (files && files.length > 0) {
+      const file = files[0];
+      const reader = new FileReader();
+      
+      reader.onload = (e) => {
+        const content = e.target?.result as string;
+        
+        const userMessage: ChatMessage = {
+          role: 'user',
+          content: `Uploaded document: ${file.name}`,
+          timestamp: new Date()
+        };
+        
+        setChatMessages(prev => [...prev, userMessage]);
+        setIsGenerating(true);
+        
+        setTimeout(() => {
+          const assistantMessage: ChatMessage = {
+            role: 'assistant',
+            content: `I've analyzed the document "${file.name}". Here's a summary you can share with clients:\n\nThis document covers important mortgage information that would be valuable for potential homebuyers. The key points include market trends and financing options.`,
+            timestamp: new Date()
+          };
+          
+          setChatMessages(prev => [...prev, assistantMessage]);
+          setGeneratedContent(`I've analyzed the document "${file.name}". Here's a summary you can share with clients:\n\nThis document covers important mortgage information that would be valuable for potential homebuyers. The key points include market trends and financing options.`);
+          setIsGenerating(false);
+        }, 2000);
+      };
+      
+      reader.readAsText(file);
+    }
+  };
+  
+  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setDragActive(true);
+  };
+  
+  const handleDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setDragActive(false);
+  };
+  
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    handleFileUpload(event);
+  };
+  
   const handleSave = () => {
-    // In a real app, this would save the content to the database
     navigate('/dashboard');
   };
   
@@ -294,7 +340,6 @@ const ContentEditor: React.FC = () => {
   const { title, icon } = optionDetails[option as keyof typeof optionDetails];
   const filteredNews = activeTab === 'all' ? newsFeed : newsFeed.filter(item => item.category.toLowerCase() === activeTab);
   
-  // Custom content chat interface
   if (option === 'custom') {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -342,7 +387,6 @@ const ContentEditor: React.FC = () => {
             </motion.div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Chat Interface */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -350,59 +394,68 @@ const ContentEditor: React.FC = () => {
               >
                 <Card className="overflow-hidden">
                   <CardContent className="p-6">
-                    <h2 className="text-lg font-semibold mb-4">Tell me what you want to write about</h2>
+                    <h2 className="text-lg font-semibold mb-4">Upload an article or document</h2>
                     
                     <div className="bg-gray-50 border border-gray-100 rounded-lg p-4 mb-4 h-[300px] overflow-y-auto flex flex-col gap-3">
                       {chatMessages.length === 0 ? (
-                        <div className="text-center text-gray-500 my-auto">
-                          <MessageSquare className="w-10 h-10 mx-auto mb-2 opacity-20" />
-                          <p>Type a topic or question below to generate content</p>
+                        <div 
+                          className={`text-center border-2 border-dashed ${dragActive ? 'border-nextrend-500 bg-nextrend-50' : 'border-gray-300'} rounded-lg flex flex-col items-center justify-center h-full cursor-pointer`}
+                          onDragOver={handleDragOver}
+                          onDragLeave={handleDragLeave}
+                          onDrop={handleDrop}
+                          onClick={() => document.getElementById('file-upload')?.click()}
+                        >
+                          <FileText className="w-16 h-16 text-gray-400 mb-3" />
+                          <p className="text-gray-600 mb-2">Drag and drop your document here</p>
+                          <p className="text-gray-500 text-sm">or click to browse files</p>
+                          <input 
+                            id="file-upload" 
+                            type="file" 
+                            accept=".txt,.pdf,.doc,.docx,.md" 
+                            className="hidden" 
+                            onChange={handleFileUpload}
+                          />
                         </div>
                       ) : (
-                        chatMessages.map((msg, index) => (
-                          <div 
-                            key={index}
-                            className={`p-3 rounded-lg max-w-[80%] ${
-                              msg.role === 'user' 
-                                ? 'bg-nextrend-500 text-white ml-auto' 
-                                : 'bg-gray-200 text-gray-800'
-                            }`}
-                          >
-                            {msg.content}
-                          </div>
-                        ))
-                      )}
-                      
-                      {isGenerating && (
-                        <div className="bg-gray-200 text-gray-800 p-3 rounded-lg max-w-[80%] flex items-center gap-2">
-                          <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
-                          <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                          <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
-                        </div>
+                        <>
+                          {chatMessages.map((msg, index) => (
+                            <div 
+                              key={index}
+                              className={`p-3 rounded-lg max-w-[80%] ${
+                                msg.role === 'user' 
+                                  ? 'bg-nextrend-500 text-white ml-auto' 
+                                  : 'bg-gray-200 text-gray-800'
+                              }`}
+                            >
+                              {msg.content}
+                            </div>
+                          ))}
+                          
+                          {isGenerating && (
+                            <div className="bg-gray-200 text-gray-800 p-3 rounded-lg max-w-[80%] flex items-center gap-2">
+                              <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
+                              <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                              <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                            </div>
+                          )}
+                        </>
                       )}
                     </div>
                     
-                    <div className="flex items-center gap-2">
-                      <Input
-                        placeholder="Type your topic here... (e.g., 'Current mortgage rates' or 'First-time homebuyer tips')"
-                        value={userInput}
-                        onChange={(e) => setUserInput(e.target.value)}
-                        className="flex-1"
-                        onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                      />
+                    <div className="flex items-center justify-center">
                       <Button 
-                        onClick={handleSendMessage} 
-                        disabled={isGenerating || !userInput.trim()} 
-                        className="bg-nextrend-500 hover:bg-nextrend-600"
+                        variant="outline"
+                        onClick={() => document.getElementById('file-upload')?.click()}
+                        className="flex-1 max-w-xs"
                       >
-                        <Send className="w-4 h-4" />
+                        <FileText className="w-4 h-4 mr-2" />
+                        Upload New Document
                       </Button>
                     </div>
                   </CardContent>
                 </Card>
               </motion.div>
               
-              {/* Generated Content Editor */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -415,9 +468,8 @@ const ContentEditor: React.FC = () => {
                     <TextEditor
                       content={generatedContent}
                       onContentChange={setGeneratedContent}
-                      onRegenerateClick={chatMessages.length > 0 ? handleSendMessage : undefined}
                       loading={isGenerating}
-                      placeholder="Your generated content will appear here..."
+                      placeholder="Your generated content will appear here after uploading a document..."
                       className="flex-1"
                     />
                     
@@ -438,7 +490,6 @@ const ContentEditor: React.FC = () => {
     );
   }
   
-  // Custom tabs for the General Mortgage section
   const tabsContent = option === 'general' 
     ? (
       <TabsList className="mb-6">
@@ -556,7 +607,6 @@ const ContentEditor: React.FC = () => {
                               </Button>
                             </div>
                           ) : (
-                            // Keep the original Generate Content button for General Mortgage terms
                             !article.generatedContent ? (
                               <Button
                                 variant="outline"

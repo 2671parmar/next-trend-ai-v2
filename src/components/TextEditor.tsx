@@ -2,12 +2,13 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, FileText } from 'lucide-react';
 
 interface TextEditorProps {
   content: string;
   onContentChange: (content: string) => void;
   onRegenerateClick?: () => void;
+  onFileUpload?: (content: string) => void;
   loading?: boolean;
   label?: string;
   placeholder?: string;
@@ -18,6 +19,7 @@ const TextEditor: React.FC<TextEditorProps> = ({
   content,
   onContentChange,
   onRegenerateClick,
+  onFileUpload,
   loading = false,
   label = 'Content',
   placeholder = 'Start typing or edit the generated content...',
