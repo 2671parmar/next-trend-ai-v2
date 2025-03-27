@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import Features from '@/components/Features';
+import Pricing from '@/components/Pricing';
 import { ArrowRight, ArrowUp } from 'lucide-react';
 
 const Index = () => {
@@ -34,6 +35,9 @@ const Index = () => {
       <Hero />
       
       <Features />
+      
+      {/* Added Pricing component here */}
+      <Pricing />
       
       {/* CTA Section */}
       <section className="py-20 px-6 bg-gradient-to-br from-nextrend-500 to-nextrend-700 text-white">
