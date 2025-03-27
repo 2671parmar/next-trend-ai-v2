@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -17,7 +16,7 @@ const Features = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">Built for Loan Officers Who Want to Scale FAST Online</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-center">Built for Loan Officers Who Want to Scale FAST Online</h2>
             <p className="text-xl text-gray-600">
               NexTrend.AI provides mortgage professionals with the tools to create engaging, personalized content that resonates with clients.
             </p>
@@ -74,7 +73,6 @@ const Features = () => {
           ))}
         </div>
         
-        {/* Content Formats Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -143,7 +141,6 @@ const Features = () => {
           ))}
         </div>
         
-        {/* How It Works Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
