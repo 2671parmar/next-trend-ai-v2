@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -617,7 +618,7 @@ const ContentEditor: React.FC = () => {
                                 disabled={article.isGenerating}
                                 className="text-xs w-full"
                               >
-                                {article.isGenerating ? 'Generating...' : 'Generate Content'}
+                                {article.isGenerating ? 'Generating...' : 'Use this Mortgage Term'}
                               </Button>
                             ) : (
                               <div className="flex w-full justify-between">
