@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -102,7 +101,7 @@ const Features = () => {
             {
               icon: <Video className="w-6 h-6" />,
               title: "Video Script",
-              description: "Ready-to-use scripts for YouTube, reels & shorts."
+              description: "Professional scripts for your video content."
             },
             {
               icon: <Film className="w-6 h-6" />,

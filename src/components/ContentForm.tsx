@@ -49,7 +49,7 @@ export const contentFormOptions = [
     id: 'video-script',
     icon: <Video className="w-5 h-5" />,
     title: 'Video Script',
-    description: 'Create a script with hook & intro/outro',
+    description: 'Professional scripts for your video content',
   },
   {
     id: 'reel-script',
