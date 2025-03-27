@@ -34,7 +34,7 @@ const formatIcons = {
 
 // Option titles and icons
 const optionDetails = {
-  'this-week': { title: 'This Week in Mortgage', icon: <Newspaper className="w-6 h-6" /> },
+  'this-week': { title: 'MBS Commentary Today', icon: <Newspaper className="w-6 h-6" /> },
   'trending': { title: 'Trending Topics', icon: <BarChart className="w-6 h-6" /> },
   'general': { title: 'General Mortgage', icon: <FileText className="w-6 h-6" /> },
   'custom': { title: 'Custom Content', icon: <MessageSquare className="w-6 h-6" /> }

@@ -38,7 +38,7 @@ const Dashboard: React.FC = () => {
           <div className="grid md:grid-cols-2 gap-6 mb-12">
             <ContentOption
               icon={<Newspaper className="w-6 h-6" />}
-              title="This Week in Mortgage"
+              title="MBS Commentary Today"
               description="Get the latest mortgage market updates explained in simple terms for your clients."
               onClick={() => handleOptionSelect('this-week')}
               delay={0.1}
@@ -63,7 +63,7 @@ const Dashboard: React.FC = () => {
             <ContentOption
               icon={<MessageSquare className="w-6 h-6" />}
               title="You Tell Me"
-              description="Custom content generation based on your specific topic or prompt."
+              description="Your brainstorm, your way. Anything goes."
               onClick={() => handleOptionSelect('custom')}
               delay={0.4}
             />
