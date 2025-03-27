@@ -30,6 +30,11 @@ const Navbar: React.FC = () => {
           to="/" 
           className="flex items-center space-x-2 text-nextrend-600 transition-all"
         >
+          <img 
+            src="/lovable-uploads/d7cf0d96-7b79-4ff2-ba6b-9467b46d8ff2.png" 
+            alt="NexTrend.AI Logo" 
+            className="h-8 w-auto"
+          />
           <span className="text-xl font-bold tracking-tight">
             <span>NexTrend</span>
             <span className="text-nextrend-500">.AI</span>

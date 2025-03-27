@@ -64,9 +64,16 @@ const Index = () => {
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-4 gap-8">
             <div className="md:col-span-2">
-              <div className="text-2xl font-bold mb-4">
-                <span>NexTrend</span>
-                <span className="text-nextrend-400">.AI</span>
+              <div className="flex items-center space-x-2 mb-4">
+                <img 
+                  src="/lovable-uploads/d7cf0d96-7b79-4ff2-ba6b-9467b46d8ff2.png" 
+                  alt="NexTrend.AI Logo" 
+                  className="h-8 w-auto"
+                />
+                <div className="text-2xl font-bold">
+                  <span>NexTrend</span>
+                  <span className="text-nextrend-400">.AI</span>
+                </div>
               </div>
               <p className="text-gray-400 mb-4">
                 AI-powered content creation for mortgage professionals.
