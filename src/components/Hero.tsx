@@ -49,22 +49,6 @@ const Hero: React.FC = () => {
         </motion.div>
         
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.3 }}
-          className="relative mt-8 max-w-5xl mx-auto"
-        >
-          <div className="aspect-[16/8] bg-white rounded-xl shadow-xl overflow-hidden">
-            <img 
-              src="/lovable-uploads/5b5bfca4-a9df-4f91-b965-3f21223e570f.png" 
-              alt="NexTrend.AI Dashboard Preview" 
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <div className="absolute inset-0 bg-gradient-to-t from-white/10 to-transparent rounded-xl pointer-events-none"></div>
-        </motion.div>
-        
-        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
