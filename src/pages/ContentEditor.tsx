@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -257,6 +256,9 @@ const ContentEditor: React.FC = () => {
       let initialContent = '';
       if (article.generatedContent) {
         initialContent = article.generatedContent;
+      } else if (option === 'general') {
+        // For mortgage terminology, create a structured template
+        initialContent = `# ${article.title}\n\n${article.title} is an important mortgage concept that your clients should understand.\n\nKey points about this term:\n- This term relates to the mortgage process\n- Understanding this can help clients make better decisions\n- You can customize this explanation for your specific audience`;
       } else {
         initialContent = `${article.title}\n\n${article.content}\n\nFurther analysis and context can be added here...`;
       }
@@ -272,7 +274,14 @@ const ContentEditor: React.FC = () => {
     
     // Simulate content regeneration
     setTimeout(() => {
-      const updatedContent = `${selectedArticle.title} - Regenerated\n\n${selectedArticle.content}\n\nThis is a newly generated version with additional insights and information about this topic that would be valuable to share with clients.`;
+      let updatedContent;
+      
+      if (option === 'general') {
+        updatedContent = `# ${selectedArticle.title} - Explained\n\n${selectedArticle.title} is a fundamental mortgage concept that clients often ask about.\n\nDetailed explanation:\n- This term relates to how loans are structured\n- It impacts monthly payments and overall loan costs\n- Clients should understand this before making financing decisions\n\nTips for explaining to clients:\n- Use simple language and relatable examples\n- Compare with similar concepts they might already understand\n- Highlight how this affects their specific situation`;
+      } else {
+        updatedContent = `${selectedArticle.title} - Regenerated\n\n${selectedArticle.content}\n\nThis is a newly generated version with additional insights and information about this topic that would be valuable to share with clients.`;
+      }
+      
       setGeneratedContent(updatedContent);
       setIsGenerating(false);
     }, 1500);
@@ -378,7 +387,6 @@ const ContentEditor: React.FC = () => {
   const { title, icon } = optionDetails[option as keyof typeof optionDetails];
   const filteredNews = activeTab === 'all' ? newsFeed : newsFeed.filter(item => item.category.toLowerCase() === activeTab);
   
-  // If we're showing the editor for a selected article from any category (now including 'general')
   if (showEditor && (option === 'this-week' || option === 'trending' || option === 'general')) {
     return (
       <div className="min-h-screen bg-gray-50">
