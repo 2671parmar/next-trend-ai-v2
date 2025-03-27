@@ -29,7 +29,7 @@ const Hero: React.FC = () => {
             </p>
             <p className="text-lg text-gray-600 mb-8">
               Your brand needs visibility, but writing content takes too much time.
-              What if one click could instantly generate a full suite of engaging, on-brand content?
+              What if three clicks could instantly generate a full suite of engaging, on-brand content?
               <span className="font-semibold"> With NexTrend.AI, it does.</span>
             </p>
           </motion.div>

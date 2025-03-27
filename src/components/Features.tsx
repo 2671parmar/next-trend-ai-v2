@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -80,7 +81,7 @@ const Features = () => {
           transition={{ duration: 0.5 }}
           className="mt-24 mb-16 text-center"
         >
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">1 Click = 8 Ready-to-Post Content Pieces</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">3 Clicks = 8 Ready-to-Post Content Pieces</h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             More engagement. More visibility. More business.
           </p>
@@ -162,7 +163,7 @@ const Features = () => {
             </div>
             <div className="text-center">
               <div className="rounded-full bg-nextrend-500 text-white w-12 h-12 flex items-center justify-center mx-auto mb-4 text-xl font-bold">2</div>
-              <h3 className="font-semibold mb-2">Click once</h3>
+              <h3 className="font-semibold mb-2">Click three times</h3>
               <p className="text-gray-600">Watch NexTrend.AI generate 8 formats instantly.</p>
             </div>
             <div className="text-center">
@@ -173,7 +174,7 @@ const Features = () => {
           </div>
           <div className="mt-8 text-center">
             <p className="text-lg font-medium text-nextrend-700">Need daily posts? A week's worth of content?</p>
-            <p className="text-lg font-bold text-nextrend-700">Create it all in under 10 minutes.</p>
+            <p className="text-lg font-bold text-nextrend-700">Create it all in under 10 seconds.</p>
           </div>
         </motion.div>
         

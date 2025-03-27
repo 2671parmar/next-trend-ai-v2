@@ -39,7 +39,7 @@ const Index = () => {
       <section className="py-20 px-6 bg-gradient-to-br from-nextrend-500 to-nextrend-700 text-white">
         <div className="max-w-5xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6 animate-fade-up">
-            Your Personal Content Machine. One Click Away.
+            Your Personal Content Machine. Three Clicks Away.
           </h2>
           <p className="text-xl text-white/80 mb-10 max-w-2xl mx-auto animate-fade-up" style={{ animationDelay: '0.1s' }}>
             Start building your brand authority without wasting time. Get early access to NexTrend.AI today!
