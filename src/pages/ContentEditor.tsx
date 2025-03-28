@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -7,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import TextEditor from '@/components/TextEditor';
 
 const mortgageTerms = [
@@ -204,7 +207,15 @@ const ContentEditor: React.FC = () => {
       setShowEditor(false);
       setGeneratedContent('');
       
-      setChatMessages([]);
+      if (option === 'custom' && chatMessages.length === 0) {
+        setChatMessages([
+          {
+            role: 'assistant',
+            content: 'Example Idea:',
+            timestamp: new Date()
+          }
+        ]);
+      }
     }
   }, [option]);
   
@@ -591,38 +602,57 @@ const ContentEditor: React.FC = () => {
                     <h2 className="text-lg font-semibold mb-4">Create Custom Content</h2>
                     
                     <div className="flex-1 flex flex-col gap-4">
-                      <TextEditor
-                        content={generatedContent}
-                        onContentChange={setGeneratedContent}
-                        chatMode={true}
-                        userInput={userInput}
-                        onUserInputChange={setUserInput}
-                        onSendMessage={handleSendMessage}
-                        chatMessages={chatMessages}
-                        loading={isGenerating}
+                      <Textarea
+                        value={userInput}
+                        onChange={(e) => setUserInput(e.target.value)}
+                        placeholder="Type your message here..."
+                        className="resize-none h-32 flex-grow"
                       />
+                      
+                      <Button 
+                        className="h-12 bg-nextrend-500 hover:bg-nextrend-600 w-full"
+                        disabled={isGenerating || !userInput?.trim()}
+                        onClick={handleSendMessage}
+                      >
+                        <Send className="h-5 w-5 mr-2" />
+                        Send Message
+                      </Button>
+                      
+                      {/* Content prompt section */}
+                      {option === 'custom' && (
+                        <div className="text-sm p-4 bg-nextrend-50 border border-nextrend-100 rounded-md mt-2">
+                          {chatMessages.length > 0 && chatMessages[0].role === 'assistant' && (
+                            <div className="mb-4 text-gray-700">
+                              {chatMessages[0].content}
+                            </div>
+                          )}
+                          
+                          {/* Random content prompt */}
+                          <div className="content-prompt">
+                            {contentPrompts[Math.floor(Math.random() * contentPrompts.length) % contentPrompts.length] && (
+                              <>
+                                <p className="font-medium text-nextrend-600">
+                                  {contentPrompts[Math.floor(Math.random() * contentPrompts.length) % contentPrompts.length].headline}
+                                </p>
+                                <p className="text-gray-600 italic mt-1">
+                                  {contentPrompts[Math.floor(Math.random() * contentPrompts.length) % contentPrompts.length].hook}
+                                </p>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {generatedContent && (
+                        <div className="mt-4 p-4 bg-white rounded-md border border-gray-200">
+                          <p className="font-medium mb-2 text-nextrend-600">Generated Content:</p>
+                          <p className="text-gray-700 whitespace-pre-wrap">{generatedContent}</p>
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
               </motion.div>
-              
-              {generatedContent && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: 0.2 }}
-                  className="lg:col-span-2"
-                >
-                  <Card>
-                    <CardContent className="p-6">
-                      <h2 className="text-lg font-semibold mb-4">Generated Content</h2>
-                      <div className="p-4 bg-gray-50 rounded-md border border-gray-200">
-                        <p className="text-gray-700 whitespace-pre-wrap">{generatedContent}</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              )}
             </div>
           </div>
         </main>
