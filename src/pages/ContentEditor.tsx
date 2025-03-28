@@ -205,6 +205,16 @@ const ContentEditor: React.FC = () => {
       setSelectedArticle(null);
       setShowEditor(false);
       setGeneratedContent('');
+      
+      if (option === 'custom' && chatMessages.length === 0) {
+        setChatMessages([
+          {
+            role: 'assistant',
+            content: 'Hi there! How can I help you create content today?',
+            timestamp: new Date()
+          }
+        ]);
+      }
     }
   }, [option]);
   
@@ -519,7 +529,7 @@ const ContentEditor: React.FC = () => {
               className="flex items-center mb-6"
             >
               <div className="w-10 h-10 rounded-lg bg-nextrend-50 text-nextrend-500 flex items-center justify-center mr-3">
-                {icon}
+                <MessageSquare className="w-6 h-6" />
               </div>
               <h1 className="text-2xl font-bold">
                 Your Custom Content

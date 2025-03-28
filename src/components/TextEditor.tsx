@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -225,14 +226,14 @@ const TextEditor: React.FC<TextEditorProps> = ({
     return contentPrompts[randomIndex];
   };
 
-  // Set a random content prompt when component mounts
+  // Set a random content prompt when component mounts or when chatMode changes
   useEffect(() => {
     if (chatMode) {
       setContentPrompt(getRandomContentPrompt());
     }
   }, [chatMode]);
 
-  if (chatMode && chatMessages.length > 0) {
+  if (chatMode) {
     return (
       <div className={`w-full ${className} flex flex-col h-full`}>
         {label && (
