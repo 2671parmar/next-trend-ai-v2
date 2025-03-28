@@ -1,7 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { RefreshCw, FileText, MessageSquare, Send } from 'lucide-react';
+import { RefreshCw, FileText, MessageSquare, Send, Copy } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface ContentPrompt {
   headline: string;
@@ -203,6 +205,7 @@ const TextEditor: React.FC<TextEditorProps> = ({
   chatMessages = [],
 }) => {
   const [contentPrompt, setContentPrompt] = useState<ContentPrompt | null>(null);
+  const { toast } = useToast();
   
   // Function to get a random content prompt
   const getRandomContentPrompt = () => {
@@ -231,6 +234,18 @@ const TextEditor: React.FC<TextEditorProps> = ({
       setContentPrompt(getRandomContentPrompt());
     }
   }, [chatMode]);
+
+  // Function to copy hook text to clipboard and update the input field
+  const copyHookToInput = () => {
+    if (contentPrompt?.hook && onUserInputChange) {
+      onUserInputChange(contentPrompt.hook);
+      toast({
+        title: "Hook copied to input",
+        description: "The hook text has been copied to the input field.",
+        duration: 2000,
+      });
+    }
+  };
 
   if (chatMode) {
     return (
@@ -304,7 +319,18 @@ const TextEditor: React.FC<TextEditorProps> = ({
           {contentPrompt && (
             <div className="text-sm p-3 bg-nextrend-50 border border-nextrend-100 rounded-md mt-2">
               <p className="font-medium text-nextrend-600">{contentPrompt.headline}</p>
-              <p className="text-gray-600 italic mt-1">{contentPrompt.hook}</p>
+              <div className="flex items-center mt-1">
+                <p className="text-gray-600 italic flex-1">{contentPrompt.hook}</p>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-6 w-6 p-0 ml-2" 
+                  onClick={copyHookToInput}
+                  title="Copy to input"
+                >
+                  <Copy className="h-4 w-4 text-gray-500 hover:text-nextrend-500" />
+                </Button>
+              </div>
             </div>
           )}
         </div>
