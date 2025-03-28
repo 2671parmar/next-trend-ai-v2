@@ -210,7 +210,7 @@ const ContentEditor: React.FC = () => {
         setChatMessages([
           {
             role: 'assistant',
-            content: 'Example Idea:',
+            content: 'Hi there! How can I help you create content today?',
             timestamp: new Date()
           }
         ]);

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -318,18 +317,8 @@ const TextEditor: React.FC<TextEditorProps> = ({
           </Button>
           
           {contentPrompt && (
-            <div className="text-sm p-3 bg-nextrend-50 border border-nextrend-100 rounded-md mt-2 relative">
-              <p className="font-medium text-nextrend-600">{contentPrompt.headline}</p>
-              <p className="text-gray-600 italic mt-1">{contentPrompt.hook}</p>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleCopyPrompt}
-                className="absolute top-2 right-2 h-8 w-8 p-0"
-                title="Copy to input"
-              >
-                <Copy className="h-4 w-4 text-gray-500 hover:text-nextrend-500" />
-              </Button>
+            <div className="text-sm text-gray-600 mt-2">
+              Example Idea:
             </div>
           )}
         </div>
