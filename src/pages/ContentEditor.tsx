@@ -554,46 +554,21 @@ const ContentEditor: React.FC = () => {
                       onDragLeave={handleDragLeave}
                       onDrop={handleDrop}
                     >
-                      {chatMessages.length === 0 ? (
-                        <div 
-                          className="text-center border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center h-full cursor-pointer"
-                          onClick={() => document.getElementById('file-upload')?.click()}
-                        >
-                          <FileText className="w-16 h-16 text-gray-400 mb-3" />
-                          <p className="text-gray-600 mb-2">Drag and drop your document here</p>
-                          <p className="text-gray-500 text-sm">or click to browse files</p>
-                          <input 
-                            id="file-upload" 
-                            type="file" 
-                            accept=".txt,.pdf,.doc,.docx,.md" 
-                            className="hidden" 
-                            onChange={handleFileUpload}
-                          />
-                        </div>
-                      ) : (
-                        <>
-                          {chatMessages.map((msg, index) => (
-                            <div 
-                              key={index}
-                              className={`p-3 rounded-lg max-w-[80%] ${
-                                msg.role === 'user' 
-                                  ? 'bg-nextrend-500 text-white ml-auto' 
-                                  : 'bg-gray-200 text-gray-800'
-                              }`}
-                            >
-                              {msg.content}
-                            </div>
-                          ))}
-                          
-                          {isGenerating && (
-                            <div className="bg-gray-200 text-gray-800 p-3 rounded-lg max-w-[80%] flex items-center gap-2">
-                              <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
-                              <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                              <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
-                            </div>
-                          )}
-                        </>
-                      )}
+                      <div 
+                        className="text-center border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center h-full cursor-pointer"
+                        onClick={() => document.getElementById('file-upload')?.click()}
+                      >
+                        <FileText className="w-16 h-16 text-gray-400 mb-3" />
+                        <p className="text-gray-600 mb-2">Drag and drop your document here</p>
+                        <p className="text-gray-500 text-sm">or click to browse files</p>
+                        <input 
+                          id="file-upload" 
+                          type="file" 
+                          accept=".txt,.pdf,.doc,.docx,.md" 
+                          className="hidden" 
+                          onChange={handleFileUpload}
+                        />
+                      </div>
                     </div>
                     
                     <div className="flex items-center justify-center">
