@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { RefreshCw, FileText, MessageSquare, Send, Copy } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { RefreshCw, FileText, MessageSquare, Send } from 'lucide-react';
 
 interface ContentPrompt {
   headline: string;
   hook: string;
 }
 
+// Content prompts for loan officers
 const contentPrompts: ContentPrompt[] = [
   {
     headline: "Share a time you overcame a financial setback and what it taught you about resilience.",
@@ -184,6 +184,7 @@ interface TextEditorProps {
   chatMessages?: Array<{ role: string; content: string; timestamp?: Date }>;
 }
 
+// Keep track of which prompts have been displayed
 const usedPromptIndexes: Set<number> = new Set();
 
 const TextEditor: React.FC<TextEditorProps> = ({
@@ -202,43 +203,34 @@ const TextEditor: React.FC<TextEditorProps> = ({
   chatMessages = [],
 }) => {
   const [contentPrompt, setContentPrompt] = useState<ContentPrompt | null>(null);
-  const { toast } = useToast();
   
+  // Function to get a random content prompt
   const getRandomContentPrompt = () => {
     if (contentPrompts.length === 0) return null;
     
+    // If all prompts have been used, reset the tracking
     if (usedPromptIndexes.size >= contentPrompts.length) {
       usedPromptIndexes.clear();
     }
     
+    // Find an index that hasn't been used yet
     let randomIndex;
     do {
       randomIndex = Math.floor(Math.random() * contentPrompts.length);
     } while (usedPromptIndexes.has(randomIndex));
     
+    // Mark this index as used
     usedPromptIndexes.add(randomIndex);
     
     return contentPrompts[randomIndex];
   };
 
+  // Set a random content prompt when component mounts or when chatMode changes
   useEffect(() => {
     if (chatMode) {
       setContentPrompt(getRandomContentPrompt());
     }
   }, [chatMode]);
-
-  const handleCopyPrompt = () => {
-    if (contentPrompt) {
-      const textToCopy = `${contentPrompt.headline}\n\n${contentPrompt.hook}`;
-      if (onUserInputChange) {
-        onUserInputChange(textToCopy);
-      }
-      toast({
-        title: "Copied to input",
-        description: "The prompt has been copied to the input field.",
-      });
-    }
-  };
 
   if (chatMode) {
     return (
@@ -310,10 +302,9 @@ const TextEditor: React.FC<TextEditorProps> = ({
           </Button>
           
           {contentPrompt && (
-            <div className="text-sm mt-2">
-              <div className="text-gray-600">Example Idea:</div>
-              <p className="font-medium text-gray-800 mt-1">{contentPrompt.headline}</p>
-              <p className="text-gray-600 italic">{contentPrompt.hook}</p>
+            <div className="text-sm p-3 bg-nextrend-50 border border-nextrend-100 rounded-md mt-2">
+              <p className="font-medium text-nextrend-600">{contentPrompt.headline}</p>
+              <p className="text-gray-600 italic mt-1">{contentPrompt.hook}</p>
             </div>
           )}
         </div>
