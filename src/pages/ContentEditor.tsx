@@ -7,8 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import TextEditor from '@/components/TextEditor';
 
 const mortgageTerms = [
@@ -603,17 +601,28 @@ const ContentEditor: React.FC = () => {
                         chatMessages={chatMessages}
                         loading={isGenerating}
                       />
-                      
-                      {generatedContent && (
-                        <div className="mt-4 p-4 bg-white rounded-md border border-gray-200">
-                          <p className="font-medium mb-2 text-nextrend-600">Generated Content:</p>
-                          <p className="text-gray-700 whitespace-pre-wrap">{generatedContent}</p>
-                        </div>
-                      )}
                     </div>
                   </CardContent>
                 </Card>
               </motion.div>
+              
+              {generatedContent && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: 0.2 }}
+                  className="lg:col-span-2"
+                >
+                  <Card>
+                    <CardContent className="p-6">
+                      <h2 className="text-lg font-semibold mb-4">Generated Content</h2>
+                      <div className="p-4 bg-gray-50 rounded-md border border-gray-200">
+                        <p className="text-gray-700 whitespace-pre-wrap">{generatedContent}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              )}
             </div>
           </div>
         </main>
