@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -284,32 +283,14 @@ const TextEditor: React.FC<TextEditorProps> = ({
         </div>
         
         <div className="flex flex-col gap-2">
-          <div className="relative flex-1">
+          <div className="relative">
             <Textarea
               value={userInput}
               onChange={(e) => onUserInputChange && onUserInputChange(e.target.value)}
               placeholder="Type your message here..."
-              className="resize-none h-20 pr-12"
+              className="resize-none h-20"
             />
-            {userInput && userInput.trim().length > 0 && (
-              <Button 
-                className="absolute bottom-2 right-2 p-2 h-auto w-auto bg-nextrend-500 hover:bg-nextrend-600 rounded-full"
-                disabled={loading}
-                onClick={onSendMessage}
-                type="button"
-                size="icon"
-              >
-                <Send className="h-4 w-4" />
-              </Button>
-            )}
           </div>
-          
-          {contentPrompt && (
-            <div className="text-sm p-3 bg-nextrend-50 border border-nextrend-100 rounded-md">
-              <p className="font-medium text-nextrend-600">{contentPrompt.headline}</p>
-              <p className="text-gray-600 italic mt-1">{contentPrompt.hook}</p>
-            </div>
-          )}
           
           <Button 
             className="h-12 bg-nextrend-500 hover:bg-nextrend-600"
@@ -319,6 +300,13 @@ const TextEditor: React.FC<TextEditorProps> = ({
             <Send className="h-5 w-5 mr-2" />
             Send Message
           </Button>
+          
+          {contentPrompt && (
+            <div className="text-sm p-3 bg-nextrend-50 border border-nextrend-100 rounded-md mt-2">
+              <p className="font-medium text-nextrend-600">{contentPrompt.headline}</p>
+              <p className="text-gray-600 italic mt-1">{contentPrompt.hook}</p>
+            </div>
+          )}
         </div>
       </div>
     );

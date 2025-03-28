@@ -402,6 +402,12 @@ const ContentEditor: React.FC = () => {
     navigate('/dashboard');
   };
   
+  const contentPrompts = [
+    { headline: "What's the most important mortgage term for your clients?", hook: "Understanding this term can help them make better decisions when financing their homes." },
+    { headline: "How can you explain the difference between a fixed-rate and adjustable-rate mortgage?", hook: "This can help clients choose the right loan for their needs." },
+    { headline: "What are some common mortgage terms that clients often ask about?", hook: "This can help you provide more personalized and helpful responses." }
+  ];
+  
   if (!option || !optionDetails[option as keyof typeof optionDetails]) {
     return <div>Invalid option</div>;
   }
@@ -592,21 +598,57 @@ const ContentEditor: React.FC = () => {
               >
                 <Card className="overflow-hidden h-full">
                   <CardContent className="p-6 h-full flex flex-col">
-                    <h2 className="text-lg font-semibold mb-4">Chat About Anything Below</h2>
+                    <h2 className="text-lg font-semibold mb-4">Create Custom Content</h2>
                     
-                    <TextEditor
-                      content={generatedContent}
-                      onContentChange={setGeneratedContent}
-                      loading={isGenerating}
-                      placeholder="Type your message to get started..."
-                      className="flex-1"
-                      chatMode={true}
-                      userInput={userInput}
-                      onUserInputChange={setUserInput}
-                      onSendMessage={handleSendMessage}
-                      chatMessages={chatMessages}
-                      label=""
-                    />
+                    <div className="flex-1 flex flex-col gap-4">
+                      <Textarea
+                        value={userInput}
+                        onChange={(e) => setUserInput(e.target.value)}
+                        placeholder="Type your message here..."
+                        className="resize-none h-32 flex-grow"
+                      />
+                      
+                      <Button 
+                        className="h-12 bg-nextrend-500 hover:bg-nextrend-600 w-full"
+                        disabled={loading || !userInput?.trim()}
+                        onClick={handleSendMessage}
+                      >
+                        <Send className="h-5 w-5 mr-2" />
+                        Send Message
+                      </Button>
+                      
+                      {/* Content prompt section */}
+                      {option === 'custom' && (
+                        <div className="text-sm p-4 bg-nextrend-50 border border-nextrend-100 rounded-md mt-2">
+                          {chatMessages.length > 0 && chatMessages[0].role === 'assistant' && (
+                            <div className="mb-4 text-gray-700">
+                              {chatMessages[0].content}
+                            </div>
+                          )}
+                          
+                          {/* Random content prompt */}
+                          <div className="content-prompt">
+                            {contentPrompts[Math.floor(Math.random() * contentPrompts.length % contentPrompts.length)] && (
+                              <>
+                                <p className="font-medium text-nextrend-600">
+                                  {contentPrompts[Math.floor(Math.random() * contentPrompts.length) % contentPrompts.length].headline}
+                                </p>
+                                <p className="text-gray-600 italic mt-1">
+                                  {contentPrompts[Math.floor(Math.random() * contentPrompts.length) % contentPrompts.length].hook}
+                                </p>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {generatedContent && (
+                        <div className="mt-4 p-4 bg-white rounded-md border border-gray-200">
+                          <p className="font-medium mb-2 text-nextrend-600">Generated Content:</p>
+                          <p className="text-gray-700 whitespace-pre-wrap">{generatedContent}</p>
+                        </div>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               </motion.div>
