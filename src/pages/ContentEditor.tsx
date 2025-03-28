@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -602,46 +601,16 @@ const ContentEditor: React.FC = () => {
                     <h2 className="text-lg font-semibold mb-4">Create Custom Content</h2>
                     
                     <div className="flex-1 flex flex-col gap-4">
-                      <Textarea
-                        value={userInput}
-                        onChange={(e) => setUserInput(e.target.value)}
-                        placeholder="Type your message here..."
-                        className="resize-none h-32 flex-grow"
+                      <TextEditor
+                        content={content}
+                        onContentChange={onContentChange}
+                        chatMode={true}
+                        userInput={userInput}
+                        onUserInputChange={setUserInput}
+                        onSendMessage={handleSendMessage}
+                        chatMessages={chatMessages}
+                        loading={isGenerating}
                       />
-                      
-                      <Button 
-                        className="h-12 bg-nextrend-500 hover:bg-nextrend-600 w-full"
-                        disabled={isGenerating || !userInput?.trim()}
-                        onClick={handleSendMessage}
-                      >
-                        <Send className="h-5 w-5 mr-2" />
-                        Send Message
-                      </Button>
-                      
-                      {/* Content prompt section */}
-                      {option === 'custom' && (
-                        <div className="text-sm p-4 bg-nextrend-50 border border-nextrend-100 rounded-md mt-2">
-                          {chatMessages.length > 0 && chatMessages[0].role === 'assistant' && (
-                            <div className="mb-4 text-gray-700">
-                              {chatMessages[0].content}
-                            </div>
-                          )}
-                          
-                          {/* Random content prompt */}
-                          <div className="content-prompt">
-                            {contentPrompts[Math.floor(Math.random() * contentPrompts.length) % contentPrompts.length] && (
-                              <>
-                                <p className="font-medium text-nextrend-600">
-                                  {contentPrompts[Math.floor(Math.random() * contentPrompts.length) % contentPrompts.length].headline}
-                                </p>
-                                <p className="text-gray-600 italic mt-1">
-                                  {contentPrompts[Math.floor(Math.random() * contentPrompts.length) % contentPrompts.length].hook}
-                                </p>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      )}
                       
                       {generatedContent && (
                         <div className="mt-4 p-4 bg-white rounded-md border border-gray-200">
