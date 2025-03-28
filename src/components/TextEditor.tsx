@@ -95,70 +95,6 @@ const contentPrompts: ContentPrompt[] = [
     hook: "I crossed that finish line, and it's why I never quit on clients:"
   },
   {
-    headline: "Talk about a time you had to get creative to solve a client's loan problem.",
-    hook: "The rules said no, but I found a yes—wait 'til you hear this:"
-  },
-  {
-    headline: "How has your definition of success evolved since you started in this industry?",
-    hook: "I used to chase dollars, but now I chase something bigger:"
-  },
-  {
-    headline: "Share a memory of a house you grew up in and how it influences your work today.",
-    hook: "That creaky porch taught me more about homes than any textbook:"
-  },
-  {
-    headline: "Describe a time you learned something valuable from a client—what was it?",
-    hook: "They flipped the script on me, and I've never been the same since:"
-  },
-  {
-    headline: "Share a time you had to say 'no' to a client and how you turned it into a positive.",
-    hook: "I shut the door, but opened a window—here's what happened next:"
-  },
-  {
-    headline: "What's the strangest request a client ever made, and how did you handle it?",
-    hook: "They asked for the moon, and I didn't blink—guess what I did:"
-  },
-  {
-    headline: "Reflect on a time you felt like giving up but pushed through—what kept you going?",
-    hook: "I was this close to quitting, but then this one thing pulled me back:"
-  },
-  {
-    headline: "Tell the story of a client who reminded you why you love this job.",
-    hook: "Their smile at closing was worth every late night—here's why:"
-  },
-  {
-    headline: "How has a family member's advice shaped your approach to your career?",
-    hook: "Grandma dropped a truth bomb, and I still use it every day:"
-  },
-  {
-    headline: "Describe a moment you surprised yourself with your own determination.",
-    hook: "I didn't know I had it in me until this one deal tested me:"
-  },
-  {
-    headline: "Share a time you helped a client rebuild after a tough financial hit.",
-    hook: "They were down and out, but I handed them a lifeline—here's how:"
-  },
-  {
-    headline: "What's the best compliment a client ever gave you, and why did it stick?",
-    hook: "Their words hit me like a freight train, and I'll never forget why:"
-  },
-  {
-    headline: "Talk about a time you learned a hard truth about the mortgage industry.",
-    hook: "The rose-colored glasses came off, and this is what I saw:"
-  },
-  {
-    headline: "How has a hobby or passion outside work made you a better loan officer?",
-    hook: "My weekend obsession turned into my weekday superpower:"
-  },
-  {
-    headline: "Reflect on a time you had to rebuild trust with a client—what did you learn?",
-    hook: "I dropped the ball, but picked it up stronger—here's the takeaway:"
-  },
-  {
-    headline: "Share a moment when you felt truly connected to a client's journey.",
-    hook: "Their story became mine, and it hit me right here:"
-  },
-  {
     headline: "Talk about a time you found joy in the chaos of a busy workday.",
     hook: "The phones wouldn't stop, but I smiled anyway—here's why:"
   },
@@ -304,25 +240,6 @@ const TextEditor: React.FC<TextEditorProps> = ({
             <Send className="h-5 w-5 mr-2" />
             Send Message
           </Button>
-          
-          {contentPrompt && (
-            <div className="text-sm p-3 bg-nextrend-50 border border-nextrend-100 rounded-md mt-2">
-              <p className="font-medium text-nextrend-600">Example Idea:</p>
-              <p className="font-medium text-nextrend-600">{contentPrompt.headline}</p>
-              <div className="flex items-center mt-1">
-                <p className="text-gray-600 italic flex-1">{contentPrompt.hook}</p>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-6 w-6 p-0 ml-2" 
-                  onClick={copyHookToInput}
-                  title="Copy to input"
-                >
-                  <Copy className="h-4 w-4 text-gray-500 hover:text-nextrend-500" />
-                </Button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     );
