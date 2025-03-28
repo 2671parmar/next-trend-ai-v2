@@ -602,8 +602,8 @@ const ContentEditor: React.FC = () => {
                     
                     <div className="flex-1 flex flex-col gap-4">
                       <TextEditor
-                        content={content}
-                        onContentChange={onContentChange}
+                        content={generatedContent}
+                        onContentChange={setGeneratedContent}
                         chatMode={true}
                         userInput={userInput}
                         onUserInputChange={setUserInput}
