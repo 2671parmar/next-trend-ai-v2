@@ -610,7 +610,7 @@ const ContentEditor: React.FC = () => {
                       
                       <Button 
                         className="h-12 bg-nextrend-500 hover:bg-nextrend-600 w-full"
-                        disabled={loading || !userInput?.trim()}
+                        disabled={isGenerating || !userInput?.trim()}
                         onClick={handleSendMessage}
                       >
                         <Send className="h-5 w-5 mr-2" />
@@ -628,7 +628,7 @@ const ContentEditor: React.FC = () => {
                           
                           {/* Random content prompt */}
                           <div className="content-prompt">
-                            {contentPrompts[Math.floor(Math.random() * contentPrompts.length % contentPrompts.length)] && (
+                            {contentPrompts[Math.floor(Math.random() * contentPrompts.length) % contentPrompts.length] && (
                               <>
                                 <p className="font-medium text-nextrend-600">
                                   {contentPrompts[Math.floor(Math.random() * contentPrompts.length) % contentPrompts.length].headline}
