@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -210,7 +211,7 @@ const ContentEditor: React.FC = () => {
         setChatMessages([
           {
             role: 'assistant',
-            content: 'Hi there! How can I help you create content today?',
+            content: 'Example Idea:',
             timestamp: new Date()
           }
         ]);
