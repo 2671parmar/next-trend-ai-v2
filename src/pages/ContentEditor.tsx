@@ -206,15 +206,7 @@ const ContentEditor: React.FC = () => {
       setShowEditor(false);
       setGeneratedContent('');
       
-      if (option === 'custom' && chatMessages.length === 0) {
-        setChatMessages([
-          {
-            role: 'assistant',
-            content: 'Example Idea:',
-            timestamp: new Date()
-          }
-        ]);
-      }
+      setChatMessages([]);
     }
   }, [option]);
   

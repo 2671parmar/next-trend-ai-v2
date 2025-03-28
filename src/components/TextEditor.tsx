@@ -1,108 +1,9 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { RefreshCw, FileText, MessageSquare, Send, Copy } from 'lucide-react';
+import { RefreshCw, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-
-interface ContentPrompt {
-  headline: string;
-  hook: string;
-}
-
-const contentPrompts: ContentPrompt[] = [
-  {
-    headline: "Share a time you overcame a financial setback and what it taught you about resilience.",
-    hook: "When my wallet hit rock bottom, I never expected this lesson to lift me up:"
-  },
-  {
-    headline: "Describe a moment when a client's gratitude made you proud to be a loan officer.",
-    hook: "Their thank-you note still sits on my desk—here's why it means everything:"
-  },
-  {
-    headline: "Reflect on the biggest mistake you made early in your career and how it shaped you.",
-    hook: "I bombed so hard my first year, but wait 'til you hear what I learned:"
-  },
-  {
-    headline: "Tell the story of your first big win helping someone secure their dream home.",
-    hook: "The keys were in their hands, but the real victory was mine—here's why:"
-  },
-  {
-    headline: "How would your younger self react to the loan officer you've become today?",
-    hook: "If 8-year-old me saw this suit and tie, they'd probably ask one thing:"
-  },
-  {
-    headline: "Recall a time you went above and beyond for a client—what drove you to do it?",
-    hook: "I stayed up 'til 2 a.m. for them, and I'd do it again—here's why:"
-  },
-  {
-    headline: "Share a lesson you learned from a deal that didn't go as planned.",
-    hook: "The deal crashed, but the wisdom I gained was worth more than gold:"
-  },
-  {
-    headline: "What's the most unexpected advice you've given a client that changed their perspective?",
-    hook: "They laughed when I said it, but then their jaw dropped—guess what I told them:"
-  },
-  {
-    headline: "Describe a childhood dream and how your career connects to it now.",
-    hook: "I wanted to be an astronaut, but here's how I still reached the stars:"
-  },
-  {
-    headline: "Talk about a mentor who influenced your approach to helping people with loans.",
-    hook: "He told me one thing I'll never forget—and it changed everything:"
-  },
-  {
-    headline: "Reflect on a time you turned a stressful situation into a win for a client.",
-    hook: "The clock was ticking, but I pulled off a miracle—here's how:"
-  },
-  {
-    headline: "What's one thing you wish you'd known when you started in the mortgage industry?",
-    hook: "If I could slap a Post-it on rookie me's forehead, it'd say this:"
-  },
-  {
-    headline: "Share a story of how you helped a client achieve something they thought was impossible.",
-    hook: "They said 'no way,' but I said 'watch me'—and then this happened:"
-  },
-  {
-    headline: "How has a personal life challenge made you better at understanding clients' needs?",
-    hook: "Life threw me a curveball, and it turned me into their secret weapon:"
-  },
-  {
-    headline: "Tell us about a time you took a risk in your career and how it paid off.",
-    hook: "I rolled the dice, and the payout was bigger than I ever dreamed:"
-  },
-  {
-    headline: "What's the most rewarding part of being a loan officer that you didn't expect?",
-    hook: "I signed up for numbers, but I stayed for this one thing:"
-  },
-  {
-    headline: "Describe a moment when you realized the true impact of your work on someone's life.",
-    hook: "Their tears hit me harder than any commission ever could—here's why:"
-  },
-  {
-    headline: "Share a funny or surprising moment from your career that still makes you smile.",
-    hook: "I still chuckle when I think about that one wild closing day:"
-  },
-  {
-    headline: "How do you stay motivated when the market gets tough—tell us your secret!",
-    hook: "Rates tanked, but I kept my fire—here's my little trick:"
-  },
-  {
-    headline: "Reflect on a time a client's story inspired you to push harder for them.",
-    hook: "Their dream was fading, but their words lit a spark in me:"
-  },
-  {
-    headline: "What's a personal goal you've achieved that mirrors the persistence you bring to work?",
-    hook: "I crossed that finish line, and it's why I never quit on clients:"
-  },
-  {
-    headline: "Talk about a time you found joy in the chaos of a busy workday.",
-    hook: "The phones wouldn't stop, but I smiled anyway—here's why:"
-  },
-  {
-    headline: "Reflect on a time you realized your work was about more than just loans.",
-    hook: "It wasn't about the paperwork—it was about this one moment:"
-  }
-];
 
 interface TextEditorProps {
   content: string;
@@ -120,8 +21,6 @@ interface TextEditorProps {
   chatMessages?: Array<{ role: string; content: string; timestamp?: Date }>;
 }
 
-const usedPromptIndexes: Set<number> = new Set();
-
 const TextEditor: React.FC<TextEditorProps> = ({
   content,
   onContentChange,
@@ -137,42 +36,7 @@ const TextEditor: React.FC<TextEditorProps> = ({
   onUserInputChange,
   chatMessages = [],
 }) => {
-  const [contentPrompt, setContentPrompt] = useState<ContentPrompt | null>(null);
   const { toast } = useToast();
-  
-  const getRandomContentPrompt = () => {
-    if (contentPrompts.length === 0) return null;
-    
-    if (usedPromptIndexes.size >= contentPrompts.length) {
-      usedPromptIndexes.clear();
-    }
-    
-    let randomIndex;
-    do {
-      randomIndex = Math.floor(Math.random() * contentPrompts.length);
-    } while (usedPromptIndexes.has(randomIndex));
-    
-    usedPromptIndexes.add(randomIndex);
-    
-    return contentPrompts[randomIndex];
-  };
-
-  useEffect(() => {
-    if (chatMode) {
-      setContentPrompt(getRandomContentPrompt());
-    }
-  }, [chatMode]);
-
-  const copyHookToInput = () => {
-    if (contentPrompt?.hook && onUserInputChange) {
-      onUserInputChange(contentPrompt.hook);
-      toast({
-        title: "Hook copied to input",
-        description: "The hook text has been copied to the input field.",
-        duration: 2000,
-      });
-    }
-  };
 
   if (chatMode) {
     return (
