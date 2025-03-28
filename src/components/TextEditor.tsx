@@ -288,18 +288,16 @@ const TextEditor: React.FC<TextEditorProps> = ({
           </div>
         </div>
         
-        <div className="flex flex-col gap-2">
-          <div className="relative">
-            <Textarea
-              value={userInput}
-              onChange={(e) => onUserInputChange && onUserInputChange(e.target.value)}
-              placeholder="Type your message here..."
-              className="resize-none h-20"
-            />
-          </div>
+        <div className="flex flex-col gap-4">
+          <Textarea
+            value={userInput}
+            onChange={(e) => onUserInputChange && onUserInputChange(e.target.value)}
+            placeholder="Type your message here..."
+            className="resize-none min-h-[120px] w-full p-4 text-base border-2 border-gray-200 focus:border-nextrend-400 rounded-lg"
+          />
           
           <Button 
-            className="h-12 bg-nextrend-500 hover:bg-nextrend-600"
+            className="h-12 bg-nextrend-500 hover:bg-nextrend-600 w-full"
             disabled={loading || !userInput?.trim()}
             onClick={onSendMessage}
           >
