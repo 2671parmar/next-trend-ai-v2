@@ -447,6 +447,43 @@ const ContentEditor: React.FC = () => {
     }
   };
   
+  const handleUseGeneralTerm = async (article: any) => {
+    setSelectedArticle({
+      ...article,
+      content: `Generate comprehensive, expert-level content about the mortgage term: ${article.title}. Include its definition, importance, and how it affects mortgage decisions.`
+    });
+    setShowEditor(true);
+    setGeneratedContents([]);
+    setIsGenerating(true);
+    
+    try {
+      // Generate content for each type from contentService.ts
+      const contentTypes = [
+        { type: 'LinkedIn Post', description: 'Thought Leadership, Expert Take' },
+        { type: 'Blog Post', description: 'Deep-Dive, SEO-Optimized' },
+        { type: 'Video Script', description: 'Educational, Senior Loan Officer Perspective' },
+        { type: 'Email', description: 'Client-Focused, Trust-Building' },
+        { type: 'Social Post', description: 'Engaging & Value-Driven' },
+        { type: 'X/Twitter Post', description: 'Quick, Authority Take' },
+        { type: 'SMS Broadcast', description: 'Concise, CTA-Driven' }
+      ];
+      
+      const newContents = [];
+      
+      for (const { type, description } of contentTypes) {
+        const prompt = `Generate a ${type} (${description}) explaining the mortgage term "${article.title}" to potential clients. Include its definition, importance, and how it affects mortgage decisions.`;
+        const result = await contentService.generateContent(prompt);
+        newContents.push({ type, content: result });
+      }
+
+      setGeneratedContents(newContents);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to generate content');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+  
   if (!option || !optionDetails[option as keyof typeof optionDetails]) {
     return <div>Invalid option</div>;
   }
@@ -454,7 +491,7 @@ const ContentEditor: React.FC = () => {
   const { title, icon } = optionDetails[option as keyof typeof optionDetails];
   const filteredNews = activeTab === 'all' ? newsFeed : newsFeed.filter(item => item.category.toLowerCase() === activeTab);
   
-  if (showEditor && (option === 'this-week' || option === 'trending' || option === 'general')) {
+  if (showEditor) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
@@ -472,7 +509,7 @@ const ContentEditor: React.FC = () => {
                 onClick={() => setShowEditor(false)}
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to {title}
+                Back to {option === 'general' ? 'General Mortgage' : title}
               </Button>
 
               <Button 
@@ -498,94 +535,138 @@ const ContentEditor: React.FC = () => {
               className="flex items-center mb-6"
             >
               <div className="w-10 h-10 rounded-lg bg-nextrend-50 text-nextrend-500 flex items-center justify-center mr-3">
-                {icon}
+                <FileText className="w-6 h-6" />
               </div>
               <h1 className="text-2xl font-bold">
-                {option === 'general' ? 'Edit Mortgage Term Content' : 'Edit Article Content'}
+                {selectedArticle?.title}
               </h1>
             </motion.div>
             
             <div className="grid grid-cols-1 gap-6">
-              {selectedArticle && (
-                <Card className="mb-4">
-                  <CardContent className="p-5">
-                    <div className="flex justify-between items-center mb-3">
-                      <Badge variant="outline" className="bg-nextrend-50 text-nextrend-500 hover:bg-nextrend-100">
-                        {selectedArticle.category}
-                      </Badge>
-                      <span className="text-sm text-gray-500">{selectedArticle.date}</span>
+              {option === 'general' ? (
+                // For General Mortgage Terms
+                isGenerating ? (
+                  <Card className="p-12">
+                    <div className="flex flex-col items-center justify-center text-center">
+                      <RefreshCw className="w-8 h-8 text-nextrend-500 animate-spin mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">Generating Content</h3>
+                      <p className="text-gray-500">Please wait while we create content for {selectedArticle?.title}...</p>
                     </div>
-                    <h3 className="text-lg font-semibold mb-2">{selectedArticle.title}</h3>
-                    <p className="text-gray-600 text-sm">{selectedArticle.content}</p>
-                  </CardContent>
-                </Card>
-              )}
-              
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-center mb-4">
-                    <label className="text-sm font-medium">Content Editor</label>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleGenerateContent}
-                      disabled={isGenerating}
-                      className="flex items-center"
-                    >
-                      <RefreshCw className={`w-4 h-4 mr-2 ${isGenerating ? 'animate-spin' : ''}`} />
-                      {isGenerating ? 'Generating...' : 'Generate Content'}
-                    </Button>
-                  </div>
-                  <TextEditor
-                    content={generatedContents.find(c => c.type === 'Original Article')?.content || ''}
-                    onContentChange={(value) => {
-                      setGeneratedContents(prev => {
-                        const updated = prev.map(c => 
-                          c.type === 'Original Article' 
-                            ? { ...c, content: value }
-                            : c
-                        );
-                        if (!updated.find(c => c.type === 'Original Article')) {
-                          updated.unshift({ type: 'Original Article', content: value });
-                        }
-                        return updated;
-                      });
-                    }}
-                    loading={isGenerating}
-                    placeholder="Click 'Generate Content' to create social media posts..."
-                  />
-                </CardContent>
-              </Card>
-
-              {generatedContents
-                .filter(content => content.type !== 'Original Article')
-                .map((content, index) => (
-                <Card key={index} className="mt-6 overflow-hidden border-0 shadow-md hover:shadow-lg transition-shadow duration-200">
-                  <CardContent className="p-0">
-                    <div className="border-b border-gray-100 bg-gradient-to-r from-nextrend-50/50 to-white p-4 flex justify-between items-center">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-nextrend-500"></div>
-                        <label className="font-medium text-gray-700">{content.type}</label>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => copyToClipboard(content.content)}
-                        className="hover:bg-nextrend-100/50"
-                      >
-                        <Copy className="w-4 h-4 text-gray-600" />
-                      </Button>
-                    </div>
-                    <div className="p-6 bg-white">
-                      <div className="prose max-w-none">
-                        <div className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap rounded-md">
-                          {content.content}
+                  </Card>
+                ) : (
+                  generatedContents.map((content, index) => (
+                    <Card key={index} className="overflow-hidden border-0 shadow-md hover:shadow-lg transition-shadow duration-200">
+                      <CardContent className="p-0">
+                        <div className="border-b border-gray-100 bg-gradient-to-r from-nextrend-50/50 to-white p-4 flex justify-between items-center">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-nextrend-500"></div>
+                            <label className="font-medium text-gray-700">{content.type}</label>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => copyToClipboard(content.content)}
+                            className="hover:bg-nextrend-100/50"
+                          >
+                            <Copy className="w-4 h-4 text-gray-600" />
+                          </Button>
                         </div>
+                        <div className="p-6 bg-white">
+                          <div className="prose max-w-none">
+                            <div className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap rounded-md">
+                              {content.content}
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+                )
+              ) : (
+                // For MBS Commentary Today and Trending Topics
+                <>
+                  {selectedArticle && (
+                    <Card className="mb-4">
+                      <CardContent className="p-5">
+                        <div className="flex justify-between items-center mb-3">
+                          <Badge variant="outline" className="bg-nextrend-50 text-nextrend-500 hover:bg-nextrend-100">
+                            {selectedArticle.category}
+                          </Badge>
+                          <span className="text-sm text-gray-500">{selectedArticle.date}</span>
+                        </div>
+                        <h3 className="text-lg font-semibold mb-2">{selectedArticle.title}</h3>
+                        <p className="text-gray-600 text-sm">{selectedArticle.content}</p>
+                      </CardContent>
+                    </Card>
+                  )}
+                  
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex justify-between items-center mb-4">
+                        <label className="text-sm font-medium">Content Editor</label>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleGenerateContent}
+                          disabled={isGenerating}
+                          className="flex items-center"
+                        >
+                          <RefreshCw className={`w-4 h-4 mr-2 ${isGenerating ? 'animate-spin' : ''}`} />
+                          {isGenerating ? 'Generating...' : 'Generate Content'}
+                        </Button>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                      <TextEditor
+                        content={generatedContents.find(c => c.type === 'Original Article')?.content || ''}
+                        onContentChange={(value) => {
+                          setGeneratedContents(prev => {
+                            const updated = prev.map(c => 
+                              c.type === 'Original Article' 
+                                ? { ...c, content: value }
+                                : c
+                            );
+                            if (!updated.find(c => c.type === 'Original Article')) {
+                              updated.unshift({ type: 'Original Article', content: value });
+                            }
+                            return updated;
+                          });
+                        }}
+                        loading={isGenerating}
+                        placeholder="Click 'Generate Content' to create social media posts..."
+                      />
+                    </CardContent>
+                  </Card>
+
+                  {generatedContents
+                    .filter(content => content.type !== 'Original Article')
+                    .map((content, index) => (
+                    <Card key={index} className="mt-6 overflow-hidden border-0 shadow-md hover:shadow-lg transition-shadow duration-200">
+                      <CardContent className="p-0">
+                        <div className="border-b border-gray-100 bg-gradient-to-r from-nextrend-50/50 to-white p-4 flex justify-between items-center">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-nextrend-500"></div>
+                            <label className="font-medium text-gray-700">{content.type}</label>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => copyToClipboard(content.content)}
+                            className="hover:bg-nextrend-100/50"
+                          >
+                            <Copy className="w-4 h-4 text-gray-600" />
+                          </Button>
+                        </div>
+                        <div className="p-6 bg-white">
+                          <div className="prose max-w-none">
+                            <div className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap rounded-md">
+                              {content.content}
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </>
+              )}
             </div>
           </div>
         </main>
@@ -901,11 +982,10 @@ const ContentEditor: React.FC = () => {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleGenerateContent()}
-                              disabled={isGenerating}
+                              onClick={() => handleUseGeneralTerm(article)}
                               className="text-xs w-full"
                             >
-                              {isGenerating ? 'Generating...' : 'Use this Mortgage Term'}
+                              Use this Mortgage Term
                             </Button>
                           ) : (
                             !article.generatedContent ? (
