@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -11,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import TextEditor from '@/components/TextEditor';
+import { contentService } from '@/lib/services/contentService';
 
 const mortgageTerms = [
   "Adjustable-Rate Mortgage (ARM)",
@@ -195,10 +195,12 @@ const ContentEditor: React.FC = () => {
   const [userInput, setUserInput] = useState('');
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedContent, setGeneratedContent] = useState('');
+  const [generatedContent, setGeneratedContent] = useState<string>('');
   const [dragActive, setDragActive] = useState(false);
   const [selectedArticle, setSelectedArticle] = useState<any | null>(null);
   const [showEditor, setShowEditor] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string>('');
   
   useEffect(() => {
     if (option) {
@@ -219,46 +221,31 @@ const ContentEditor: React.FC = () => {
     }
   }, [option]);
   
-  const handleGenerateContent = (articleId: number) => {
-    setNewsFeed(prev => 
-      prev.map(article => 
-        article.id === articleId 
-          ? { ...article, isGenerating: true }
-          : article
-      )
-    );
+  const handleGenerateContent = async () => {
+    if (!selectedArticle) return;
     
-    setTimeout(() => {
-      const article = newsFeed.find(item => item.id === articleId);
-      if (article && option === 'general') {
-        const generatedContent = `${article.title}: A key mortgage concept that helps borrowers understand the lending process. This term is important for clients to know when navigating their home financing journey.`;
-        
-        setSelectedArticle({
-          ...article,
-          isGenerating: false,
-          generatedContent: generatedContent
-        });
-        
-        const initialContent = `# ${article.title}\n\n${article.title} is an important mortgage concept that your clients should understand.\n\nKey points about this term:\n- This term relates to the mortgage process\n- Understanding this can help clients make better decisions\n- You can customize this explanation for your specific audience`;
-        
-        setGeneratedContent(initialContent);
-        setShowEditor(true);
-      } else {
-        setNewsFeed(prev => 
-          prev.map(article => 
-            article.id === articleId 
-              ? { 
-                  ...article, 
-                  isGenerating: false,
-                  generatedContent: option === 'general'
-                    ? `${article.title}: A key mortgage concept that helps borrowers understand the lending process. This term is important for clients to know when navigating their home financing journey.`
-                    : `Generated content for "${article.title}" that explains this topic in a way that's easy for clients to understand. This content is tailored for mortgage professionals to share with their clients.`
-                }
-              : article
-          )
-        );
-      }
-    }, 1500);
+    setIsGenerating(true);
+    setError('');
+    
+    try {
+      // Prepare the content for generation
+      const articleData = {
+        title: selectedArticle.title,
+        content: selectedArticle.content,
+        category: selectedArticle.category
+      };
+      
+      // Generate content using OpenAI
+      const result = await contentService.generateContent(
+        `Generate social media content for this ${articleData.category} article:\n\nTitle: ${articleData.title}\n\nContent: ${articleData.content}`
+      );
+      
+      setGeneratedContent(result);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to generate content');
+    } finally {
+      setIsGenerating(false);
+    }
   };
   
   const handleReadArticle = (articleId: number) => {
@@ -277,37 +264,8 @@ const ContentEditor: React.FC = () => {
     if (article) {
       setSelectedArticle(article);
       setShowEditor(true);
-      
-      let initialContent = '';
-      if (article.generatedContent) {
-        initialContent = article.generatedContent;
-      } else if (option === 'general') {
-        initialContent = `# ${article.title}\n\n${article.title} is an important mortgage concept that your clients should understand.\n\nKey points about this term:\n- This term relates to the mortgage process\n- Understanding this can help clients make better decisions\n- You can customize this explanation for your specific audience`;
-      } else {
-        initialContent = `${article.title}\n\n${article.content}\n\nFurther analysis and context can be added here...`;
-      }
-      
-      setGeneratedContent(initialContent);
+      setGeneratedContent(`${article.title}\n\n${article.content}`);
     }
-  };
-  
-  const handleRegenerateContent = () => {
-    if (!selectedArticle) return;
-    
-    setIsGenerating(true);
-    
-    setTimeout(() => {
-      let updatedContent;
-      
-      if (option === 'general') {
-        updatedContent = `# ${selectedArticle.title} - Explained\n\n${selectedArticle.title} is a fundamental mortgage concept that clients often ask about.\n\nDetailed explanation:\n- This term relates to how loans are structured\n- It impacts monthly payments and overall loan costs\n- Clients should understand this before making financing decisions\n\nTips for explaining to clients:\n- Use simple language and relatable examples\n- Compare with similar concepts they might already understand\n- Highlight how this affects their specific situation`;
-      } else {
-        updatedContent = `${selectedArticle.title} - Regenerated\n\n${selectedArticle.content}\n\nThis is a newly generated version with additional insights and information about this topic that would be valuable to share with clients.`;
-      }
-      
-      setGeneratedContent(updatedContent);
-      setIsGenerating(false);
-    }, 1500);
   };
   
   const handleSendMessage = () => {
@@ -409,6 +367,21 @@ const ContentEditor: React.FC = () => {
     { headline: "What are some common mortgage terms that clients often ask about?", hook: "This can help you provide more personalized and helpful responses." }
   ];
   
+  const handleTestGeneration = async () => {
+    setIsLoading(true);
+    setError('');
+    try {
+      // Test with a sample mortgage topic
+      const testContent = "Generate content about Fixed-Rate Mortgages and their benefits in today's market.";
+      const result = await contentService.generateContent(testContent);
+      setGeneratedContent(result);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to generate content');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
   if (!option || !optionDetails[option as keyof typeof optionDetails]) {
     return <div>Invalid option</div>;
   }
@@ -436,17 +409,22 @@ const ContentEditor: React.FC = () => {
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to {title}
               </Button>
-              
+
               <Button 
                 variant="default" 
-                className="bg-nextrend-500 hover:bg-nextrend-600"
+                className="bg-green-500 hover:bg-green-600"
                 onClick={handleSave}
-                disabled={!generatedContent}
               >
                 <Save className="w-4 h-4 mr-2" />
                 Save Content
               </Button>
             </motion.div>
+
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-600 rounded-md p-4 mb-6">
+                {error}
+              </div>
+            )}
             
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
@@ -480,13 +458,24 @@ const ContentEditor: React.FC = () => {
               
               <Card>
                 <CardContent className="p-6">
+                  <div className="flex justify-between items-center mb-4">
+                    <label className="text-sm font-medium">Content Editor</label>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleGenerateContent}
+                      disabled={isGenerating}
+                      className="flex items-center"
+                    >
+                      <RefreshCw className={`w-4 h-4 mr-2 ${isGenerating ? 'animate-spin' : ''}`} />
+                      {isGenerating ? 'Generating...' : 'Generate Content'}
+                    </Button>
+                  </div>
                   <TextEditor
                     content={generatedContent}
                     onContentChange={setGeneratedContent}
-                    onRegenerateClick={handleRegenerateContent}
                     loading={isGenerating}
-                    label="Content Editor"
-                    placeholder="Edit the content to make it your own..."
+                    placeholder="Click 'Generate Content' to create social media posts..."
                   />
                 </CardContent>
               </Card>
@@ -681,44 +670,23 @@ const ContentEditor: React.FC = () => {
       
       <main className="pt-24 pb-16 px-6">
         <div className="max-w-6xl mx-auto">
-          <motion.div 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center justify-between mb-6"
-          >
-            <Button 
-              variant="ghost" 
-              className="flex items-center text-gray-600"
+          <div className="flex items-center mb-8">
+            <Button
+              variant="ghost"
               onClick={() => navigate('/dashboard')}
+              className="mr-4"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Dashboard
             </Button>
-            
-            <Button 
-              variant="default" 
-              className="bg-nextrend-500 hover:bg-nextrend-600"
-              onClick={handleSave}
-            >
-              <Save className="w-4 h-4 mr-2" />
-              Save Content
-            </Button>
-          </motion.div>
-          
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="flex items-center mb-6"
-          >
-            <div className="w-10 h-10 rounded-lg bg-nextrend-50 text-nextrend-500 flex items-center justify-center mr-3">
-              {icon}
-            </div>
             <h1 className="text-2xl font-bold">
-              {option === 'general' ? 'Mortgage Terminology' : 'News Feed'}
+              {option === 'this-week' ? 'MBS Commentary Today' :
+               option === 'trending' ? 'Trending Topics' :
+               option === 'general' ? 'General Mortgage' :
+               'Custom Content'}
             </h1>
-          </motion.div>
-          
+          </div>
+
           <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
             {tabsContent}
             
@@ -780,19 +748,19 @@ const ContentEditor: React.FC = () => {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleGenerateContent(article.id)}
-                              disabled={article.isGenerating}
+                              onClick={() => handleGenerateContent()}
+                              disabled={isGenerating}
                               className="text-xs w-full"
                             >
-                              {article.isGenerating ? 'Generating...' : 'Use this Mortgage Term'}
+                              {isGenerating ? 'Generating...' : 'Use this Mortgage Term'}
                             </Button>
                           ) : (
                             !article.generatedContent ? (
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => handleGenerateContent(article.id)}
-                                disabled={article.isGenerating}
+                                onClick={() => handleGenerateContent()}
+                                disabled={isGenerating}
                                 className="text-xs w-full"
                               >
                                 Generate Content
@@ -802,7 +770,7 @@ const ContentEditor: React.FC = () => {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => handleGenerateContent(article.id)}
+                                  onClick={() => handleGenerateContent()}
                                   className="text-xs"
                                 >
                                   Regenerate
