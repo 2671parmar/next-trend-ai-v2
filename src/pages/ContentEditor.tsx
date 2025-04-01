@@ -291,30 +291,63 @@ const ContentEditor: React.FC = () => {
     }
   };
   
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!userInput.trim()) return;
     
-    const userMessage: ChatMessage = {
-      role: 'user',
-      content: userInput,
-      timestamp: new Date()
-    };
-    
-    setChatMessages(prev => [...prev, userMessage]);
-    setUserInput('');
     setIsGenerating(true);
+    setError('');
     
-    setTimeout(() => {
-      const assistantMessage: ChatMessage = {
-        role: 'assistant',
-        content: `Here's some content about "${userInput}" that you can share with your clients:\n\nThe current mortgage market is seeing significant changes due to recent economic developments. This presents both challenges and opportunities for homebuyers and those looking to refinance.`,
+    try {
+      // Prepare the content for generation
+      const customContent = {
+        title: "Custom Content",
+        content: userInput,
+        category: "Custom"
+      };
+      
+      // Generate content for each type from contentService.ts
+      const contentTypes = [
+        { type: 'LinkedIn Post', description: 'Thought Leadership, Expert Take' },
+        { type: 'Blog Post', description: 'Deep-Dive, SEO-Optimized' },
+        { type: 'Video Script', description: 'Educational, Senior Loan Officer Perspective' },
+        { type: 'Email', description: 'Client-Focused, Trust-Building' },
+        { type: 'Social Post', description: 'Engaging & Value-Driven' },
+        { type: 'X/Twitter Post', description: 'Quick, Authority Take' },
+        { type: 'SMS Broadcast', description: 'Concise, CTA-Driven' }
+      ];
+      
+      const newContents = [];
+      
+      for (const { type, description } of contentTypes) {
+        const prompt = `Generate a ${type} (${description}) for this custom content:\n\nContent: ${customContent.content}`;
+        const result = await contentService.generateContent(prompt);
+        newContents.push({ type, content: result });
+      }
+
+      // Update the generated contents
+      setGeneratedContents(newContents);
+      
+      // Add the message to chat history
+      const userMessage: ChatMessage = {
+        role: 'user',
+        content: userInput,
         timestamp: new Date()
       };
       
-      setChatMessages(prev => [...prev, assistantMessage]);
-      setGeneratedContents([{ type: 'LinkedIn Post', content: `Here's some content about "${userInput}" that you can share with your clients:\n\nThe current mortgage market is seeing significant changes due to recent economic developments. This presents both challenges and opportunities for homebuyers and those looking to refinance.` }]);
+      const assistantMessage: ChatMessage = {
+        role: 'assistant',
+        content: 'I have generated various content formats based on your input. You can find them below.',
+        timestamp: new Date()
+      };
+      
+      setChatMessages(prev => [...prev, userMessage, assistantMessage]);
+      setUserInput('');
+      
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to generate content');
+    } finally {
       setIsGenerating(false);
-    }, 2000);
+    }
   };
   
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement> | React.DragEvent<HTMLDivElement>) => {
@@ -668,7 +701,7 @@ const ContentEditor: React.FC = () => {
                       <Textarea
                         value={userInput}
                         onChange={(e) => setUserInput(e.target.value)}
-                        placeholder="Type your message here..."
+                        placeholder="Example Idea : The current mortgage market is seeing significant changes due to recent economic developments. This presents both challenges and opportunities for homebuyers and those looking to refinance...."
                         className="resize-none h-32 flex-grow"
                       />
                       
@@ -677,28 +710,30 @@ const ContentEditor: React.FC = () => {
                         disabled={isGenerating || !userInput?.trim()}
                         onClick={handleSendMessage}
                       >
-                        <Send className="h-5 w-5 mr-2" />
-                        Send Message
+                        {isGenerating ? (
+                          <>
+                            <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                            Generating...
+                          </>
+                        ) : (
+                          <>
+                            <Send className="h-4 w-4 mr-2" />
+                            Generate Content
+                          </>
+                        )}
                       </Button>
                       
                       {/* Content prompt section */}
-                      {option === 'custom' && (
+                      {option === 'custom' && chatMessages.length === 0 && (
                         <div className="text-sm p-4 bg-nextrend-50 border border-nextrend-100 rounded-md mt-2">
-                          {chatMessages.length > 0 && chatMessages[0].role === 'assistant' && (
-                            <div className="mb-4 text-gray-700">
-                              {chatMessages[0].content}
-                            </div>
-                          )}
-                          
-                          {/* Random content prompt */}
                           <div className="content-prompt">
-                            {contentPrompts[Math.floor(Math.random() * contentPrompts.length) % contentPrompts.length] && (
+                            {contentPrompts[Math.floor(Math.random() * contentPrompts.length)] && (
                               <>
                                 <p className="font-medium text-nextrend-600">
-                                  {contentPrompts[Math.floor(Math.random() * contentPrompts.length) % contentPrompts.length].headline}
+                                  {contentPrompts[Math.floor(Math.random() * contentPrompts.length)].headline}
                                 </p>
                                 <p className="text-gray-600 italic mt-1">
-                                  {contentPrompts[Math.floor(Math.random() * contentPrompts.length) % contentPrompts.length].hook}
+                                  {contentPrompts[Math.floor(Math.random() * contentPrompts.length)].hook}
                                 </p>
                               </>
                             )}
@@ -706,10 +741,21 @@ const ContentEditor: React.FC = () => {
                         </div>
                       )}
                       
-                      {generatedContents.length > 0 && (
-                        <div className="mt-4 p-4 bg-white rounded-md border border-gray-200">
-                          <p className="font-medium mb-2 text-nextrend-600">Generated Content:</p>
-                          <p className="text-gray-700 whitespace-pre-wrap">{generatedContents[0].content}</p>
+                      {/* Chat Messages */}
+                      {chatMessages.length > 0 && (
+                        <div className="mt-4 space-y-4">
+                          {chatMessages.map((msg, index) => (
+                            <div
+                              key={index}
+                              className={`p-3 rounded-lg ${
+                                msg.role === 'user'
+                                  ? 'bg-nextrend-50 text-nextrend-700'
+                                  : 'bg-gray-50 text-gray-700'
+                              }`}
+                            >
+                              <p className="text-sm">{msg.content}</p>
+                            </div>
+                          ))}
                         </div>
                       )}
                     </div>
@@ -717,6 +763,39 @@ const ContentEditor: React.FC = () => {
                 </Card>
               </motion.div>
             </div>
+
+            {/* Generated Content Cards */}
+            {generatedContents.length > 0 && (
+              <div className="mt-8 grid grid-cols-1 gap-6">
+                {generatedContents.map((content, index) => (
+                  <Card key={index} className="mt-6 overflow-hidden border-0 shadow-md hover:shadow-lg transition-shadow duration-200">
+                    <CardContent className="p-0">
+                      <div className="border-b border-gray-100 bg-gradient-to-r from-nextrend-50/50 to-white p-4 flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-nextrend-500"></div>
+                          <label className="font-medium text-gray-700">{content.type}</label>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => copyToClipboard(content.content)}
+                          className="hover:bg-nextrend-100/50"
+                        >
+                          <Copy className="w-4 h-4 text-gray-600" />
+                        </Button>
+                      </div>
+                      <div className="p-6 bg-white">
+                        <div className="prose max-w-none">
+                          <div className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap rounded-md">
+                            {content.content}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
         </main>
       </div>
