@@ -195,7 +195,7 @@ const ContentEditor: React.FC = () => {
   const [userInput, setUserInput] = useState('');
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedContent, setGeneratedContent] = useState<string>('');
+  const [generatedContents, setGeneratedContents] = useState<Array<{type: string, content: string}>>([]);
   const [dragActive, setDragActive] = useState(false);
   const [selectedArticle, setSelectedArticle] = useState<any | null>(null);
   const [showEditor, setShowEditor] = useState(false);
@@ -207,7 +207,7 @@ const ContentEditor: React.FC = () => {
       setNewsFeed(generateNewsFeedData(option));
       setSelectedArticle(null);
       setShowEditor(false);
-      setGeneratedContent('');
+      setGeneratedContents([]);
       
       if (option === 'custom' && chatMessages.length === 0) {
         setChatMessages([
@@ -235,12 +235,30 @@ const ContentEditor: React.FC = () => {
         category: selectedArticle.category
       };
       
-      // Generate content using OpenAI
-      const result = await contentService.generateContent(
-        `Generate social media content for this ${articleData.category} article:\n\nTitle: ${articleData.title}\n\nContent: ${articleData.content}`
-      );
+      // Generate content for each type from contentService.ts
+      const contentTypes = [
+        { type: 'LinkedIn Post', description: 'Thought Leadership, Expert Take' },
+        { type: 'Blog Post', description: 'Deep-Dive, SEO-Optimized' },
+        { type: 'Video Script', description: 'Educational, Senior Loan Officer Perspective' },
+        { type: 'Email', description: 'Client-Focused, Trust-Building' },
+        { type: 'Social Post', description: 'Engaging & Value-Driven' },
+        { type: 'X/Twitter Post', description: 'Quick, Authority Take' },
+        { type: 'SMS Broadcast', description: 'Concise, CTA-Driven' }
+      ];
       
-      setGeneratedContent(result);
+      const newContents = [];
+      
+      for (const { type, description } of contentTypes) {
+        const prompt = `Generate a ${type} (${description}) for this ${articleData.category} article:\n\nTitle: ${articleData.title}\n\nContent: ${articleData.content}`;
+        const result = await contentService.generateContent(prompt);
+        newContents.push({ type, content: result });
+      }
+
+      // Update the generated contents while keeping the original content in the editor
+      setGeneratedContents(prev => {
+        const originalContent = prev.find(c => c.type === 'Original Article');
+        return originalContent ? [originalContent, ...newContents] : newContents;
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to generate content');
     } finally {
@@ -264,7 +282,12 @@ const ContentEditor: React.FC = () => {
     if (article) {
       setSelectedArticle(article);
       setShowEditor(true);
-      setGeneratedContent(`${article.title}\n\n${article.content}`);
+      setGeneratedContents([]);
+      // Set the initial content in the editor to be the article's content
+      setGeneratedContents([{ 
+        type: 'Original Article',
+        content: `${article.title}\n\n${article.content}`
+      }]);
     }
   };
   
@@ -289,7 +312,7 @@ const ContentEditor: React.FC = () => {
       };
       
       setChatMessages(prev => [...prev, assistantMessage]);
-      setGeneratedContent(`Here's some content about "${userInput}" that you can share with your clients:\n\nThe current mortgage market is seeing significant changes due to recent economic developments. This presents both challenges and opportunities for homebuyers and those looking to refinance.`);
+      setGeneratedContents([{ type: 'LinkedIn Post', content: `Here's some content about "${userInput}" that you can share with your clients:\n\nThe current mortgage market is seeing significant changes due to recent economic developments. This presents both challenges and opportunities for homebuyers and those looking to refinance.` }]);
       setIsGenerating(false);
     }, 2000);
   };
@@ -332,7 +355,7 @@ const ContentEditor: React.FC = () => {
           };
           
           setChatMessages(prev => [...prev, assistantMessage]);
-          setGeneratedContent(`I've analyzed the document "${file.name}". Here's a summary you can share with clients:\n\nThis document covers important mortgage information that would be valuable for potential homebuyers. The key points include market trends and financing options.`);
+          setGeneratedContents([{ type: 'LinkedIn Post', content: `I've analyzed the document "${file.name}". Here's a summary you can share with clients:\n\nThis document covers important mortgage information that would be valuable for potential homebuyers. The key points include market trends and financing options.` }]);
           setIsGenerating(false);
         }, 2000);
       };
@@ -374,7 +397,7 @@ const ContentEditor: React.FC = () => {
       // Test with a sample mortgage topic
       const testContent = "Generate content about Fixed-Rate Mortgages and their benefits in today's market.";
       const result = await contentService.generateContent(testContent);
-      setGeneratedContent(result);
+      setGeneratedContents([{ type: 'LinkedIn Post', content: result }]);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to generate content');
     } finally {
@@ -472,13 +495,55 @@ const ContentEditor: React.FC = () => {
                     </Button>
                   </div>
                   <TextEditor
-                    content={generatedContent}
-                    onContentChange={setGeneratedContent}
+                    content={generatedContents.find(c => c.type === 'Original Article')?.content || ''}
+                    onContentChange={(value) => {
+                      setGeneratedContents(prev => {
+                        const updated = prev.map(c => 
+                          c.type === 'Original Article' 
+                            ? { ...c, content: value }
+                            : c
+                        );
+                        if (!updated.find(c => c.type === 'Original Article')) {
+                          updated.unshift({ type: 'Original Article', content: value });
+                        }
+                        return updated;
+                      });
+                    }}
                     loading={isGenerating}
                     placeholder="Click 'Generate Content' to create social media posts..."
                   />
                 </CardContent>
               </Card>
+
+              {generatedContents
+                .filter(content => content.type !== 'Original Article')
+                .map((content, index) => (
+                <Card key={index} className="mt-6">
+                  <CardContent className="p-6">
+                    <div className="flex justify-between items-center mb-4">
+                      <label className="text-sm font-medium">{content.type}</label>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setGeneratedContents(prev => {
+                            const originalContent = prev.find(c => c.type === 'Original Article');
+                            return originalContent 
+                              ? [originalContent, { type: content.type, content: content.content }]
+                              : [{ type: content.type, content: content.content }];
+                          });
+                        }}
+                        className="flex items-center"
+                      >
+                        Use This Content
+                      </Button>
+                    </div>
+                    <div className="prose max-w-none">
+                      <pre className="whitespace-pre-wrap text-sm">{content.content}</pre>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </div>
         </main>
@@ -511,7 +576,7 @@ const ContentEditor: React.FC = () => {
                 variant="default" 
                 className="bg-nextrend-500 hover:bg-nextrend-600"
                 onClick={handleSave}
-                disabled={!generatedContent}
+                disabled={!generatedContents.length}
               >
                 <Save className="w-4 h-4 mr-2" />
                 Save Content
@@ -632,10 +697,10 @@ const ContentEditor: React.FC = () => {
                         </div>
                       )}
                       
-                      {generatedContent && (
+                      {generatedContents.length > 0 && (
                         <div className="mt-4 p-4 bg-white rounded-md border border-gray-200">
                           <p className="font-medium mb-2 text-nextrend-600">Generated Content:</p>
-                          <p className="text-gray-700 whitespace-pre-wrap">{generatedContent}</p>
+                          <p className="text-gray-700 whitespace-pre-wrap">{generatedContents[0].content}</p>
                         </div>
                       )}
                     </div>
