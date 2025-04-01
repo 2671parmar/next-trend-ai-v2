@@ -122,14 +122,20 @@ class MBSScraper:
             
             # Wait for content to load with more specific class
             WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located((By.CLASS_NAME, "article-content"))
+                EC.presence_of_element_located((By.CLASS_NAME, "article-body"))
             )
             
             # Let the page fully load
             time.sleep(2)
             
             soup = BeautifulSoup(self.driver.page_source, 'html.parser')
-            content_div = soup.find('div', class_='article-content')
+            
+            # Try different possible content div classes
+            content_div = None
+            for class_name in ['article-body', 'article-content', 'article-text']:
+                content_div = soup.find('div', class_=class_name)
+                if content_div:
+                    break
             
             if not content_div:
                 logger.warning(f"No content div found for {url}")
@@ -146,56 +152,50 @@ class MBSScraper:
             logger.error(f"Error scraping article content: {e}")
             return ""
 
+    def truncate_table(self):
+        """Truncate the mbs_articles table before starting new scrape"""
+        try:
+            logger.info("Truncating mbs_articles table")
+            result = supabase.table('mbs_articles').delete().neq('id', 0).execute()
+            logger.info("Table truncated successfully")
+        except Exception as e:
+            logger.error(f"Error truncating table: {e}")
+            raise e
+
     def update_database(self):
         """Update Supabase with fresh article data"""
         try:
             logger.info("Starting database update")
+            
+            # Truncate table first
+            self.truncate_table()
+            
             # Get articles from main page
             articles = self.scrape_article_list()
             
             for article in articles:
-                logger.info(f"Processing article: {article['title']}")
-                # Check if article exists and needs updating
                 try:
-                    existing = supabase.table('mbs_articles').select('*').eq('url', article['url']).execute()
-                    logger.info(f"Found {len(existing.data)} existing entries for URL")
+                    # Always scrape content since we're starting fresh
+                    logger.info(f"Processing article: {article['title']}")
+                    content = self.scrape_article_content(article['url'])
                     
-                    if not existing.data:
-                        # New article - scrape content
-                        logger.info("New article found, scraping content")
-                        content = self.scrape_article_content(article['url'])
-                        
-                        # Insert into database
-                        logger.info("Inserting new article into database")
-                        result = supabase.table('mbs_articles').insert({
-                            'title': article['title'],
-                            'url': article['url'],
-                            'date': article['date'],
-                            'description': article['description'],
-                            'content': content,
-                            'category': 'Mortgage',
-                            'date': datetime.now().isoformat(),
-                            'last_scraped': datetime.now().isoformat(),
-                            'is_generating': False
-                        }).execute()
-                        logger.info(f"Insert result: {result}")
-                    else:
-                        # Check if needs refresh (older than 6 hours)
-                        last_scraped = datetime.fromisoformat(existing.data[0]['last_scraped'])
-                        if datetime.now() - last_scraped > timedelta(hours=6):
-                            logger.info("Article needs refresh, scraping new content")
-                            content = self.scrape_article_content(article['url'])
-                            
-                            # Update existing record
-                            logger.info("Updating article in database")
-                            result = supabase.table('mbs_articles').update({
-                                'content': content,
-                                'last_scraped': datetime.now().isoformat()
-                            }).eq('url', article['url']).execute()
-                            logger.info(f"Update result: {result}")
+                    # Insert into database
+                    logger.info("Inserting article into database")
+                    result = supabase.table('mbs_articles').insert({
+                        'title': article['title'],
+                        'url': article['url'],
+                        'description': article['description'],
+                        'content': content,
+                        'category': 'Mortgage',
+                        'date': datetime.now().isoformat(),
+                        'last_scraped': datetime.now().isoformat(),
+                        'is_generating': False
+                    }).execute()
+                    logger.info(f"Insert result: {result}")
                 except Exception as e:
                     logger.error(f"Error processing article {article['url']}: {e}")
-                        
+                    continue
+                    
         except Exception as e:
             logger.error(f"Error updating database: {e}")
 
