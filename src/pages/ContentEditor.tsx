@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Newspaper, BarChart, FileText, MessageSquare, ArrowLeft, Save, ExternalLink, Send, RefreshCw } from 'lucide-react';
+import { Newspaper, BarChart, FileText, MessageSquare, ArrowLeft, Save, ExternalLink, Send, RefreshCw, Copy, CheckCheck } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -405,6 +405,15 @@ const ContentEditor: React.FC = () => {
     }
   };
   
+  const copyToClipboard = async (content: string) => {
+    try {
+      await navigator.clipboard.writeText(content);
+      // You can add toast notification here if you want
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
+  };
+  
   if (!option || !optionDetails[option as keyof typeof optionDetails]) {
     return <div>Invalid option</div>;
   }
@@ -518,28 +527,28 @@ const ContentEditor: React.FC = () => {
               {generatedContents
                 .filter(content => content.type !== 'Original Article')
                 .map((content, index) => (
-                <Card key={index} className="mt-6">
-                  <CardContent className="p-6">
-                    <div className="flex justify-between items-center mb-4">
-                      <label className="text-sm font-medium">{content.type}</label>
+                <Card key={index} className="mt-6 overflow-hidden border-0 shadow-md hover:shadow-lg transition-shadow duration-200">
+                  <CardContent className="p-0">
+                    <div className="border-b border-gray-100 bg-gradient-to-r from-nextrend-50/50 to-white p-4 flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-nextrend-500"></div>
+                        <label className="font-medium text-gray-700">{content.type}</label>
+                      </div>
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
-                        onClick={() => {
-                          setGeneratedContents(prev => {
-                            const originalContent = prev.find(c => c.type === 'Original Article');
-                            return originalContent 
-                              ? [originalContent, { type: content.type, content: content.content }]
-                              : [{ type: content.type, content: content.content }];
-                          });
-                        }}
-                        className="flex items-center"
+                        onClick={() => copyToClipboard(content.content)}
+                        className="hover:bg-nextrend-100/50"
                       >
-                        Use This Content
+                        <Copy className="w-4 h-4 text-gray-600" />
                       </Button>
                     </div>
-                    <div className="prose max-w-none">
-                      <pre className="whitespace-pre-wrap text-sm">{content.content}</pre>
+                    <div className="p-6 bg-white">
+                      <div className="prose max-w-none">
+                        <div className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap rounded-md">
+                          {content.content}
+                        </div>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
