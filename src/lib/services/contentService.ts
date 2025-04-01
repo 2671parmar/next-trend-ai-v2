@@ -180,5 +180,42 @@ export const contentService = {
 
     const data = await response.json();
     return data.choices[0].message.content;
+  },
+
+  // Add this method
+  async getMBSArticles(): Promise<MBSArticle[]> {
+    const { data, error } = await supabase
+      .from('mbs_articles')
+      .select('*')
+      .order('date', { ascending: false })
+      .limit(10);
+
+    if (error) throw error;
+    return data as MBSArticle[];
+  },
+
+  // Add this method to get single article content
+  async getMBSArticleContent(url: string): Promise<MBSArticle | null> {
+    const { data, error } = await supabase
+      .from('mbs_articles')
+      .select('*')
+      .eq('url', url)
+      .single();
+
+    if (error) throw error;
+    return data as MBSArticle;
   }
-}; 
+};
+
+// Add this interface
+export interface MBSArticle {
+  id: number;
+  title: string;
+  url: string;
+  description: string;
+  content: string;
+  category: string;
+  date: string;
+  last_scraped: string;
+  is_generating: boolean;
+}

@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import TextEditor from '@/components/TextEditor';
 import { contentService } from '@/lib/services/contentService';
+import { type MBSArticle } from '@/lib/services/contentService';
 
 const mortgageTerms = [
   "Adjustable-Rate Mortgage (ARM)",
@@ -82,7 +83,30 @@ const mortgageTerms = [
   "Interest-Only Loan"
 ];
 
-const generateNewsFeedData = (option: string) => {
+const generateNewsFeedData = async (option: string) => {
+  if (option === 'this-week') {
+    try {
+      const articles = await contentService.getMBSArticles();
+      return articles.map(article => ({
+        id: article.id,
+        category: article.category,
+        date: new Date(article.date).toLocaleDateString('en-US', { 
+          month: 'numeric', 
+          day: 'numeric', 
+          year: 'numeric' 
+        }),
+        title: article.title,
+        content: article.description,
+        url: article.url,
+        isGenerating: article.is_generating
+      }));
+    } catch (error) {
+      console.error('Error fetching MBS articles:', error);
+      return [];
+    }
+  }
+  
+  // Return existing mock data for other options
   const today = new Date().toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' });
   
   const commonData = [
@@ -136,9 +160,7 @@ const generateNewsFeedData = (option: string) => {
     }
   ];
   
-  if (option === 'this-week') {
-    return commonData.slice(0, 3);
-  } else if (option === 'trending') {
+  if (option === 'trending') {
     const extendedTrending = [...commonData];
     for (let i = 0; i < 3; i++) {
       extendedTrending.push({
@@ -204,20 +226,25 @@ const ContentEditor: React.FC = () => {
   
   useEffect(() => {
     if (option) {
-      setNewsFeed(generateNewsFeedData(option));
-      setSelectedArticle(null);
-      setShowEditor(false);
-      setGeneratedContents([]);
+      const loadData = async () => {
+        const data = await generateNewsFeedData(option);
+        setNewsFeed(data);
+        setSelectedArticle(null);
+        setShowEditor(false);
+        setGeneratedContents([]);
+        
+        if (option === 'custom' && chatMessages.length === 0) {
+          setChatMessages([
+            {
+              role: 'assistant',
+              content: 'Example Idea:',
+              timestamp: new Date()
+            }
+          ]);
+        }
+      };
       
-      if (option === 'custom' && chatMessages.length === 0) {
-        setChatMessages([
-          {
-            role: 'assistant',
-            content: 'Example Idea:',
-            timestamp: new Date()
-          }
-        ]);
-      }
+      loadData();
     }
   }, [option]);
   
@@ -277,17 +304,33 @@ const ContentEditor: React.FC = () => {
     );
   };
 
-  const handleUseArticle = (articleId: number) => {
+  const handleUseArticle = async (articleId: number) => {
     const article = newsFeed.find(item => item.id === articleId);
     if (article) {
-      setSelectedArticle(article);
-      setShowEditor(true);
-      setGeneratedContents([]);
-      // Set the initial content in the editor to be the article's content
-      setGeneratedContents([{ 
-        type: 'Original Article',
-        content: `${article.title}\n\n${article.content}`
-      }]);
+      try {
+        // Fetch full article content if it's an MBS article
+        if (option === 'this-week' && article.url) {
+          const fullArticle = await contentService.getMBSArticleContent(article.url);
+          if (fullArticle) {
+            setSelectedArticle({
+              ...article,
+              content: fullArticle.content
+            });
+          }
+        } else {
+          setSelectedArticle(article);
+        }
+        setShowEditor(true);
+        setGeneratedContents([]);
+        // Set the initial content in the editor
+        setGeneratedContents([{ 
+          type: 'Original Article',
+          content: `${article.title}\n\n${article.content}`
+        }]);
+      } catch (error) {
+        console.error('Error fetching article content:', error);
+        setError('Failed to fetch article content');
+      }
     }
   };
   

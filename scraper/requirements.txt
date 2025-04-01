@@ -1,0 +1,8 @@
+beautifulsoup4==4.12.3
+requests==2.31.0
+python-dotenv==1.0.1
+supabase==2.3.4
+APScheduler==3.10.4
+ratelimit==2.2.1
+selenium==4.18.1
+webdriver-manager==4.0.1 
