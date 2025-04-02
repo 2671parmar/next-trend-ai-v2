@@ -314,11 +314,15 @@ const ContentEditor: React.FC = () => {
           if (fullArticle) {
             setSelectedArticle({
               ...article,
+              description: article.content,
               content: fullArticle.content
             });
           }
         } else {
-          setSelectedArticle(article);
+          setSelectedArticle({
+            ...article,
+            description: article.content
+          });
         }
         setShowEditor(true);
         setGeneratedContents([]);
@@ -638,15 +642,14 @@ const ContentEditor: React.FC = () => {
                           <span className="text-sm text-gray-500">{selectedArticle.date}</span>
                         </div>
                         <h3 className="text-lg font-semibold mb-2">{selectedArticle.title}</h3>
-                        <p className="text-gray-600 text-sm">{selectedArticle.content}</p>
+                        <p className="text-gray-600 text-sm">{selectedArticle.description}</p>
                       </CardContent>
                     </Card>
                   )}
                   
                   <Card>
                     <CardContent className="p-6">
-                      <div className="flex justify-between items-center mb-4">
-                        <label className="text-sm font-medium">Content Editor</label>
+                      <div className="flex justify-end mb-4">
                         <Button
                           variant="outline"
                           size="sm"
@@ -659,7 +662,7 @@ const ContentEditor: React.FC = () => {
                         </Button>
                       </div>
                       <TextEditor
-                        content={generatedContents.find(c => c.type === 'Original Article')?.content || ''}
+                        content={selectedArticle?.content || ''}
                         onContentChange={(value) => {
                           setGeneratedContents(prev => {
                             const updated = prev.map(c => 
