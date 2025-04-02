@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import TextEditor from '@/components/TextEditor';
 import { contentService } from '@/lib/services/contentService';
 import { type MBSArticle } from '@/lib/services/contentService';
+import TypewriterText from '@/components/TypewriterText';
 
 const mortgageTerms = [
   "Adjustable-Rate Mortgage (ARM)",
@@ -207,6 +208,12 @@ interface ChatMessage {
   timestamp: Date;
 }
 
+interface GeneratedContent {
+  type: string;
+  content: string;
+  isGenerating?: boolean;
+}
+
 const ContentEditor: React.FC = () => {
   const { option } = useParams<{ option: string }>();
   const navigate = useNavigate();
@@ -217,7 +224,7 @@ const ContentEditor: React.FC = () => {
   const [userInput, setUserInput] = useState('');
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedContents, setGeneratedContents] = useState<Array<{type: string, content: string}>>([]);
+  const [generatedContents, setGeneratedContents] = useState<GeneratedContent[]>([]);
   const [dragActive, setDragActive] = useState(false);
   const [selectedArticle, setSelectedArticle] = useState<any | null>(null);
   const [showEditor, setShowEditor] = useState(false);
@@ -255,14 +262,12 @@ const ContentEditor: React.FC = () => {
     setError('');
     
     try {
-      // Prepare the content for generation
       const articleData = {
         title: selectedArticle.title,
         content: selectedArticle.content,
         category: selectedArticle.category
       };
       
-      // Generate content for each type from contentService.ts
       const contentTypes = [
         { type: 'LinkedIn Post', description: 'Thought Leadership, Expert Take' },
         { type: 'Blog Post', description: 'Deep-Dive, SEO-Optimized' },
@@ -272,20 +277,29 @@ const ContentEditor: React.FC = () => {
         { type: 'X/Twitter Post', description: 'Quick, Authority Take' },
         { type: 'SMS Broadcast', description: 'Concise, CTA-Driven' }
       ];
-      
-      const newContents = [];
-      
-      for (const { type, description } of contentTypes) {
+
+      // Initialize all content types with loading state
+      setGeneratedContents(contentTypes.map(type => ({
+        type: type.type,
+        content: '',
+        isGenerating: true
+      })));
+
+      // Generate content for each type sequentially
+      for (const [index, { type, description }] of contentTypes.entries()) {
         const prompt = `Generate a ${type} (${description}) for this ${articleData.category} article:\n\nTitle: ${articleData.title}\n\nContent: ${articleData.content}`;
         const result = await contentService.generateContent(prompt);
-        newContents.push({ type, content: result });
+        
+        setGeneratedContents(prev => {
+          const updated = [...prev];
+          updated[index] = {
+            type,
+            content: result,
+            isGenerating: false
+          };
+          return updated;
+        });
       }
-
-      // Update the generated contents while keeping the original content in the editor
-      setGeneratedContents(prev => {
-        const originalContent = prev.find(c => c.type === 'Original Article');
-        return originalContent ? [originalContent, ...newContents] : newContents;
-      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to generate content');
     } finally {
@@ -608,20 +622,34 @@ const ContentEditor: React.FC = () => {
                           <div className="flex items-center gap-2">
                             <div className="w-2 h-2 rounded-full bg-nextrend-500"></div>
                             <label className="font-medium text-gray-700">{content.type}</label>
+                            {content.isGenerating && (
+                              <RefreshCw className="w-4 h-4 text-nextrend-500 animate-spin ml-2" />
+                            )}
                           </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => copyToClipboard(content.content)}
-                            className="hover:bg-nextrend-100/50"
-                          >
-                            <Copy className="w-4 h-4 text-gray-600" />
-                          </Button>
+                          {!content.isGenerating && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => copyToClipboard(content.content)}
+                              className="hover:bg-nextrend-100/50"
+                            >
+                              <Copy className="w-4 h-4 text-gray-600" />
+                            </Button>
+                          )}
                         </div>
                         <div className="p-6 bg-white">
                           <div className="prose max-w-none">
-                            <div className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap rounded-md">
-                              {content.content}
+                            <div className="text-gray-600 text-sm leading-relaxed">
+                              {content.isGenerating ? (
+                                <div className="flex items-center gap-2">
+                                  <span className="text-nextrend-500">Generating {content.type}...</span>
+                                </div>
+                              ) : (
+                                <TypewriterText 
+                                  content={content.content} 
+                                  speed={15}
+                                />
+                              )}
                             </div>
                           </div>
                         </div>
@@ -691,20 +719,34 @@ const ContentEditor: React.FC = () => {
                           <div className="flex items-center gap-2">
                             <div className="w-2 h-2 rounded-full bg-nextrend-500"></div>
                             <label className="font-medium text-gray-700">{content.type}</label>
+                            {content.isGenerating && (
+                              <RefreshCw className="w-4 h-4 text-nextrend-500 animate-spin ml-2" />
+                            )}
                           </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => copyToClipboard(content.content)}
-                            className="hover:bg-nextrend-100/50"
-                          >
-                            <Copy className="w-4 h-4 text-gray-600" />
-                          </Button>
+                          {!content.isGenerating && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => copyToClipboard(content.content)}
+                              className="hover:bg-nextrend-100/50"
+                            >
+                              <Copy className="w-4 h-4 text-gray-600" />
+                            </Button>
+                          )}
                         </div>
                         <div className="p-6 bg-white">
                           <div className="prose max-w-none">
-                            <div className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap rounded-md">
-                              {content.content}
+                            <div className="text-gray-600 text-sm leading-relaxed">
+                              {content.isGenerating ? (
+                                <div className="flex items-center gap-2">
+                                  <span className="text-nextrend-500">Generating {content.type}...</span>
+                                </div>
+                              ) : (
+                                <TypewriterText 
+                                  content={content.content} 
+                                  speed={15}
+                                />
+                              )}
                             </div>
                           </div>
                         </div>
@@ -901,20 +943,34 @@ const ContentEditor: React.FC = () => {
                         <div className="flex items-center gap-2">
                           <div className="w-2 h-2 rounded-full bg-nextrend-500"></div>
                           <label className="font-medium text-gray-700">{content.type}</label>
+                          {content.isGenerating && (
+                            <RefreshCw className="w-4 h-4 text-nextrend-500 animate-spin ml-2" />
+                          )}
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => copyToClipboard(content.content)}
-                          className="hover:bg-nextrend-100/50"
-                        >
-                          <Copy className="w-4 h-4 text-gray-600" />
-                        </Button>
+                        {!content.isGenerating && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => copyToClipboard(content.content)}
+                            className="hover:bg-nextrend-100/50"
+                          >
+                            <Copy className="w-4 h-4 text-gray-600" />
+                          </Button>
+                        )}
                       </div>
                       <div className="p-6 bg-white">
                         <div className="prose max-w-none">
-                          <div className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap rounded-md">
-                            {content.content}
+                          <div className="text-gray-600 text-sm leading-relaxed">
+                            {content.isGenerating ? (
+                              <div className="flex items-center gap-2">
+                                <span className="text-nextrend-500">Generating {content.type}...</span>
+                              </div>
+                            ) : (
+                              <TypewriterText 
+                                content={content.content} 
+                                speed={15}
+                              />
+                            )}
                           </div>
                         </div>
                       </div>
