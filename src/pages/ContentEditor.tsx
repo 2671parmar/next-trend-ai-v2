@@ -1076,12 +1076,7 @@ const ContentEditor: React.FC = () => {
               <TabsContent value={activeTab} className="mt-0">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   {currentArticles.map((article) => (
-                    <motion.div
-                      key={article.id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.1 }}
-                    >
+                    <div key={article.id}>
                       <Card className="overflow-hidden h-full flex flex-col">
                         <CardContent className="p-0 flex flex-col h-full">
                           <div className="p-5">
@@ -1171,7 +1166,7 @@ const ContentEditor: React.FC = () => {
                           </div>
                         </CardContent>
                       </Card>
-                    </motion.div>
+                    </div>
                   ))}
                 </div>
 
