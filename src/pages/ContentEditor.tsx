@@ -103,7 +103,7 @@ const generateNewsFeedData = async (option: string) => {
       }));
     } catch (error) {
       console.error('Error fetching MBS articles:', error);
-      return [];
+      throw error;
     }
   }
   
@@ -231,8 +231,10 @@ const ContentEditor: React.FC = () => {
   const [dragActive, setDragActive] = useState(false);
   const [selectedArticle, setSelectedArticle] = useState<any | null>(null);
   const [showEditor, setShowEditor] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>('');
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
+  const [isRendered, setIsRendered] = useState(false);
 
   // Reset pagination when changing tabs or options
   useEffect(() => {
@@ -241,29 +243,44 @@ const ContentEditor: React.FC = () => {
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
-    setCurrentPage(1); // Reset to first page when changing tabs
+    setCurrentPage(1);
   };
 
   useEffect(() => {
     if (option) {
       const loadData = async () => {
-        const data = await generateNewsFeedData(option);
-        setNewsFeed(data);
-        setSelectedArticle(null);
-        setShowEditor(false);
-        setGeneratedContents([]);
-        
-        if (option === 'custom' && chatMessages.length === 0) {
-          setChatMessages([
-            {
-              role: 'assistant',
-              content: 'Example Idea:',
-              timestamp: new Date()
-            }
-          ]);
+        setIsLoading(true);
+        setIsDataLoaded(false);
+        setIsRendered(false);
+        setError('');
+        try {
+          const data = await generateNewsFeedData(option);
+          setNewsFeed(data);
+          setSelectedArticle(null);
+          setShowEditor(false);
+          setGeneratedContents([]);
+          
+          if (option === 'custom' && chatMessages.length === 0) {
+            setChatMessages([
+              {
+                role: 'assistant',
+                content: 'Example Idea:',
+                timestamp: new Date()
+              }
+            ]);
+          }
+        } catch (error) {
+          console.error('Error loading data:', error);
+          setError('Failed to load data. Please try again.');
+        } finally {
+          // Set data loaded first
+          setIsDataLoaded(true);
+          // Then wait for next render cycle to set rendered state
+          requestAnimationFrame(() => {
+            setIsRendered(true);
+          });
         }
       };
-      
       loadData();
     }
   }, [option]);
@@ -1021,135 +1038,168 @@ const ContentEditor: React.FC = () => {
             </h1>
           </div>
 
-          <Tabs defaultValue="all" value={activeTab} onValueChange={handleTabChange}>
-            {tabsContent}
-            
-            <TabsContent value={activeTab} className="mt-0">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {currentArticles.map((article) => (
-                  <motion.div
-                    key={article.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: article.id * 0.05 }}
-                  >
-                    <Card className="overflow-hidden h-full flex flex-col">
-                      <CardContent className="p-0 flex flex-col h-full">
-                        <div className="p-5">
-                          <div className="flex justify-between items-center mb-3">
-                            <Badge variant="outline" className="bg-nextrend-50 text-nextrend-500 hover:bg-nextrend-100">
-                              {article.category}
-                            </Badge>
-                            <span className="text-sm text-gray-500">{article.date}</span>
+          {(!isDataLoaded || !isRendered) ? (
+            <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+              <motion.div
+                animate={{
+                  scale: [1, 1.2, 1],
+                  rotate: [0, 360],
+                }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+                className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full"
+              />
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="text-lg text-muted-foreground"
+              >
+                {option === 'this-week' ? 'Loading MBS Commentary...' : 'Loading content...'}
+              </motion.p>
+            </div>
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+              <p className="text-lg text-destructive">{error}</p>
+              <Button onClick={() => window.location.reload()}>
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Try Again
+              </Button>
+            </div>
+          ) : (
+            <Tabs defaultValue="all" value={activeTab} onValueChange={handleTabChange}>
+              {tabsContent}
+              
+              <TabsContent value={activeTab} className="mt-0">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {currentArticles.map((article) => (
+                    <motion.div
+                      key={article.id}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.1 }}
+                    >
+                      <Card className="overflow-hidden h-full flex flex-col">
+                        <CardContent className="p-0 flex flex-col h-full">
+                          <div className="p-5">
+                            <div className="flex justify-between items-center mb-3">
+                              <Badge variant="outline" className="bg-nextrend-50 text-nextrend-500 hover:bg-nextrend-100">
+                                {article.category}
+                              </Badge>
+                              <span className="text-sm text-gray-500">{article.date}</span>
+                            </div>
+                            
+                            <h3 className="text-lg font-semibold mb-2">{article.title}</h3>
+                            
+                            <div className="text-gray-600 text-sm mb-4">
+                              {article.content}
+                            </div>
+                            
+                            {article.generatedContent && option !== 'general' && (
+                              <div className="mt-4 p-3 bg-gray-50 rounded-md border border-gray-100 text-sm">
+                                <p className="font-medium mb-1 text-nextrend-600">Generated Content:</p>
+                                <p className="text-gray-600">{article.generatedContent}</p>
+                              </div>
+                            )}
                           </div>
                           
-                          <h3 className="text-lg font-semibold mb-2">{article.title}</h3>
-                          
-                          <div className="text-gray-600 text-sm mb-4">
-                            {article.content}
-                          </div>
-                          
-                          {article.generatedContent && option !== 'general' && (
-                            <div className="mt-4 p-3 bg-gray-50 rounded-md border border-gray-100 text-sm">
-                              <p className="font-medium mb-1 text-nextrend-600">Generated Content:</p>
-                              <p className="text-gray-600">{article.generatedContent}</p>
-                            </div>
-                          )}
-                        </div>
-                        
-                        <div className="mt-auto border-t border-gray-100 p-4 flex justify-between items-center bg-gray-50">
-                          {(option === 'this-week' || option === 'trending') ? (
-                            <div className="flex w-full gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleReadArticle(article.id)}
-                                className="text-xs flex-1"
-                              >
-                                <ExternalLink className="h-3 w-3 mr-1" />
-                                Read Article
-                              </Button>
-                              <Button
-                                variant="default"
-                                size="sm"
-                                onClick={() => handleUseArticle(article.id)}
-                                className="text-xs flex-1 bg-nextrend-500 hover:bg-nextrend-600"
-                              >
-                                Use Article
-                              </Button>
-                            </div>
-                          ) : option === 'general' ? (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleUseGeneralTerm(article)}
-                              className="text-xs w-full"
-                            >
-                              Use this Mortgage Term
-                            </Button>
-                          ) : (
-                            !article.generatedContent ? (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleGenerateContent()}
-                                disabled={isGenerating}
-                                className="text-xs w-full"
-                              >
-                                Generate Content
-                              </Button>
-                            ) : (
-                              <div className="flex w-full justify-between">
+                          <div className="mt-auto border-t border-gray-100 p-4 flex justify-between items-center bg-gray-50">
+                            {(option === 'this-week' || option === 'trending') ? (
+                              <div className="flex w-full gap-2">
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => handleGenerateContent()}
-                                  className="text-xs"
+                                  onClick={() => handleReadArticle(article.id)}
+                                  className="text-xs flex-1"
                                 >
-                                  Regenerate
+                                  <ExternalLink className="h-3 w-3 mr-1" />
+                                  Read Article
                                 </Button>
                                 <Button
                                   variant="default"
                                   size="sm"
-                                  className="text-xs bg-nextrend-500 hover:bg-nextrend-600"
                                   onClick={() => handleUseArticle(article.id)}
+                                  className="text-xs flex-1 bg-nextrend-500 hover:bg-nextrend-600"
                                 >
-                                  Use This
+                                  Use Article
                                 </Button>
                               </div>
-                            )
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                ))}
-              </div>
+                            ) : option === 'general' ? (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleUseGeneralTerm(article)}
+                                className="text-xs w-full"
+                              >
+                                Use this Mortgage Term
+                              </Button>
+                            ) : (
+                              !article.generatedContent ? (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleGenerateContent()}
+                                  disabled={isGenerating}
+                                  className="text-xs w-full"
+                                >
+                                  Generate Content
+                                </Button>
+                              ) : (
+                                <div className="flex w-full justify-between">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleGenerateContent()}
+                                    className="text-xs"
+                                  >
+                                    Regenerate
+                                  </Button>
+                                  <Button
+                                    variant="default"
+                                    size="sm"
+                                    className="text-xs bg-nextrend-500 hover:bg-nextrend-600"
+                                    onClick={() => handleUseArticle(article.id)}
+                                  >
+                                    Use This
+                                  </Button>
+                                </div>
+                              )
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </div>
 
-              {/* Pagination Controls */}
-              <div className="flex justify-center items-center gap-2 mt-8">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                  disabled={currentPage === 1}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <span className="text-sm text-muted-foreground">
-                  Page {currentPage} of {totalPages}
-                </span>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                  disabled={currentPage === totalPages}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </TabsContent>
-          </Tabs>
+                {/* Pagination Controls */}
+                <div className="flex justify-center items-center gap-2 mt-8">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <span className="text-sm text-muted-foreground">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </TabsContent>
+            </Tabs>
+          )}
         </div>
       </main>
     </div>
