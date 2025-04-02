@@ -870,31 +870,29 @@ const ContentEditor: React.FC = () => {
                       <Textarea
                         value={userInput}
                         onChange={(e) => setUserInput(e.target.value)}
-                        placeholder="Example Idea : The current mortgage market is seeing significant changes due to recent economic developments. This presents both challenges and opportunities for homebuyers and those looking to refinance...."
+                        placeholder="Type your message here..."
                         className="resize-none h-32 flex-grow"
                       />
                       
                       <Button 
-                        className="h-12 bg-nextrend-500 hover:bg-nextrend-600 w-full"
+                        className="h-12 bg-nextrend-500 hover:bg-nextrend-600 w-full flex items-center justify-center"
                         disabled={isGenerating || !userInput?.trim()}
                         onClick={handleSendMessage}
                       >
-                        {isGenerating ? (
-                          <>
-                            <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                            Generating...
-                          </>
-                        ) : (
-                          <>
-                            <Send className="h-4 w-4 mr-2" />
-                            Generate Content
-                          </>
-                        )}
+                        <Send className="h-5 w-5 mr-2" />
+                        Send Message
                       </Button>
                       
                       {/* Content prompt section */}
-                      {option === 'custom' && chatMessages.length === 0 && (
+                      {option === 'custom' && (
                         <div className="text-sm p-4 bg-nextrend-50 border border-nextrend-100 rounded-md mt-2">
+                          {chatMessages.length > 0 && chatMessages[0].role === 'assistant' && (
+                            <div className="mb-4 text-gray-700">
+                              {chatMessages[0].content}
+                            </div>
+                          )}
+                          
+                          {/* Random content prompt */}
                           <div className="content-prompt">
                             {contentPrompts[Math.floor(Math.random() * contentPrompts.length)] && (
                               <>
@@ -907,24 +905,6 @@ const ContentEditor: React.FC = () => {
                               </>
                             )}
                           </div>
-                        </div>
-                      )}
-                      
-                      {/* Chat Messages */}
-                      {chatMessages.length > 0 && (
-                        <div className="mt-4 space-y-4">
-                          {chatMessages.map((msg, index) => (
-                            <div
-                              key={index}
-                              className={`p-3 rounded-lg ${
-                                msg.role === 'user'
-                                  ? 'bg-nextrend-50 text-nextrend-700'
-                                  : 'bg-gray-50 text-gray-700'
-                              }`}
-                            >
-                              <p className="text-sm">{msg.content}</p>
-                            </div>
-                          ))}
                         </div>
                       )}
                     </div>
