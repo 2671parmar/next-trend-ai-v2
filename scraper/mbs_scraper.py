@@ -63,8 +63,13 @@ class MBSScraper:
                 EC.presence_of_element_located((By.CLASS_NAME, "article"))
             )
             
-            # Let the page fully load
-            time.sleep(5)
+            # Wait specifically for article descriptions to load
+            WebDriverWait(self.driver, 20).until(
+                EC.presence_of_element_located((By.CLASS_NAME, "article-body"))
+            )
+            
+            # Let the page fully load and render
+            time.sleep(8)  # Increased from 5 to 8 seconds
             
             # Get the page source and parse with BeautifulSoup
             soup = BeautifulSoup(self.driver.page_source, 'html.parser')
@@ -90,19 +95,26 @@ class MBSScraper:
                     date_elem = article.find('div', class_='article-byline')
                     date_text = date_elem.get_text(strip=True) if date_elem else ""
                     
-                    # Get article description - specifically target hidden-xs class
-                    desc_elem = article.find('div', class_='article-body hidden-xs')
+                    # Get article description - try multiple class combinations
+                    desc_elem = None
+                    for class_name in ['article-body hidden-xs', 'article-body', 'article-content']:
+                        desc_elem = article.find('div', class_=class_name)
+                        if desc_elem and desc_elem.get_text(strip=True):
+                            break
+                    
                     description = desc_elem.get_text(strip=True) if desc_elem else ""
                     
                     logger.info(f"Found article: {title}")
                     logger.info(f"Description: {description[:100]}...")  # Log first 100 chars of description
                     
-                    articles.append({
-                        'title': title,
-                        'url': url,
-                        'date': date_text,
-                        'description': description
-                    })
+                    # Only append if we have both title and description
+                    if title and description:
+                        articles.append({
+                            'title': title,
+                            'url': url,
+                            'date': date_text,
+                            'description': description
+                        })
                 except Exception as e:
                     logger.error(f"Error processing individual article block: {e}")
                     continue

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Newspaper, BarChart, FileText, MessageSquare, ArrowLeft, Save, ExternalLink, Send, RefreshCw, Copy, CheckCheck } from 'lucide-react';
+import { Newspaper, BarChart, FileText, MessageSquare, ArrowLeft, Save, ExternalLink, Send, RefreshCw, Copy, CheckCheck, ChevronLeft, ChevronRight } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -214,12 +214,15 @@ interface GeneratedContent {
   isGenerating?: boolean;
 }
 
+const ITEMS_PER_PAGE = 12;
+
 const ContentEditor: React.FC = () => {
   const { option } = useParams<{ option: string }>();
   const navigate = useNavigate();
   
   const [newsFeed, setNewsFeed] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
   
   const [userInput, setUserInput] = useState('');
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -230,7 +233,17 @@ const ContentEditor: React.FC = () => {
   const [showEditor, setShowEditor] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>('');
-  
+
+  // Reset pagination when changing tabs or options
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, option]);
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    setCurrentPage(1); // Reset to first page when changing tabs
+  };
+
   useEffect(() => {
     if (option) {
       const loadData = async () => {
@@ -551,6 +564,11 @@ const ContentEditor: React.FC = () => {
   
   const { title, icon } = optionDetails[option as keyof typeof optionDetails];
   const filteredNews = activeTab === 'all' ? newsFeed : newsFeed.filter(item => item.category.toLowerCase() === activeTab);
+  
+  const totalPages = Math.ceil(filteredNews.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const currentArticles = filteredNews.slice(startIndex, endIndex);
   
   if (showEditor) {
     return (
@@ -996,19 +1014,19 @@ const ContentEditor: React.FC = () => {
               Back to Dashboard
             </Button>
             <h1 className="text-2xl font-bold">
-              {option === 'this-week' ? 'MBS Commentary Today' :
+              {option === 'this-week' ? 'This Week\'s MBS Commentary' :
                option === 'trending' ? 'Trending Topics' :
                option === 'general' ? 'General Mortgage' :
                'Custom Content'}
             </h1>
           </div>
 
-          <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
+          <Tabs defaultValue="all" value={activeTab} onValueChange={handleTabChange}>
             {tabsContent}
             
             <TabsContent value={activeTab} className="mt-0">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {filteredNews.map((article) => (
+                {currentArticles.map((article) => (
                   <motion.div
                     key={article.id}
                     initial={{ opacity: 0, y: 20 }}
@@ -1106,6 +1124,29 @@ const ContentEditor: React.FC = () => {
                     </Card>
                   </motion.div>
                 ))}
+              </div>
+
+              {/* Pagination Controls */}
+              <div className="flex justify-center items-center gap-2 mt-8">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="text-sm text-muted-foreground">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
               </div>
             </TabsContent>
           </Tabs>

@@ -187,8 +187,7 @@ export const contentService = {
     const { data, error } = await supabase
       .from('mbs_articles')
       .select('*')
-      .order('date', { ascending: false })
-      .limit(10);
+      .order('date', { ascending: false });
 
     if (error) throw error;
     return data as MBSArticle[];
