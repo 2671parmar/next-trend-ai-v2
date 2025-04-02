@@ -541,38 +541,16 @@ const ContentEditor: React.FC = () => {
   const handleUseGeneralTerm = async (article: any) => {
     setSelectedArticle({
       ...article,
+      description: article.content,
       content: `Generate comprehensive, expert-level content about the mortgage term: ${article.title}. Include its definition, importance, and how it affects mortgage decisions.`
     });
     setShowEditor(true);
     setGeneratedContents([]);
-    setIsGenerating(true);
-    
-    try {
-      // Generate content for each type from contentService.ts
-      const contentTypes = [
-        { type: 'LinkedIn Post', description: 'Thought Leadership, Expert Take' },
-        { type: 'Blog Post', description: 'Deep-Dive, SEO-Optimized' },
-        { type: 'Video Script', description: 'Educational, Senior Loan Officer Perspective' },
-        { type: 'Email', description: 'Client-Focused, Trust-Building' },
-        { type: 'Social Post', description: 'Engaging & Value-Driven' },
-        { type: 'X/Twitter Post', description: 'Quick, Authority Take' },
-        { type: 'SMS Broadcast', description: 'Concise, CTA-Driven' }
-      ];
-      
-      const newContents = [];
-      
-      for (const { type, description } of contentTypes) {
-        const prompt = `Generate a ${type} (${description}) explaining the mortgage term "${article.title}" to potential clients. Include its definition, importance, and how it affects mortgage decisions.`;
-        const result = await contentService.generateContent(prompt);
-        newContents.push({ type, content: result });
-      }
-
-      setGeneratedContents(newContents);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to generate content');
-    } finally {
-      setIsGenerating(false);
-    }
+    // Set the initial content in the editor
+    setGeneratedContents([{ 
+      type: 'Original Article',
+      content: `${article.title}\n\n${article.content}`
+    }]);
   };
   
   if (!option || !optionDetails[option as keyof typeof optionDetails]) {
@@ -641,17 +619,61 @@ const ContentEditor: React.FC = () => {
             <div className="grid grid-cols-1 gap-6">
               {option === 'general' ? (
                 // For General Mortgage Terms
-                isGenerating ? (
-                  <Card className="p-12">
-                    <div className="flex flex-col items-center justify-center text-center">
-                      <RefreshCw className="w-8 h-8 text-nextrend-500 animate-spin mb-4" />
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">Generating Content</h3>
-                      <p className="text-gray-500">Please wait while we create content for {selectedArticle?.title}...</p>
-                    </div>
+                <>
+                  {selectedArticle && (
+                    <Card className="mb-4">
+                      <CardContent className="p-5">
+                        <div className="flex justify-between items-center mb-3">
+                          <Badge variant="outline" className="bg-nextrend-50 text-nextrend-500 hover:bg-nextrend-100">
+                            {selectedArticle.category}
+                          </Badge>
+                          <span className="text-sm text-gray-500">{selectedArticle.date}</span>
+                        </div>
+                        <h3 className="text-lg font-semibold mb-2">{selectedArticle.title}</h3>
+                        <p className="text-gray-600 text-sm">{selectedArticle.description}</p>
+                      </CardContent>
+                    </Card>
+                  )}
+                  
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex justify-end mb-4">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleGenerateContent}
+                          disabled={isGenerating}
+                          className="flex items-center"
+                        >
+                          <RefreshCw className={`w-4 h-4 mr-2 ${isGenerating ? 'animate-spin' : ''}`} />
+                          {isGenerating ? 'Generating...' : 'Generate Content'}
+                        </Button>
+                      </div>
+                      <TextEditor
+                        content={selectedArticle?.content || ''}
+                        onContentChange={(value) => {
+                          setGeneratedContents(prev => {
+                            const updated = prev.map(c => 
+                              c.type === 'Original Article' 
+                                ? { ...c, content: value }
+                                : c
+                            );
+                            if (!updated.find(c => c.type === 'Original Article')) {
+                              updated.unshift({ type: 'Original Article', content: value });
+                            }
+                            return updated;
+                          });
+                        }}
+                        loading={isGenerating}
+                        placeholder="Click 'Generate Content' to create social media posts..."
+                      />
+                    </CardContent>
                   </Card>
-                ) : (
-                  generatedContents.map((content, index) => (
-                    <Card key={index} className="overflow-hidden border-0 shadow-md hover:shadow-lg transition-shadow duration-200">
+
+                  {generatedContents
+                    .filter(content => content.type !== 'Original Article')
+                    .map((content, index) => (
+                    <Card key={index} className="mt-6 overflow-hidden border-0 shadow-md hover:shadow-lg transition-shadow duration-200">
                       <CardContent className="p-0">
                         <div className="border-b border-gray-100 bg-gradient-to-r from-nextrend-50/50 to-white p-4 flex justify-between items-center">
                           <div className="flex items-center gap-2">
@@ -690,8 +712,8 @@ const ContentEditor: React.FC = () => {
                         </div>
                       </CardContent>
                     </Card>
-                  ))
-                )
+                  ))}
+                </>
               ) : (
                 // For MBS Commentary Today and Trending Topics
                 <>
