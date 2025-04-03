@@ -107,92 +107,43 @@ const generateNewsFeedData = async (option: string) => {
     }
   }
   
-  // Return existing mock data for other options
-  const today = new Date().toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' });
-  
-  const commonData = [
-    {
-      id: 1,
-      category: 'Mortgage',
-      date: today,
-      title: 'US Q4 final GDP +2.4% vs +2.3% expected',
-      content: 'US Q4 final GDP +2.4% vs +2.3% expected. The fourth quarter GDP was revised upward, showing stronger economic growth than initially reported.',
-      isGenerating: false,
-    },
-    {
-      id: 2,
-      category: 'Mortgage',
-      date: today,
-      title: 'US initial jobless claims 224K vs 225K estimate',
-      content: 'Weekly jobless claims came in slightly below expectations, indicating continued resilience in the labor market despite concerns over potential economic slowdown.',
-      isGenerating: false,
-    },
-    {
-      id: 3,
-      category: 'Mortgage',
-      date: today,
-      title: 'Treasury yields are higher as investors weigh new auto tariffs',
-      content: 'U.S. Treasury yields ticked higher on Thursday as investors digested the latest news on potential new auto tariffs and their impact on inflation expectations.',
-      isGenerating: false,
-    },
-    {
-      id: 4,
-      category: 'Mortgage',
-      date: today,
-      title: 'Update: Lumber Prices Up 15% YoY',
-      content: 'Lumber prices have increased 15% compared to the same period last year, potentially raising costs for new home construction and renovation projects.',
-      isGenerating: false,
-    },
-    {
-      id: 5,
-      category: 'Mortgage',
-      date: today,
-      title: 'Final Look at Local Housing Markets in February',
-      content: 'A brief excerpt from the latest housing market analysis shows inventory levels increasing in most major metros compared to last year, while price growth is moderating.',
-      isGenerating: false,
-    },
-    {
-      id: 6,
-      category: 'Mortgage',
-      date: today,
-      title: 'New auto tariffs could impact mortgage rates',
-      content: 'Analysts suggest the proposed auto tariffs could put upward pressure on inflation, potentially delaying expected Fed rate cuts this year.',
-      isGenerating: false,
-    }
-  ];
-  
   if (option === 'trending') {
-    const extendedTrending = [...commonData];
-    for (let i = 0; i < 3; i++) {
-      extendedTrending.push({
-        ...commonData[i],
-        id: i + 7,
-        title: `${commonData[i].title} - Updated`,
-      });
+    try {
+      const articles = await contentService.getTrendingArticles();
+      return articles.map(article => ({
+        id: article.id,
+        category: article.category || 'Mortgage',
+        date: new Date(article.date).toLocaleDateString('en-US', { 
+          month: 'numeric', 
+          day: 'numeric', 
+          year: 'numeric' 
+        }),
+        title: article.title,
+        content: article.content,
+        url: article.url,
+        isGenerating: false
+      }));
+    } catch (error) {
+      console.error('Error fetching trending articles:', error);
+      throw error;
     }
-    for (let i = 0; i < 3; i++) {
-      extendedTrending.push({
-        ...commonData[i + 3],
-        id: i + 10,
-        title: `${commonData[i + 3].title} - New Analysis`,
-      });
-    }
-    return extendedTrending.slice(0, 9);
-  } else if (option === 'general') {
+  }
+  
+  if (option === 'general') {
     const shuffled = [...mortgageTerms].sort(() => 0.5 - Math.random());
     const selectedTerms = shuffled.slice(0, 25);
     
     return selectedTerms.map((term, index) => ({
       id: index + 1,
       category: 'Term',
-      date: today,
+      date: new Date().toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' }),
       title: term,
       content: `Description for ${term} will appear here when you generate content.`,
       isGenerating: false,
     }));
-  } else {
-    return commonData.slice(0, 3);
   }
+  
+  return [];
 };
 
 const optionDetails = {

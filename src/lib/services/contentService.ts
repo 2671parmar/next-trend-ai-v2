@@ -124,6 +124,30 @@ Clear CTA. Should not be directed at the person we're sending to rather letting 
 ✅ LINKEDIN POSTS MUST USE EXPERT INSIGHTS WITH MINIMAL EMOJIS (1-2 MAX).
 ✅ ALL CONTENT MUST REFLECT AN EXPERT SENIOR LOAN OFFICER'S PERSPECTIVE.`;
 
+export interface MBSArticle {
+  id: number;
+  title: string;
+  url: string;
+  description: string;
+  content: string;
+  category: string;
+  date: string;
+  last_scraped: string;
+  is_generating: boolean;
+}
+
+export interface TrendingArticle {
+  id: number;
+  title: string;
+  content: string;
+  category: string;
+  date: string;
+  url: string;
+  source: string;
+  last_scraped: string;
+  is_generating: boolean;
+}
+
 export const contentService = {
   // Fetch MBS Commentary
   async getMBSCommentary() {
@@ -203,18 +227,20 @@ export const contentService = {
 
     if (error) throw error;
     return data as MBSArticle;
-  }
-};
+  },
 
-// Add this interface
-export interface MBSArticle {
-  id: number;
-  title: string;
-  url: string;
-  description: string;
-  content: string;
-  category: string;
-  date: string;
-  last_scraped: string;
-  is_generating: boolean;
-}
+  getTrendingArticles: async (): Promise<TrendingArticle[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('trending_articles')
+        .select('*')
+        .order('date', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching trending articles:', error);
+      throw error;
+    }
+  },
+};
