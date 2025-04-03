@@ -14,7 +14,11 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.chrome import ChromeDriverManager
+from selenium.common.exceptions import WebDriverException
+import subprocess
+import urllib.request
+import zipfile
+import os
 
 # Load environment variables
 load_dotenv()
@@ -33,23 +37,44 @@ if not SUPABASE_URL or not SUPABASE_KEY:
 logger.info(f"Connecting to Supabase at {SUPABASE_URL}")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
+def get_chrome_version():
+    try:
+        # For Windows
+        cmd = 'reg query "HKEY_CURRENT_USER\\Software\\Google\\Chrome\\BLBeacon" /v version'
+        output = subprocess.check_output(cmd, shell=True).decode()
+        version = output.strip().split()[-1]
+        return version.split('.')[0]  # Return major version number
+    except:
+        logger.warning("Could not determine Chrome version, using default")
+        return "114"  # fallback version
+
 class MBSScraper:
     BASE_URL = "https://www.mortgagenewsdaily.com/topic/mbs"
     
     def __init__(self):
-        chrome_options = Options()
-        chrome_options.add_argument("--headless")  # Run in headless mode
-        chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("--disable-dev-shm-usage")
-        
-        self.driver = webdriver.Chrome(
-            service=Service(ChromeDriverManager().install()),
-            options=chrome_options
-        )
-        
+        try:
+            chrome_options = Options()
+            chrome_options.add_argument("--headless=new")
+            chrome_options.add_argument("--no-sandbox")
+            chrome_options.add_argument("--disable-dev-shm-usage")
+            chrome_options.add_argument("--disable-gpu")
+            chrome_options.add_argument("--disable-extensions")
+            chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
+            
+            # Download Chrome for Testing
+            logger.info("Setting up Chrome for Testing...")
+            self.driver = webdriver.Chrome(options=chrome_options)
+            
+        except Exception as e:
+            logger.error(f"Failed to initialize Chrome WebDriver: {str(e)}")
+            raise
+    
     def __del__(self):
         if hasattr(self, 'driver'):
-            self.driver.quit()
+            try:
+                self.driver.quit()
+            except Exception as e:
+                logger.error(f"Error closing WebDriver: {str(e)}")
     
     def scrape_article_list(self) -> List[Dict]:
         """Scrape the main MBS page for article listings using Selenium"""
