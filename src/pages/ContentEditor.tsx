@@ -673,12 +673,14 @@ const ContentEditor: React.FC = () => {
                       <CardContent className="p-5">
                         <div className="flex justify-between items-center mb-3">
                           <Badge variant="outline" className="bg-nextrend-50 text-nextrend-500 hover:bg-nextrend-100">
-                            {selectedArticle.category}
+                            {option === 'trending' ? 'Mortgage' : selectedArticle.category}
                           </Badge>
                           <span className="text-sm text-gray-500">{selectedArticle.date}</span>
                         </div>
                         <h3 className="text-lg font-semibold mb-2">{selectedArticle.title}</h3>
-                        <p className="text-gray-600 text-sm">{selectedArticle.description}</p>
+                        {option !== 'trending' && (
+                          <p className="text-gray-600 text-sm">{selectedArticle.description}</p>
+                        )}
                       </CardContent>
                     </Card>
                   )}
@@ -1055,16 +1057,18 @@ const ContentEditor: React.FC = () => {
                           <div className="p-5">
                             <div className="flex justify-between items-center mb-3">
                               <Badge variant="outline" className="bg-nextrend-50 text-nextrend-500 hover:bg-nextrend-100">
-                                {article.category}
+                                {option === 'trending' ? 'Mortgage' : article.category}
                               </Badge>
                               <span className="text-sm text-gray-500">{article.date}</span>
                             </div>
                             
                             <h3 className="text-lg font-semibold mb-2">{article.title}</h3>
                             
-                            <div className="text-gray-600 text-sm mb-4">
-                              {article.content}
-                            </div>
+                            {option !== 'trending' && (
+                              <div className="text-gray-600 text-sm mb-4">
+                                {article.content}
+                              </div>
+                            )}
                             
                             {article.generatedContent && option !== 'general' && (
                               <div className="mt-4 p-3 bg-gray-50 rounded-md border border-gray-100 text-sm">
