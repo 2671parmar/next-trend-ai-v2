@@ -84,6 +84,12 @@ const mortgageTerms = [
   "Interest-Only Loan"
 ];
 
+const contentPrompts = [
+  { headline: "What's the most important mortgage term for your clients?", hook: "Understanding this term can help them make better decisions when financing their homes." },
+  { headline: "How can you explain the difference between a fixed-rate and adjustable-rate mortgage?", hook: "This can help clients choose the right loan for their needs." },
+  { headline: "What are some common mortgage terms that clients often ask about?", hook: "This can help you provide more personalized and helpful responses." }
+];
+
 const generateNewsFeedData = async (option: string) => {
   if (option === 'this-week') {
     try {
@@ -186,11 +192,19 @@ const ContentEditor: React.FC = () => {
   const [error, setError] = useState<string>('');
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [isRendered, setIsRendered] = useState(false);
+  const [selectedPrompt, setSelectedPrompt] = useState(contentPrompts[Math.floor(Math.random() * contentPrompts.length)]);
 
   // Reset pagination when changing tabs or options
   useEffect(() => {
     setCurrentPage(1);
   }, [activeTab, option]);
+
+  // Update selected prompt when component mounts or when chat messages are cleared
+  useEffect(() => {
+    if (option === 'custom' && chatMessages.length === 0) {
+      setSelectedPrompt(contentPrompts[Math.floor(Math.random() * contentPrompts.length)]);
+    }
+  }, [option, chatMessages.length]);
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
@@ -472,12 +486,6 @@ const ContentEditor: React.FC = () => {
   const handleSave = () => {
     navigate('/dashboard');
   };
-  
-  const contentPrompts = [
-    { headline: "What's the most important mortgage term for your clients?", hook: "Understanding this term can help them make better decisions when financing their homes." },
-    { headline: "How can you explain the difference between a fixed-rate and adjustable-rate mortgage?", hook: "This can help clients choose the right loan for their needs." },
-    { headline: "What are some common mortgage terms that clients often ask about?", hook: "This can help you provide more personalized and helpful responses." }
-  ];
   
   const handleTestGeneration = async () => {
     setIsLoading(true);
@@ -918,13 +926,13 @@ const ContentEditor: React.FC = () => {
                           
                           {/* Random content prompt */}
                           <div className="content-prompt">
-                            {contentPrompts[Math.floor(Math.random() * contentPrompts.length)] && (
+                            {selectedPrompt && (
                               <>
                                 <p className="font-medium text-nextrend-600">
-                                  {contentPrompts[Math.floor(Math.random() * contentPrompts.length)].headline}
+                                  {selectedPrompt.headline}
                                 </p>
                                 <p className="text-gray-600 italic mt-1">
-                                  {contentPrompts[Math.floor(Math.random() * contentPrompts.length)].hook}
+                                  {selectedPrompt.hook}
                                 </p>
                               </>
                             )}
