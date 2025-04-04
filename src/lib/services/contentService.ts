@@ -148,6 +148,13 @@ export interface TrendingArticle {
   is_generating: boolean;
 }
 
+export interface MortgageTerm {
+  id: number;
+  term: string;
+  definition: string;
+  mortgage_relevance: string;
+}
+
 export const contentService = {
   // Fetch MBS Commentary
   async getMBSCommentary() {
@@ -242,5 +249,18 @@ export const contentService = {
       console.error('Error fetching trending articles:', error);
       throw error;
     }
+  },
+
+  getMortgageTerms: async (): Promise<MortgageTerm[]> => {
+    const { data, error } = await supabase
+      .from('mortgage_terms')
+      .select('*');
+
+    if (error) {
+      console.error('Error fetching mortgage terms:', error);
+      throw error;
+    }
+
+    return data || [];
   },
 };

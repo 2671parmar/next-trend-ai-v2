@@ -11,78 +11,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import TextEditor from '@/components/TextEditor';
 import { contentService } from '@/lib/services/contentService';
-import { type MBSArticle } from '@/lib/services/contentService';
+import { type MBSArticle, type MortgageTerm } from '@/lib/services/contentService';
 import TypewriterText from '@/components/TypewriterText';
-
-const mortgageTerms = [
-  "Adjustable-Rate Mortgage (ARM)",
-  "Amortization",
-  "Annual Percentage Rate (APR)",
-  "Appraisal",
-  "Balloon Mortgage",
-  "Borrower",
-  "Broker",
-  "Closing Costs",
-  "Co-Borrower",
-  "Collateral",
-  "Conforming Loan",
-  "Conventional Loan",
-  "Credit Score",
-  "Debt-to-Income Ratio (DTI)",
-  "Default",
-  "Down Payment",
-  "Earnest Money Deposit",
-  "Equity",
-  "Escrow",
-  "Fannie Mae (FNMA)",
-  "FHA Loan",
-  "Fixed-Rate Mortgage",
-  "Foreclosure",
-  "Freddie Mac (FHLMC)",
-  "Good Faith Estimate (GFE)",
-  "Government-Backed Loan",
-  "Hard Money Loan",
-  "Hazard Insurance",
-  "Home Equity Line of Credit (HELOC)",
-  "Homeowners Association (HOA) Fees",
-  "Homeowners Insurance",
-  "Housing Ratio",
-  "Interest Rate",
-  "Jumbo Loan",
-  "Lender",
-  "Lien",
-  "Loan Estimate (LE)",
-  "Loan-to-Value Ratio (LTV)",
-  "Lock-In Rate",
-  "Margin (for ARMs)",
-  "Maturity Date",
-  "Mortgage",
-  "Mortgage Banker",
-  "Mortgage Broker",
-  "Mortgage Insurance (MI)",
-  "Mortgage Note",
-  "Mortgage Underwriting",
-  "Negative Amortization",
-  "Non-Conforming Loan",
-  "Origination Fee",
-  "Pre-Approval",
-  "Private Mortgage Insurance (PMI)",
-  "Rate Lock",
-  "Refinance",
-  "Reverse Mortgage",
-  "Title Insurance",
-  "VA Loan",
-  "Balloon Payment",
-  "Cash-Out Refinance",
-  "Escrow Account",
-  "Forbearance",
-  "Loan Modification",
-  "Construction Loan",
-  "Discount Points",
-  "Gift Funds",
-  "Home Inspection",
-  "Interest-Only Loan"
-];
 
 const contentPrompts = [
   { headline: "What's the most important mortgage term for your clients?", hook: "Understanding this term can help them make better decisions when financing their homes." },
@@ -136,17 +66,24 @@ const generateNewsFeedData = async (option: string) => {
   }
   
   if (option === 'general') {
-    const shuffled = [...mortgageTerms].sort(() => 0.5 - Math.random());
-    const selectedTerms = shuffled.slice(0, 25);
-    
-    return selectedTerms.map((term, index) => ({
-      id: index + 1,
-      category: 'Term',
-      date: new Date().toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' }),
-      title: term,
-      content: `Description for ${term} will appear here when you generate content.`,
-      isGenerating: false,
-    }));
+    try {
+      const terms = await contentService.getMortgageTerms();
+      const shuffled = [...terms].sort(() => 0.5 - Math.random());
+      const selectedTerms = shuffled.slice(0, 25);
+      
+      return selectedTerms.map((term, index) => ({
+        id: index + 1,
+        category: 'Term',
+        date: new Date().toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' }),
+        title: term.term,
+        content: term.definition,
+        mortgage_relevance: term.mortgage_relevance,
+        isGenerating: false,
+      }));
+    } catch (error) {
+      console.error('Error fetching mortgage terms:', error);
+      throw error;
+    }
   }
   
   return [];
@@ -515,14 +452,14 @@ const ContentEditor: React.FC = () => {
     setSelectedArticle({
       ...article,
       description: article.content,
-      content: `Generate comprehensive, expert-level content about the mortgage term: ${article.title}. Include its definition, importance, and how it affects mortgage decisions.`
+      content: `Term: ${article.title}\n\nDefinition: ${article.content}\n\nMortgage Relevance: ${article.mortgage_relevance}\n\nGenerate comprehensive, expert-level content about this mortgage term. Include its definition, importance, and how it affects mortgage decisions.`
     });
     setShowEditor(true);
     setGeneratedContents([]);
     // Set the initial content in the editor
     setGeneratedContents([{ 
       type: 'Original Article',
-      content: `${article.title}\n\n${article.content}`
+      content: `${article.title}\n\n${article.content}\n\n${article.mortgage_relevance}`
     }]);
   };
   
