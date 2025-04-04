@@ -358,17 +358,31 @@ const ContentEditor: React.FC = () => {
         { type: 'SMS Broadcast', description: 'Concise, CTA-Driven' }
       ];
       
+      // Initialize all content types with loading state
+      setGeneratedContents(contentTypes.map(type => ({
+        type: type.type,
+        content: '',
+        isGenerating: true
+      })));
+      
       const newContents = [];
       
-      for (const { type, description } of contentTypes) {
+      // Generate content for each type sequentially
+      for (const [index, { type, description }] of contentTypes.entries()) {
         const prompt = `Generate a ${type} (${description}) for this custom content:\n\nContent: ${customContent.content}`;
         const result = await contentService.generateContent(prompt);
-        newContents.push({ type, content: result });
+        
+        setGeneratedContents(prev => {
+          const updated = [...prev];
+          updated[index] = {
+            type,
+            content: result,
+            isGenerating: false
+          };
+          return updated;
+        });
       }
 
-      // Update the generated contents
-      setGeneratedContents(newContents);
-      
       // Add the message to chat history
       const userMessage: ChatMessage = {
         role: 'user',
