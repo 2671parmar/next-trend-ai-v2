@@ -452,7 +452,7 @@ const ContentEditor: React.FC = () => {
     setSelectedArticle({
       ...article,
       description: article.content,
-      content: `Term: ${article.title}\n\nDefinition: ${article.content}\n\nMortgage Relevance: ${article.mortgage_relevance}\n\nGenerate comprehensive, expert-level content about this mortgage term. Include its definition, importance, and how it affects mortgage decisions.`
+      content: `${article.title}\n\n${article.content}\n\n${article.mortgage_relevance}\n\nGenerate comprehensive, expert-level content about this mortgage term. Include its definition, importance, and how it affects mortgage decisions.`
     });
     setShowEditor(true);
     setGeneratedContents([]);
@@ -562,6 +562,13 @@ const ContentEditor: React.FC = () => {
                       <TextEditor
                         content={selectedArticle?.content || ''}
                         onContentChange={(value) => {
+                          // Update the selected article content
+                          setSelectedArticle(prev => prev ? {
+                            ...prev,
+                            content: value
+                          } : null);
+                          
+                          // Update the generated contents
                           setGeneratedContents(prev => {
                             const updated = prev.map(c => 
                               c.type === 'Original Article' 
@@ -661,6 +668,13 @@ const ContentEditor: React.FC = () => {
                       <TextEditor
                         content={selectedArticle?.content || ''}
                         onContentChange={(value) => {
+                          // Update the selected article content
+                          setSelectedArticle(prev => prev ? {
+                            ...prev,
+                            content: value
+                          } : null);
+                          
+                          // Update the generated contents
                           setGeneratedContents(prev => {
                             const updated = prev.map(c => 
                               c.type === 'Original Article' 
