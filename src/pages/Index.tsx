@@ -37,7 +37,7 @@ const Index = () => {
       <Features />
       
       {/* Added Pricing component here */}
-      <Pricing />
+      {/* <Pricing /> */}
       
       {/* CTA Section */}
       <section className="py-20 px-6 bg-gradient-to-br from-nextrend-500 to-nextrend-700 text-white">
