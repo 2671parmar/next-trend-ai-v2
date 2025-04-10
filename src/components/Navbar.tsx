@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
@@ -44,7 +43,6 @@ const Navbar: React.FC = () => {
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center space-x-8">
           <NavLink to="/" current={location.pathname === "/"}>Home</NavLink>
-          <NavLink to="/dashboard" current={location.pathname === "/dashboard"}>Dashboard</NavLink>
           <Link 
             to="/login" 
             className="button-hover px-5 py-2 rounded-lg bg-nextrend-500 text-white font-medium"
@@ -73,9 +71,6 @@ const Navbar: React.FC = () => {
           <div className="flex flex-col space-y-4 p-2">
             <MobileNavLink to="/" onClick={() => setIsMobileMenuOpen(false)}>
               Home
-            </MobileNavLink>
-            <MobileNavLink to="/dashboard" onClick={() => setIsMobileMenuOpen(false)}>
-              Dashboard
             </MobileNavLink>
             <Link 
               to="/login"
