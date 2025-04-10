@@ -7,22 +7,31 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from 'sonner';
+import Navbar from '@/components/Navbar';
+import { supabase } from '@/lib/supabase';
 
 export default function Profile() {
   const { profile, updateProfile } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    full_name: profile?.full_name || '',
-    company_name: profile?.company_name || '',
+    name: profile?.full_name || '',
     email: profile?.email || '',
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+
+  const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      const { error } = await updateProfile(formData);
+      const { error } = await updateProfile({
+        full_name: formData.name,
+      });
       if (error) throw error;
       toast.success('Profile updated successfully');
     } catch (error: any) {
@@ -32,109 +41,145 @@ export default function Profile() {
     }
   };
 
-  return (
-    <div className="container mx-auto py-8">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {/* Left Column - Profile Info */}
-        <div className="md:col-span-1">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center space-x-4">
-                <Avatar className="h-20 w-20">
-                  <AvatarImage src={profile?.avatar_url} />
-                  <AvatarFallback>{profile?.full_name?.[0] || 'U'}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <CardTitle className="text-2xl">{profile?.full_name || 'User'}</CardTitle>
-                  <CardDescription>{profile?.company_name || 'No company'}</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <Label>Email</Label>
-                  <p className="text-sm text-gray-500">{profile?.email}</p>
-                </div>
-                <div>
-                  <Label>Member since</Label>
-                  <p className="text-sm text-gray-500">
-                    {new Date(profile?.created_at).toLocaleDateString()}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast.error('New passwords do not match');
+      return;
+    }
+    setIsLoading(true);
 
-        {/* Right Column - Settings */}
-        <div className="md:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Profile Settings</CardTitle>
-              <CardDescription>Update your profile information</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Tabs defaultValue="profile">
-                <TabsList>
-                  <TabsTrigger value="profile">Profile</TabsTrigger>
-                  <TabsTrigger value="brand">Brand Voice</TabsTrigger>
-                  <TabsTrigger value="subscription">Subscription</TabsTrigger>
-                </TabsList>
-                <TabsContent value="profile">
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="full_name">Full Name</Label>
-                      <Input
-                        id="full_name"
-                        value={formData.full_name}
-                        onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="company_name">Company Name</Label>
-                      <Input
-                        id="company_name"
-                        value={formData.company_name}
-                        onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
-                      />
-                    </div>
-                    <Button type="submit" disabled={isLoading}>
-                      {isLoading ? 'Saving...' : 'Save Changes'}
-                    </Button>
-                  </form>
-                </TabsContent>
-                <TabsContent value="brand">
-                  <div className="space-y-4">
-                    <p className="text-sm text-gray-500">
-                      Upload your brand voice document to help us understand your writing style.
-                    </p>
-                    <Button variant="outline">Upload Document</Button>
-                  </div>
-                </TabsContent>
-                <TabsContent value="subscription">
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <h3 className="font-medium">Current Plan</h3>
-                        <p className="text-sm text-gray-500">Free Plan</p>
-                      </div>
-                      <Button>Upgrade Plan</Button>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Monthly Usage</Label>
-                      <div className="h-2 bg-gray-200 rounded-full">
-                        <div className="h-2 bg-blue-600 rounded-full" style={{ width: '30%' }}></div>
-                      </div>
-                      <p className="text-sm text-gray-500">30 of 100 articles used this month</p>
-                    </div>
-                  </div>
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: passwordData.newPassword
+      });
+      if (error) throw error;
+      toast.success('Password updated successfully');
+      setPasswordData({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      });
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to update password');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
+      <Navbar />
+      <main className="container mx-auto px-4 pt-24">
+        <h1 className="text-3xl font-bold mb-2">Account Settings</h1>
+        <p className="text-gray-600 mb-8">Manage your account preferences and brand voice</p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Profile Information */}
+          <div className="space-y-6">
+            <h2 className="text-2xl font-semibold">Profile Information</h2>
+            <form onSubmit={handleProfileUpdate} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Name</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  value={formData.email}
+                  disabled
+                  className="bg-gray-100"
+                />
+                <p className="text-sm text-gray-500">Email cannot be changed</p>
+              </div>
+              <Button 
+                type="submit" 
+                className=""
+                disabled={isLoading}
+              >
+                Update Profile
+              </Button>
+            </form>
+
+            {/* Change Password */}
+            <div className="pt-6">
+              <h2 className="text-2xl font-semibold mb-4">Change Password</h2>
+              <form onSubmit={handlePasswordChange} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="currentPassword">Current Password</Label>
+                  <Input
+                    id="currentPassword"
+                    type="password"
+                    value={passwordData.currentPassword}
+                    onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="newPassword">New Password</Label>
+                  <Input
+                    id="newPassword"
+                    type="password"
+                    value={passwordData.newPassword}
+                    onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    value={passwordData.confirmPassword}
+                    onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                    required
+                  />
+                </div>
+                <Button 
+                  type="submit" 
+                  className=""
+                  disabled={isLoading}
+                >
+                  Change Password
+                </Button>
+              </form>
+            </div>
+          </div>
+
+          {/* Brand Voice */}
+          <div className="space-y-6">
+            <h2 className="text-2xl font-semibold">Brand Voice</h2>
+            <p className="text-gray-600">
+              Upload personal content (emails, blog posts, video transcripts) to define your brand voice. 
+              This helps us generate content that matches your style.
+            </p>
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+              <div className="flex flex-col items-center justify-center">
+                <div className="bg-blue-50 rounded-full p-3 mb-4">
+                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                </div>
+                <p className="text-lg font-medium">Click to upload a file</p>
+                <p className="text-sm text-gray-500 mt-1">PDF, Word, or TXT (max 10MB)</p>
+              </div>
+            </div>
+            <Button className="w-full">
+              Upload File
+            </Button>
+
+            <div className="mt-8">
+              <h3 className="text-lg font-medium mb-4">Uploaded Files</h3>
+              <p className="text-gray-600">No files uploaded yet.</p>
+            </div>
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 } 

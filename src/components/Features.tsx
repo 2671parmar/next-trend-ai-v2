@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -8,9 +7,9 @@ const Features = () => {
   const navigate = useNavigate();
   
   return (
-    <section id="features" className="py-20 px-6 bg-white">
+    <section className="py-20 px-6 bg-white">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center max-w-3xl mx-auto mb-16">
+        <div id="features" className="text-center max-w-3xl mx-auto mb-16">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -75,6 +74,7 @@ const Features = () => {
         </div>
         
         <motion.div
+          id="services"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
