@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,22 +11,27 @@ import { ArrowLeft } from 'lucide-react';
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const { signIn } = useAuth();
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { signIn } = useAuth();
+
+  const from = location.state?.from?.pathname || '/dashboard';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setLoading(true);
 
     try {
       const { error } = await signIn(email, password);
       if (error) throw error;
-      navigate('/dashboard');
+
+      toast.success('Logged in successfully');
+      navigate(from, { replace: true });
     } catch (error: any) {
       toast.error(error.message || 'Failed to sign in');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
@@ -74,8 +79,8 @@ export default function Login() {
               </div>
             </CardContent>
             <CardFooter className="flex flex-col space-y-4">
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? 'Signing in...' : 'Sign in'}
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? 'Signing in...' : 'Sign in'}
               </Button>
               <div className="text-center text-sm text-gray-600">
                 Don't have an account?{' '}

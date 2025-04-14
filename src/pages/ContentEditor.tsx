@@ -13,6 +13,8 @@ import TextEditor from '@/components/TextEditor';
 import { contentService } from '@/lib/services/contentService';
 import { type MBSArticle, type MortgageTerm } from '@/lib/services/contentService';
 import TypewriterText from '@/components/TypewriterText';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 
 const contentPrompts = [
   { headline: "What's the most important mortgage term for your clients?", hook: "Understanding this term can help them make better decisions when financing their homes." },
@@ -113,6 +115,7 @@ const ITEMS_PER_PAGE = 12;
 const ContentEditor: React.FC = () => {
   const { option } = useParams<{ option: string }>();
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   
   const [newsFeed, setNewsFeed] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState('all');
@@ -130,7 +133,7 @@ const ContentEditor: React.FC = () => {
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [isRendered, setIsRendered] = useState(false);
   const [selectedPrompt, setSelectedPrompt] = useState(contentPrompts[Math.floor(Math.random() * contentPrompts.length)]);
-
+  
   // Reset pagination when changing tabs or options
   useEffect(() => {
     setCurrentPage(1);
@@ -149,7 +152,12 @@ const ContentEditor: React.FC = () => {
   };
   
   useEffect(() => {
-    if (option) {
+    if (option && !authLoading) {
+      if (!user) {
+        navigate('/login');
+        return;
+      }
+
       const loadData = async () => {
         setIsLoading(true);
         setIsDataLoaded(false);
@@ -158,34 +166,34 @@ const ContentEditor: React.FC = () => {
         try {
           const data = await generateNewsFeedData(option);
           setNewsFeed(data);
-      setSelectedArticle(null);
-      setShowEditor(false);
+          setSelectedArticle(null);
+          setShowEditor(false);
           setGeneratedContents([]);
       
-      if (option === 'custom' && chatMessages.length === 0) {
-        setChatMessages([
-          {
-            role: 'assistant',
-            content: 'Example Idea:',
-            timestamp: new Date()
+          if (option === 'custom' && chatMessages.length === 0) {
+            setChatMessages([
+              {
+                role: 'assistant',
+                content: 'Example Idea:',
+                timestamp: new Date()
+              }
+            ]);
           }
-        ]);
-      }
         } catch (error) {
           console.error('Error loading data:', error);
           setError('Failed to load data. Please try again.');
+          toast.error('Failed to load content. Please try again.');
         } finally {
-          // Set data loaded first
           setIsDataLoaded(true);
-          // Then wait for next render cycle to set rendered state
           requestAnimationFrame(() => {
             setIsRendered(true);
           });
+          setIsLoading(false);
         }
       };
       loadData();
     }
-  }, [option]);
+  }, [option, user, authLoading, navigate]);
   
   const handleGenerateContent = async () => {
     if (!selectedArticle) return;
