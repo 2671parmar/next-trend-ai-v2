@@ -222,7 +222,8 @@ const ContentEditor: React.FC = () => {
         { type: 'Email', description: 'Client-Focused, Trust-Building' },
         { type: 'Social Post', description: 'Engaging & Value-Driven' },
         { type: 'X/Twitter Post', description: 'Quick, Authority Take' },
-        { type: 'SMS Broadcast', description: 'Concise, CTA-Driven' }
+        { type: 'SMS Broadcast - For Clients', description: 'Concise, CTA-Driven' },
+        { type: 'SMS Broadcast - For Realtor Partners', description: 'Concise, Informational, Value Driven' }
       ];
 
       // Initialize all content types with loading state
@@ -321,7 +322,8 @@ const ContentEditor: React.FC = () => {
         { type: 'Email', description: 'Client-Focused, Trust-Building' },
         { type: 'Social Post', description: 'Engaging & Value-Driven' },
         { type: 'X/Twitter Post', description: 'Quick, Authority Take' },
-        { type: 'SMS Broadcast', description: 'Concise, CTA-Driven' }
+        { type: 'SMS Broadcast - For Clients', description: 'Concise, CTA-Driven' },
+        { type: 'SMS Broadcast - For Realtor Partners', description: 'Concise, Informational, Value Driven' }
       ];
       
       // Initialize all content types with loading state
