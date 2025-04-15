@@ -22,17 +22,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [subscription, setSubscription] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const isUpdating = useRef(false);
-  const sessionCheckRef = useRef<number | null>(null);
 
   const updateAuthState = async (session: any) => {
     if (isUpdating.current) {
-      console.log('Update already in progress, skipping');
       return;
     }
 
     isUpdating.current = true;
-    console.log('Updating auth state, session:', session?.user?.id);
-
     try {
       setUser(session?.user ?? null);
       if (session?.user) {
@@ -54,27 +50,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setLoading(false);
       isUpdating.current = false;
-      console.log('Auth state update completed, loading:', loading);
-    }
-  };
-
-  const checkSession = async () => {
-    try {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) throw error;
-      
-      if (session?.user?.id !== user?.id) {
-        console.log('Session changed, updating state');
-        await updateAuthState(session);
-      }
-    } catch (error) {
-      console.error('Error checking session:', error);
     }
   };
 
   useEffect(() => {
     const initializeAuth = async () => {
-      console.log('Initializing auth...');
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) throw error;
@@ -90,24 +70,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     initializeAuth();
 
-    // Set up periodic session check
-    sessionCheckRef.current = window.setInterval(checkSession, 5000);
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, session?.user?.id);
       await updateAuthState(session);
     });
 
     return () => {
       subscription.unsubscribe();
-      if (sessionCheckRef.current) {
-        clearInterval(sessionCheckRef.current);
-      }
     };
   }, []);
 
   async function fetchProfile(userId: string) {
-    console.log('Fetching profile for user:', userId);
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -124,7 +96,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function fetchSubscription(userId: string) {
-    console.log('Fetching subscription for user:', userId);
     try {
       const { data, error } = await supabase
         .from('subscriptions')
@@ -141,7 +112,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signIn = async (email: string, password: string) => {
-    console.log('Signing in with:', email);
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (!error) {
@@ -166,23 +136,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
-    console.log('Signing out...');
     try {
-      // Clear local state first
       setUser(null);
       setProfile(null);
       setSubscription(null);
       setLoading(false);
 
-      // Sign out from Supabase
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
 
-      // Clear session storage
       sessionStorage.clear();
       localStorage.clear();
 
-      // Force reload all tabs
       window.location.href = '/';
     } catch (error) {
       console.error('Error signing out:', error);

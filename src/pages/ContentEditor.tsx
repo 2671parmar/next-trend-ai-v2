@@ -151,49 +151,56 @@ const ContentEditor: React.FC = () => {
     setCurrentPage(1);
   };
   
-  useEffect(() => {
-    if (option && !authLoading) {
-      if (!user) {
-        navigate('/login');
-        return;
-      }
+  const loadData = async () => {
+    if (!option || !user || authLoading) {
+      return;
+    }
 
-      const loadData = async () => {
-        setIsLoading(true);
-        setIsDataLoaded(false);
-        setIsRendered(false);
-        setError('');
-        try {
-          const data = await generateNewsFeedData(option);
-          setNewsFeed(data);
-          setSelectedArticle(null);
-          setShowEditor(false);
-          setGeneratedContents([]);
-      
-          if (option === 'custom' && chatMessages.length === 0) {
-            setChatMessages([
-              {
-                role: 'assistant',
-                content: 'Example Idea:',
-                timestamp: new Date()
-              }
-            ]);
+    setIsLoading(true);
+    setIsDataLoaded(false);
+    setIsRendered(false);
+    setError('');
+    
+    try {
+      const data = await generateNewsFeedData(option);
+      setNewsFeed(data);
+      setSelectedArticle(null);
+      setShowEditor(false);
+      setGeneratedContents([]);
+  
+      if (option === 'custom' && chatMessages.length === 0) {
+        setChatMessages([
+          {
+            role: 'assistant',
+            content: 'Example Idea:',
+            timestamp: new Date()
           }
-        } catch (error) {
-          console.error('Error loading data:', error);
-          setError('Failed to load data. Please try again.');
-          toast.error('Failed to load content. Please try again.');
-        } finally {
-          setIsDataLoaded(true);
-          requestAnimationFrame(() => {
-            setIsRendered(true);
-          });
-          setIsLoading(false);
-        }
-      };
+        ]);
+      }
+    } catch (error) {
+      console.error('Error loading data:', error);
+      setError('Failed to load data. Please try again.');
+      toast.error('Failed to load content. Please try again.');
+    } finally {
+      setIsDataLoaded(true);
+      requestAnimationFrame(() => {
+        setIsRendered(true);
+      });
+      setIsLoading(false);
+    }
+  };
+  
+  // Load data on initial mount and when option changes
+  useEffect(() => {
+    loadData();
+  }, [option, user, authLoading]);
+
+  // Reload data when returning from editor
+  useEffect(() => {
+    if (!showEditor && selectedArticle === null && newsFeed.length === 0) {
       loadData();
     }
-  }, [option, user, authLoading, navigate]);
+  }, [showEditor, selectedArticle, newsFeed.length]);
   
   const handleGenerateContent = async () => {
     if (!selectedArticle) return;
@@ -272,7 +279,7 @@ const ContentEditor: React.FC = () => {
               content: fullArticle.content
             });
           }
-      } else {
+        } else {
           setSelectedArticle({
             ...article,
             description: article.content
@@ -471,6 +478,12 @@ const ContentEditor: React.FC = () => {
     }]);
   };
   
+  const handleBackToArticles = () => {
+    setShowEditor(false);
+    setSelectedArticle(null);
+    setGeneratedContents([]);
+  };
+  
   if (!option || !optionDetails[option as keyof typeof optionDetails]) {
     return <div>Invalid option</div>;
   }
@@ -498,7 +511,7 @@ const ContentEditor: React.FC = () => {
               <Button 
                 variant="ghost" 
                 className="flex items-center text-gray-600"
-                onClick={() => setShowEditor(false)}
+                onClick={handleBackToArticles}
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to {option === 'general' ? 'General Mortgage' : title}
