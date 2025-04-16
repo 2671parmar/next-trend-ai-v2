@@ -209,7 +209,7 @@ export const contentService = {
         'Authorization': `Bearer ${OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'chatgpt-4o-latest',
+        model: 'gpt-4o',
         messages: [
           {
             role: 'system',
@@ -220,7 +220,7 @@ export const contentService = {
             content: content
           }
         ],
-        temperature: 0.3,
+        temperature: 0.7,
         max_tokens: 4000, // Increased to handle the larger response
       }),
     });

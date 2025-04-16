@@ -195,13 +195,6 @@ const ContentEditor: React.FC = () => {
     loadData();
   }, [option, user, authLoading]);
 
-  // Reload data when returning from editor
-  useEffect(() => {
-    if (!showEditor && selectedArticle === null && newsFeed.length === 0) {
-      loadData();
-    }
-  }, [showEditor, selectedArticle, newsFeed.length]);
-  
   const handleGenerateContent = async () => {
     if (!selectedArticle) return;
     
@@ -254,9 +247,8 @@ const ContentEditor: React.FC = () => {
       setIsGenerating(false);
     }
   };
-  
+
   const handleReadArticle = (articleId: number) => {
-    console.log(`Opening full article with ID: ${articleId}`);
     setNewsFeed(prev => 
       prev.map(article => 
         article.id === articleId 
@@ -480,12 +472,6 @@ const ContentEditor: React.FC = () => {
     }]);
   };
   
-  const handleBackToArticles = () => {
-    setShowEditor(false);
-    setSelectedArticle(null);
-    setGeneratedContents([]);
-  };
-  
   if (!option || !optionDetails[option as keyof typeof optionDetails]) {
     return <div>Invalid option</div>;
   }
@@ -513,16 +499,17 @@ const ContentEditor: React.FC = () => {
               <Button 
                 variant="ghost" 
                 className="flex items-center text-gray-600"
-                onClick={handleBackToArticles}
+                onClick={() => navigate('/dashboard')}
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to {option === 'general' ? 'General Mortgage' : title}
+                Back to Dashboard
               </Button>
               
               <Button 
                 variant="default" 
-                className="bg-green-500 hover:bg-green-600"
+                className="bg-nextrend-500 hover:bg-nextrend-600"
                 onClick={handleSave}
+                disabled={!generatedContents.length}
               >
                 <Save className="w-4 h-4 mr-2" />
                 Save Content
