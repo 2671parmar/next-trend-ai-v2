@@ -1,3 +1,4 @@
+// frontend/src/contexts/AuthContext.tsx
 import { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { User, AuthError } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
@@ -20,7 +21,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<any | null>(null);
   const [subscription, setSubscription] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
-  const isUpdating = useRef(false); // Prevent concurrent updates
+  const isUpdating = useRef(false);
 
   useEffect(() => {
     const initializeAuth = async () => {
@@ -55,34 +56,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     initializeAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, session?.user?.id);
+    // Real-time auth state subscription
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state changed (real-time):', event, session?.user?.id);
       if (isUpdating.current) return;
 
       isUpdating.current = true;
-      try {
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          await Promise.all([
-            fetchProfile(session.user.id),
-            fetchSubscription(session.user.id),
-          ]);
-        } else {
-          setProfile(null);
-          setSubscription(null);
-        }
-      } catch (error) {
-        console.error('Error updating auth state:', error);
-        setUser(null);
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        Promise.all([
+          fetchProfile(session.user.id),
+          fetchSubscription(session.user.id),
+        ]).catch((error) => console.error('Error fetching profile/subscription:', error));
+      } else {
         setProfile(null);
         setSubscription(null);
-      } finally {
-        setLoading(false);
-        isUpdating.current = false;
       }
+      isUpdating.current = false;
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
   async function fetchProfile(userId: string) {
@@ -126,7 +121,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (email: string, password: string) => {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      return { error };
+      if (error) throw error;
+      return { error: null };
     } catch (error) {
       console.error('Error signing in:', error);
       return { error: error as AuthError };
@@ -151,7 +147,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setProfile(null);
       setSubscription(null);
       setLoading(false);
-      window.location.href = '/'; // Force reload to sync tabs
+      window.location.href = '/';
     } catch (error) {
       console.error('Error signing out:', error);
       throw error;

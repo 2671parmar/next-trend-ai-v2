@@ -1,3 +1,4 @@
+// frontend/src/pages/ContentEditor.tsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -106,7 +107,7 @@ const ITEMS_PER_PAGE = 12;
 const ContentEditor: React.FC = () => {
   const { option } = useParams<{ option: string }>();
   const navigate = useNavigate();
-  const { user, loading: authLoading, profile, subscription } = useAuth(); // Added profile and subscription
+  const { user, loading: authLoading, profile, subscription } = useAuth();
   
   const [newsFeed, setNewsFeed] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState('all');
@@ -173,13 +174,23 @@ const ContentEditor: React.FC = () => {
     }
   };
   
-  // Load data when auth, profile, or subscription changes
+  // Load data on auth or focus change
   useEffect(() => {
     if (!authLoading && user && (!profile || !subscription)) {
       loadData();
     } else if (!authLoading && user && profile && subscription) {
       loadData();
     }
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log('Tab regained focus, reloading data');
+        loadData();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [option, authLoading, user, profile, subscription]);
 
   const handleGenerateContent = async () => {
@@ -441,7 +452,6 @@ const ContentEditor: React.FC = () => {
   const copyToClipboard = async (content: string) => {
     try {
       await navigator.clipboard.writeText(content);
-      // Add toast if desired
     } catch (err) {
       console.error('Failed to copy text:', err);
     }
