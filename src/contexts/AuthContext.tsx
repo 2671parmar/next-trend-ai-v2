@@ -1,4 +1,3 @@
-// frontend/src/contexts/AuthContext.tsx
 import { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { User, AuthError } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
@@ -21,65 +20,73 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<any | null>(null);
   const [subscription, setSubscription] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
-  const isUpdating = useRef(false);
-
-  const updateAuthState = async (session: any) => {
-    if (isUpdating.current) {
-      return;
-    }
-
-    isUpdating.current = true;
-    try {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        const [profileData, subscriptionData] = await Promise.allSettled([
-          fetchProfile(session.user.id),
-          fetchSubscription(session.user.id),
-        ]);
-        setProfile(profileData.status === 'fulfilled' ? profileData.value : null);
-        setSubscription(subscriptionData.status === 'fulfilled' ? subscriptionData.value : null);
-      } else {
-        setProfile(null);
-        setSubscription(null);
-      }
-    } catch (error) {
-      console.error('Error updating auth state:', error);
-      setUser(null);
-      setProfile(null);
-      setSubscription(null);
-    } finally {
-      setLoading(false);
-      isUpdating.current = false;
-    }
-  };
+  const isUpdating = useRef(false); // Prevent concurrent updates
 
   useEffect(() => {
     const initializeAuth = async () => {
+      console.log('Initializing auth...');
+      if (isUpdating.current) return;
+
+      isUpdating.current = true;
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) throw error;
-        await updateAuthState(session);
+
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          await Promise.all([
+            fetchProfile(session.user.id),
+            fetchSubscription(session.user.id),
+          ]);
+        } else {
+          setProfile(null);
+          setSubscription(null);
+        }
       } catch (error) {
         console.error('Error initializing auth:', error);
         setUser(null);
         setProfile(null);
         setSubscription(null);
+      } finally {
         setLoading(false);
+        isUpdating.current = false;
       }
     };
 
     initializeAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      await updateAuthState(session);
+      console.log('Auth state changed:', event, session?.user?.id);
+      if (isUpdating.current) return;
+
+      isUpdating.current = true;
+      try {
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          await Promise.all([
+            fetchProfile(session.user.id),
+            fetchSubscription(session.user.id),
+          ]);
+        } else {
+          setProfile(null);
+          setSubscription(null);
+        }
+      } catch (error) {
+        console.error('Error updating auth state:', error);
+        setUser(null);
+        setProfile(null);
+        setSubscription(null);
+      } finally {
+        setLoading(false);
+        isUpdating.current = false;
+      }
     });
 
-    return () => {
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
   async function fetchProfile(userId: string) {
+    console.log('Fetching profile for user:', userId);
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -87,15 +94,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .eq('id', userId)
         .single();
 
-      if (error) throw error;
-      return data || null;
+      if (error) {
+        console.error('Error fetching profile:', error);
+        return;
+      }
+      setProfile(data);
     } catch (error) {
       console.error('Error fetching profile:', error);
-      return null;
     }
   }
 
   async function fetchSubscription(userId: string) {
+    console.log('Fetching subscription for user:', userId);
     try {
       const { data, error } = await supabase
         .from('subscriptions')
@@ -103,21 +113,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .eq('user_id', userId)
         .single();
 
-      if (error) throw error;
-      return data || null;
+      if (error) {
+        console.error('Error fetching subscription:', error);
+        return;
+      }
+      setSubscription(data);
     } catch (error) {
       console.error('Error fetching subscription:', error);
-      return null;
     }
   }
 
   const signIn = async (email: string, password: string) => {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (!error) {
-        const { data: { session } } = await supabase.auth.getSession();
-        await updateAuthState(session);
-      }
       return { error };
     } catch (error) {
       console.error('Error signing in:', error);
@@ -136,19 +144,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
+    console.log('Signing out...');
     try {
+      await supabase.auth.signOut();
       setUser(null);
       setProfile(null);
       setSubscription(null);
       setLoading(false);
-
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-
-      sessionStorage.clear();
-      localStorage.clear();
-
-      window.location.href = '/';
+      window.location.href = '/'; // Force reload to sync tabs
     } catch (error) {
       console.error('Error signing out:', error);
       throw error;

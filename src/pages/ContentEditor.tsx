@@ -29,11 +29,7 @@ const generateNewsFeedData = async (option: string) => {
       return articles.map(article => ({
         id: article.id,
         category: article.category,
-        date: new Date(article.date).toLocaleDateString('en-US', { 
-          month: 'numeric', 
-          day: 'numeric', 
-          year: 'numeric' 
-        }),
+        date: new Date(article.date).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' }),
         title: article.title,
         content: article.description,
         url: article.url,
@@ -51,11 +47,7 @@ const generateNewsFeedData = async (option: string) => {
       return articles.map(article => ({
         id: article.id,
         category: article.category || 'Mortgage',
-        date: new Date(article.date).toLocaleDateString('en-US', { 
-          month: 'numeric', 
-          day: 'numeric', 
-          year: 'numeric' 
-        }),
+        date: new Date(article.date).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' }),
         title: article.title,
         content: article.content,
         url: article.url,
@@ -71,21 +63,20 @@ const generateNewsFeedData = async (option: string) => {
     try {
       const terms = await contentService.getMortgageTerms();
       const shuffled = [...terms].sort(() => 0.5 - Math.random());
-    const selectedTerms = shuffled.slice(0, 25);
-    
-    return selectedTerms.map((term, index) => ({
-      id: index + 1,
-      category: 'Term',
+      const selectedTerms = shuffled.slice(0, 25);
+      return selectedTerms.map((term, index) => ({
+        id: index + 1,
+        category: 'Term',
         date: new Date().toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' }),
         title: term.term,
         content: term.definition,
         mortgage_relevance: term.mortgage_relevance,
-      isGenerating: false,
-    }));
+        isGenerating: false,
+      }));
     } catch (error) {
       console.error('Error fetching mortgage terms:', error);
       throw error;
-  }
+    }
   }
   
   return [];
@@ -115,12 +106,11 @@ const ITEMS_PER_PAGE = 12;
 const ContentEditor: React.FC = () => {
   const { option } = useParams<{ option: string }>();
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, profile, subscription } = useAuth(); // Added profile and subscription
   
   const [newsFeed, setNewsFeed] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
-  
   const [userInput, setUserInput] = useState('');
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -130,8 +120,6 @@ const ContentEditor: React.FC = () => {
   const [showEditor, setShowEditor] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>('');
-  const [isDataLoaded, setIsDataLoaded] = useState(false);
-  const [isRendered, setIsRendered] = useState(false);
   const [selectedPrompt, setSelectedPrompt] = useState(contentPrompts[Math.floor(Math.random() * contentPrompts.length)]);
   
   // Reset pagination when changing tabs or options
@@ -150,15 +138,14 @@ const ContentEditor: React.FC = () => {
     setActiveTab(value);
     setCurrentPage(1);
   };
-  
+
   const loadData = async () => {
-    if (!option || !user || authLoading) {
+    if (!option || !user) {
+      setIsLoading(false);
       return;
     }
 
     setIsLoading(true);
-    setIsDataLoaded(false);
-    setIsRendered(false);
     setError('');
     
     try {
@@ -182,18 +169,18 @@ const ContentEditor: React.FC = () => {
       setError('Failed to load data. Please try again.');
       toast.error('Failed to load content. Please try again.');
     } finally {
-      setIsDataLoaded(true);
-      requestAnimationFrame(() => {
-        setIsRendered(true);
-      });
       setIsLoading(false);
     }
   };
   
-  // Load data on initial mount and when option changes
+  // Load data when auth, profile, or subscription changes
   useEffect(() => {
-    loadData();
-  }, [option, user, authLoading]);
+    if (!authLoading && user && (!profile || !subscription)) {
+      loadData();
+    } else if (!authLoading && user && profile && subscription) {
+      loadData();
+    }
+  }, [option, authLoading, user, profile, subscription]);
 
   const handleGenerateContent = async () => {
     if (!selectedArticle) return;
@@ -219,14 +206,12 @@ const ContentEditor: React.FC = () => {
         { type: 'SMS Broadcast - For Realtor Partners', description: 'Concise, Informational, Value Driven' }
       ];
 
-      // Initialize all content types with loading state
       setGeneratedContents(contentTypes.map(type => ({
         type: type.type,
         content: '',
         isGenerating: true
       })));
 
-      // Generate content for each type sequentially
       for (const [index, { type, description }] of contentTypes.entries()) {
         const prompt = `Generate a ${type} (${description}) for this ${articleData.category} article:\n\nTitle: ${articleData.title}\n\nContent: ${articleData.content}`;
         const result = await contentService.generateContent(prompt);
@@ -247,22 +232,21 @@ const ContentEditor: React.FC = () => {
       setIsGenerating(false);
     }
   };
-
+  
   const handleReadArticle = (articleId: number) => {
     setNewsFeed(prev => 
       prev.map(article => 
-        article.id === articleId 
-          ? { ...article, isSelected: true }
-          : article
+        article.id === articleId ? { ...article, isSelected: true } : article
       )
     );
   };
 
   const handleUseArticle = async (articleId: number) => {
+    console.log('Using article:', articleId);
     const article = newsFeed.find(item => item.id === articleId);
     if (article) {
       try {
-        // Fetch full article content if it's an MBS article
+        setIsLoading(true);
         if (option === 'this-week' && article.url) {
           const fullArticle = await contentService.getMBSArticleContent(article.url);
           if (fullArticle) {
@@ -280,7 +264,6 @@ const ContentEditor: React.FC = () => {
         }
         setShowEditor(true);
         setGeneratedContents([]);
-        // Set the initial content in the editor
         setGeneratedContents([{ 
           type: 'Original Article',
           content: `${article.title}\n\n${article.content}`
@@ -288,7 +271,32 @@ const ContentEditor: React.FC = () => {
       } catch (error) {
         console.error('Error fetching article content:', error);
         setError('Failed to fetch article content');
+      } finally {
+        setIsLoading(false);
       }
+    }
+  };
+  
+  const handleUseGeneralTerm = async (article: any) => {
+    console.log('Using general term:', article.id);
+    try {
+      setIsLoading(true);
+      setSelectedArticle({
+        ...article,
+        description: article.content,
+        content: `${article.title}\n\n${article.content}\n\n${article.mortgage_relevance}\n\nGenerate comprehensive, expert-level content about this mortgage term. Include its definition, importance, and how it affects mortgage decisions.`
+      });
+      setShowEditor(true);
+      setGeneratedContents([]);
+      setGeneratedContents([{ 
+        type: 'Original Article',
+        content: `${article.title}\n\n${article.content}\n\n${article.mortgage_relevance}`
+      }]);
+    } catch (error) {
+      console.error('Error using general term:', error);
+      setError('Failed to load term content');
+    } finally {
+      setIsLoading(false);
     }
   };
   
@@ -299,14 +307,12 @@ const ContentEditor: React.FC = () => {
     setError('');
     
     try {
-      // Prepare the content for generation
       const customContent = {
         title: "Custom Content",
         content: userInput,
         category: "Custom"
       };
       
-      // Generate content for each type from contentService.ts
       const contentTypes = [
         { type: 'LinkedIn Post', description: 'Thought Leadership, Expert Take' },
         { type: 'Blog Post', description: 'Deep-Dive, SEO-Optimized' },
@@ -318,16 +324,12 @@ const ContentEditor: React.FC = () => {
         { type: 'SMS Broadcast - For Realtor Partners', description: 'Concise, Informational, Value Driven' }
       ];
       
-      // Initialize all content types with loading state
       setGeneratedContents(contentTypes.map(type => ({
         type: type.type,
         content: '',
         isGenerating: true
       })));
       
-      const newContents = [];
-      
-      // Generate content for each type sequentially
       for (const [index, { type, description }] of contentTypes.entries()) {
         const prompt = `Generate a ${type} (${description}) for this custom content:\n\nContent: ${customContent.content}`;
         const result = await contentService.generateContent(prompt);
@@ -343,22 +345,11 @@ const ContentEditor: React.FC = () => {
         });
       }
 
-      // Add the message to chat history
-    const userMessage: ChatMessage = {
-      role: 'user',
-      content: userInput,
-      timestamp: new Date()
-    };
-    
-      const assistantMessage: ChatMessage = {
-        role: 'assistant',
-        content: 'I have generated various content formats based on your input. You can find them below.',
-        timestamp: new Date()
-      };
+      const userMessage: ChatMessage = { role: 'user', content: userInput, timestamp: new Date() };
+      const assistantMessage: ChatMessage = { role: 'assistant', content: 'I have generated various content formats based on your input. You can find them below.', timestamp: new Date() };
       
       setChatMessages(prev => [...prev, userMessage, assistantMessage]);
       setUserInput('');
-      
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to generate content');
     } finally {
@@ -437,7 +428,6 @@ const ContentEditor: React.FC = () => {
     setIsLoading(true);
     setError('');
     try {
-      // Test with a sample mortgage topic
       const testContent = "Generate content about Fixed-Rate Mortgages and their benefits in today's market.";
       const result = await contentService.generateContent(testContent);
       setGeneratedContents([{ type: 'LinkedIn Post', content: result }]);
@@ -451,25 +441,10 @@ const ContentEditor: React.FC = () => {
   const copyToClipboard = async (content: string) => {
     try {
       await navigator.clipboard.writeText(content);
-      // You can add toast notification here if you want
+      // Add toast if desired
     } catch (err) {
-      console.error('Failed to copy text: ', err);
+      console.error('Failed to copy text:', err);
     }
-  };
-  
-  const handleUseGeneralTerm = async (article: any) => {
-    setSelectedArticle({
-      ...article,
-      description: article.content,
-      content: `${article.title}\n\n${article.content}\n\n${article.mortgage_relevance}\n\nGenerate comprehensive, expert-level content about this mortgage term. Include its definition, importance, and how it affects mortgage decisions.`
-    });
-    setShowEditor(true);
-    setGeneratedContents([]);
-    // Set the initial content in the editor
-    setGeneratedContents([{ 
-      type: 'Original Article',
-      content: `${article.title}\n\n${article.content}\n\n${article.mortgage_relevance}`
-    }]);
   };
   
   if (!option || !optionDetails[option as keyof typeof optionDetails]) {
@@ -488,7 +463,6 @@ const ContentEditor: React.FC = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
-        
         <main className="pt-24 pb-16 px-6">
           <div className="max-w-6xl mx-auto">
             <motion.div 
@@ -504,7 +478,6 @@ const ContentEditor: React.FC = () => {
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Dashboard
               </Button>
-              
               <Button 
                 variant="default" 
                 className="bg-nextrend-500 hover:bg-nextrend-600"
@@ -538,25 +511,24 @@ const ContentEditor: React.FC = () => {
             
             <div className="grid grid-cols-1 gap-6">
               {option === 'general' ? (
-                // For General Mortgage Terms
                 <>
-              {selectedArticle && (
-                <Card className="mb-4">
-                  <CardContent className="p-5">
-                    <div className="flex justify-between items-center mb-3">
-                      <Badge variant="outline" className="bg-nextrend-50 text-nextrend-500 hover:bg-nextrend-100">
-                        {selectedArticle.category}
-                      </Badge>
-                      <span className="text-sm text-gray-500">{selectedArticle.date}</span>
-                    </div>
-                    <h3 className="text-lg font-semibold mb-2">{selectedArticle.title}</h3>
+                  {selectedArticle && (
+                    <Card className="mb-4">
+                      <CardContent className="p-5">
+                        <div className="flex justify-between items-center mb-3">
+                          <Badge variant="outline" className="bg-nextrend-50 text-nextrend-500 hover:bg-nextrend-100">
+                            {selectedArticle.category}
+                          </Badge>
+                          <span className="text-sm text-gray-500">{selectedArticle.date}</span>
+                        </div>
+                        <h3 className="text-lg font-semibold mb-2">{selectedArticle.title}</h3>
                         <p className="text-gray-600 text-sm">{selectedArticle.description}</p>
-                  </CardContent>
-                </Card>
-              )}
-              
-              <Card>
-                <CardContent className="p-6">
+                      </CardContent>
+                    </Card>
+                  )}
+                  
+                  <Card>
+                    <CardContent className="p-6">
                       <div className="flex justify-end mb-4">
                         <Button
                           variant="outline"
@@ -569,21 +541,13 @@ const ContentEditor: React.FC = () => {
                           {isGenerating ? 'Generating...' : 'Generate Content'}
                         </Button>
                       </div>
-                  <TextEditor
+                      <TextEditor
                         content={selectedArticle?.content || ''}
                         onContentChange={(value) => {
-                          // Update the selected article content
-                          setSelectedArticle(prev => prev ? {
-                            ...prev,
-                            content: value
-                          } : null);
-                          
-                          // Update the generated contents
+                          setSelectedArticle(prev => prev ? { ...prev, content: value } : null);
                           setGeneratedContents(prev => {
                             const updated = prev.map(c => 
-                              c.type === 'Original Article' 
-                                ? { ...c, content: value }
-                                : c
+                              c.type === 'Original Article' ? { ...c, content: value } : c
                             );
                             if (!updated.find(c => c.type === 'Original Article')) {
                               updated.unshift({ type: 'Original Article', content: value });
@@ -591,58 +555,54 @@ const ContentEditor: React.FC = () => {
                             return updated;
                           });
                         }}
-                    loading={isGenerating}
+                        loading={isGenerating}
                         placeholder="Click 'Generate Content' to create social media posts..."
-                  />
-                </CardContent>
-              </Card>
+                      />
+                    </CardContent>
+                  </Card>
 
                   {generatedContents
                     .filter(content => content.type !== 'Original Article')
                     .map((content, index) => (
-                    <Card key={index} className="mt-6 overflow-hidden border-0 shadow-md hover:shadow-lg transition-shadow duration-200">
-                      <CardContent className="p-0">
-                        <div className="border-b border-gray-100 bg-gradient-to-r from-nextrend-50/50 to-white p-4 flex justify-between items-center">
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-nextrend-500"></div>
-                            <label className="font-medium text-gray-700">{content.type}</label>
-                            {content.isGenerating && (
-                              <RefreshCw className="w-4 h-4 text-nextrend-500 animate-spin ml-2" />
-                            )}
-                          </div>
-                          {!content.isGenerating && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => copyToClipboard(content.content)}
-                              className="hover:bg-nextrend-100/50"
-                            >
-                              <Copy className="w-4 h-4 text-gray-600" />
-                            </Button>
-                          )}
-                        </div>
-                        <div className="p-6 bg-white">
-                          <div className="prose max-w-none">
-                            <div className="text-gray-600 text-sm leading-relaxed">
-                              {content.isGenerating ? (
-                                <div className="flex items-center gap-2">
-                                  <span className="text-nextrend-500">Generating {content.type}...</span>
-                                </div>
-                              ) : (
-                                <TypewriterText 
-                                  content={content.content} 
-                                  speed={15}
-                                />
+                      <Card key={index} className="mt-6 overflow-hidden border-0 shadow-md hover:shadow-lg transition-shadow duration-200">
+                        <CardContent className="p-0">
+                          <div className="border-b border-gray-100 bg-gradient-to-r from-nextrend-50/50 to-white p-4 flex justify-between items-center">
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 rounded-full bg-nextrend-500"></div>
+                              <label className="font-medium text-gray-700">{content.type}</label>
+                              {content.isGenerating && (
+                                <RefreshCw className="w-4 h-4 text-nextrend-500 animate-spin ml-2" />
                               )}
                             </div>
+                            {!content.isGenerating && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => copyToClipboard(content.content)}
+                                className="hover:bg-nextrend-100/50"
+                              >
+                                <Copy className="w-4 h-4 text-gray-600" />
+                              </Button>
+                            )}
                           </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                          <div className="p-6 bg-white">
+                            <div className="prose max-w-none">
+                              <div className="text-gray-600 text-sm leading-relaxed">
+                                {content.isGenerating ? (
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-nextrend-500">Generating {content.type}...</span>
+                                  </div>
+                                ) : (
+                                  <TypewriterText content={content.content} speed={15} />
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
                 </>
               ) : (
-                // For MBS Commentary Today and Trending Topics
                 <>
                   {selectedArticle && (
                     <Card className="mb-4">
@@ -678,18 +638,10 @@ const ContentEditor: React.FC = () => {
                       <TextEditor
                         content={selectedArticle?.content || ''}
                         onContentChange={(value) => {
-                          // Update the selected article content
-                          setSelectedArticle(prev => prev ? {
-                            ...prev,
-                            content: value
-                          } : null);
-                          
-                          // Update the generated contents
+                          setSelectedArticle(prev => prev ? { ...prev, content: value } : null);
                           setGeneratedContents(prev => {
                             const updated = prev.map(c => 
-                              c.type === 'Original Article' 
-                                ? { ...c, content: value }
-                                : c
+                              c.type === 'Original Article' ? { ...c, content: value } : c
                             );
                             if (!updated.find(c => c.type === 'Original Article')) {
                               updated.unshift({ type: 'Original Article', content: value });
@@ -706,46 +658,43 @@ const ContentEditor: React.FC = () => {
                   {generatedContents
                     .filter(content => content.type !== 'Original Article')
                     .map((content, index) => (
-                    <Card key={index} className="mt-6 overflow-hidden border-0 shadow-md hover:shadow-lg transition-shadow duration-200">
-                      <CardContent className="p-0">
-                        <div className="border-b border-gray-100 bg-gradient-to-r from-nextrend-50/50 to-white p-4 flex justify-between items-center">
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-nextrend-500"></div>
-                            <label className="font-medium text-gray-700">{content.type}</label>
-                            {content.isGenerating && (
-                              <RefreshCw className="w-4 h-4 text-nextrend-500 animate-spin ml-2" />
-                            )}
-                          </div>
-                          {!content.isGenerating && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => copyToClipboard(content.content)}
-                              className="hover:bg-nextrend-100/50"
-                            >
-                              <Copy className="w-4 h-4 text-gray-600" />
-                            </Button>
-                          )}
-                        </div>
-                        <div className="p-6 bg-white">
-                          <div className="prose max-w-none">
-                            <div className="text-gray-600 text-sm leading-relaxed">
-                              {content.isGenerating ? (
-                                <div className="flex items-center gap-2">
-                                  <span className="text-nextrend-500">Generating {content.type}...</span>
-                                </div>
-                              ) : (
-                                <TypewriterText 
-                                  content={content.content} 
-                                  speed={15}
-                                />
+                      <Card key={index} className="mt-6 overflow-hidden border-0 shadow-md hover:shadow-lg transition-shadow duration-200">
+                        <CardContent className="p-0">
+                          <div className="border-b border-gray-100 bg-gradient-to-r from-nextrend-50/50 to-white p-4 flex justify-between items-center">
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 rounded-full bg-nextrend-500"></div>
+                              <label className="font-medium text-gray-700">{content.type}</label>
+                              {content.isGenerating && (
+                                <RefreshCw className="w-4 h-4 text-nextrend-500 animate-spin ml-2" />
                               )}
                             </div>
+                            {!content.isGenerating && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => copyToClipboard(content.content)}
+                                className="hover:bg-nextrend-100/50"
+                              >
+                                <Copy className="w-4 h-4 text-gray-600" />
+                              </Button>
+                            )}
                           </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                          <div className="p-6 bg-white">
+                            <div className="prose max-w-none">
+                              <div className="text-gray-600 text-sm leading-relaxed">
+                                {content.isGenerating ? (
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-nextrend-500">Generating {content.type}...</span>
+                                  </div>
+                                ) : (
+                                  <TypewriterText content={content.content} speed={15} />
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
                 </>
               )}
             </div>
@@ -759,7 +708,6 @@ const ContentEditor: React.FC = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
-        
         <main className="pt-24 pb-16 px-6">
           <div className="max-w-6xl mx-auto">
             <motion.div 
@@ -775,7 +723,6 @@ const ContentEditor: React.FC = () => {
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Dashboard
               </Button>
-              
               <Button 
                 variant="default" 
                 className="bg-nextrend-500 hover:bg-nextrend-600"
@@ -876,7 +823,6 @@ const ContentEditor: React.FC = () => {
                         Send Message
                       </Button>
                       
-                      {/* Content prompt section */}
                       {option === 'custom' && (
                         <div className="text-sm p-4 bg-nextrend-50 border border-nextrend-100 rounded-md mt-2">
                           {chatMessages.length > 0 && chatMessages[0].role === 'assistant' && (
@@ -885,7 +831,6 @@ const ContentEditor: React.FC = () => {
                             </div>
                           )}
                           
-                          {/* Random content prompt */}
                           <div className="content-prompt">
                             {selectedPrompt && (
                               <>
@@ -906,7 +851,6 @@ const ContentEditor: React.FC = () => {
               </motion.div>
             </div>
 
-            {/* Generated Content Cards */}
             {generatedContents.length > 0 && (
               <div className="mt-8 grid grid-cols-1 gap-6">
                 {generatedContents.map((content, index) => (
@@ -929,8 +873,8 @@ const ContentEditor: React.FC = () => {
                           >
                             <Copy className="w-4 h-4 text-gray-600" />
                           </Button>
-                      )}
-                    </div>
+                        )}
+                      </div>
                       <div className="p-6 bg-white">
                         <div className="prose max-w-none">
                           <div className="text-gray-600 text-sm leading-relaxed">
@@ -939,18 +883,15 @@ const ContentEditor: React.FC = () => {
                                 <span className="text-nextrend-500">Generating {content.type}...</span>
                               </div>
                             ) : (
-                              <TypewriterText 
-                                content={content.content} 
-                                speed={15}
-                              />
+                              <TypewriterText content={content.content} speed={15} />
                             )}
                           </div>
                         </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                      </div>
+                    </CardContent>
+                  </Card>
                 ))}
-            </div>
+              </div>
             )}
           </div>
         </main>
@@ -976,7 +917,6 @@ const ContentEditor: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      
       <main className="pt-24 pb-16 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center mb-8">
@@ -996,9 +936,9 @@ const ContentEditor: React.FC = () => {
             </h1>
           </div>
 
-          {(!isDataLoaded || !isRendered) ? (
+          {isLoading ? (
             <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-          <motion.div 
+              <motion.div 
                 animate={{
                   scale: [1, 1.2, 1],
                   rotate: [0, 360],
@@ -1029,108 +969,105 @@ const ContentEditor: React.FC = () => {
             </div>
           ) : (
             <Tabs defaultValue="all" value={activeTab} onValueChange={handleTabChange}>
-            {tabsContent}
-            
-            <TabsContent value={activeTab} className="mt-0">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {tabsContent}
+              <TabsContent value={activeTab} className="mt-0">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   {currentArticles.map((article) => (
                     <div key={article.id}>
-                    <Card className="overflow-hidden h-full flex flex-col">
-                      <CardContent className="p-0 flex flex-col h-full">
-                        <div className="p-5">
-                          <div className="flex justify-between items-center mb-3">
-                            <Badge variant="outline" className="bg-nextrend-50 text-nextrend-500 hover:bg-nextrend-100">
+                      <Card className="overflow-hidden h-full flex flex-col">
+                        <CardContent className="p-0 flex flex-col h-full">
+                          <div className="p-5">
+                            <div className="flex justify-between items-center mb-3">
+                              <Badge variant="outline" className="bg-nextrend-50 text-nextrend-500 hover:bg-nextrend-100">
                                 {option === 'trending' ? 'Mortgage' : article.category}
-                            </Badge>
-                            <span className="text-sm text-gray-500">{article.date}</span>
-                          </div>
-                          
-                          <h3 className="text-lg font-semibold mb-2">{article.title}</h3>
-                          
+                              </Badge>
+                              <span className="text-sm text-gray-500">{article.date}</span>
+                            </div>
+                            <h3 className="text-lg font-semibold mb-2">{article.title}</h3>
                             {option !== 'trending' && (
-                          <div className="text-gray-600 text-sm mb-4">
-                            {article.content}
-                          </div>
+                              <div className="text-gray-600 text-sm mb-4">
+                                {article.content}
+                              </div>
                             )}
-                          
-                          {article.generatedContent && option !== 'general' && (
-                            <div className="mt-4 p-3 bg-gray-50 rounded-md border border-gray-100 text-sm">
-                              <p className="font-medium mb-1 text-nextrend-600">Generated Content:</p>
-                              <p className="text-gray-600">{article.generatedContent}</p>
-                            </div>
-                          )}
-                        </div>
-                        
-                        <div className="mt-auto border-t border-gray-100 p-4 flex justify-between items-center bg-gray-50">
-                          {(option === 'this-week' || option === 'trending') ? (
-                            <div className="flex w-full gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleReadArticle(article.id)}
-                                className="text-xs flex-1"
-                              >
-                                <ExternalLink className="h-3 w-3 mr-1" />
-                                Read Article
-                              </Button>
-                              <Button
-                                variant="default"
-                                size="sm"
-                                onClick={() => handleUseArticle(article.id)}
-                                className="text-xs flex-1 bg-nextrend-500 hover:bg-nextrend-600"
-                              >
-                                Use Article
-                              </Button>
-                            </div>
-                          ) : option === 'general' ? (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                                onClick={() => handleUseGeneralTerm(article)}
-                              className="text-xs w-full"
-                            >
-                                Use this Mortgage Term
-                            </Button>
-                          ) : (
-                            !article.generatedContent ? (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                  onClick={() => handleGenerateContent()}
-                                  disabled={isGenerating}
-                                className="text-xs w-full"
-                              >
-                                Generate Content
-                              </Button>
-                            ) : (
-                              <div className="flex w-full justify-between">
+                            {article.generatedContent && option !== 'general' && (
+                              <div className="mt-4 p-3 bg-gray-50 rounded-md border border-gray-100 text-sm">
+                                <p className="font-medium mb-1 text-nextrend-600">Generated Content:</p>
+                                <p className="text-gray-600">{article.generatedContent}</p>
+                              </div>
+                            )}
+                          </div>
+                          <div className="mt-auto border-t border-gray-100 p-4 flex justify-between items-center bg-gray-50">
+                            {(option === 'this-week' || option === 'trending') ? (
+                              <div className="flex w-full gap-2">
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                    onClick={() => handleGenerateContent()}
-                                  className="text-xs"
+                                  onClick={() => handleReadArticle(article.id)}
+                                  className="text-xs flex-1"
                                 >
-                                  Regenerate
+                                  <ExternalLink className="h-3 w-3 mr-1" />
+                                  Read Article
                                 </Button>
                                 <Button
                                   variant="default"
                                   size="sm"
-                                  className="text-xs bg-nextrend-500 hover:bg-nextrend-600"
                                   onClick={() => handleUseArticle(article.id)}
+                                  className="text-xs flex-1 bg-nextrend-500 hover:bg-nextrend-600"
+                                  disabled={isLoading}
                                 >
-                                  Use This
+                                  Use Article
                                 </Button>
                               </div>
-                            )
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
+                            ) : option === 'general' ? (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleUseGeneralTerm(article)}
+                                className="text-xs w-full"
+                                disabled={isLoading}
+                              >
+                                Use this Mortgage Term
+                              </Button>
+                            ) : (
+                              !article.generatedContent ? (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleGenerateContent()}
+                                  disabled={isGenerating || isLoading}
+                                  className="text-xs w-full"
+                                >
+                                  Generate Content
+                                </Button>
+                              ) : (
+                                <div className="flex w-full justify-between">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleGenerateContent()}
+                                    className="text-xs"
+                                    disabled={isGenerating || isLoading}
+                                  >
+                                    Regenerate
+                                  </Button>
+                                  <Button
+                                    variant="default"
+                                    size="sm"
+                                    className="text-xs bg-nextrend-500 hover:bg-nextrend-600"
+                                    onClick={() => handleUseArticle(article.id)}
+                                    disabled={isLoading}
+                                  >
+                                    Use This
+                                  </Button>
+                                </div>
+                              )
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
                     </div>
-                ))}
-              </div>
-
-                {/* Pagination Controls */}
+                  ))}
+                </div>
                 <div className="flex justify-center items-center gap-2 mt-8">
                   <Button
                     variant="outline"
@@ -1151,9 +1088,9 @@ const ContentEditor: React.FC = () => {
                   >
                     <ChevronRight className="h-4 w-4" />
                   </Button>
-              </div>
-            </TabsContent>
-          </Tabs>
+                </div>
+              </TabsContent>
+            </Tabs>
           )}
         </div>
       </main>
