@@ -122,6 +122,8 @@ const ContentEditor: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>('');
   const [selectedPrompt, setSelectedPrompt] = useState(contentPrompts[Math.floor(Math.random() * contentPrompts.length)]);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
   
   // Reset pagination when changing tabs or options
   useEffect(() => {
@@ -146,15 +148,26 @@ const ContentEditor: React.FC = () => {
       return;
     }
 
+    // Don't reload if we're in the middle of content generation or data is already loaded
+    if (showEditor || isGenerating || generatedContents.length > 0 || isDataLoaded) {
+      return;
+    }
+
     setIsLoading(true);
     setError('');
     
     try {
+      // Show loading state immediately
+      setNewsFeed([]);
+      
       const data = await generateNewsFeedData(option);
+      
+      // Update state in a single batch
       setNewsFeed(data);
       setSelectedArticle(null);
       setShowEditor(false);
       setGeneratedContents([]);
+      setIsDataLoaded(true);
   
       if (option === 'custom' && chatMessages.length === 0) {
         setChatMessages([
@@ -174,24 +187,34 @@ const ContentEditor: React.FC = () => {
     }
   };
   
-  // Load data on auth or focus change
+  // Load data on initial mount or when option changes
   useEffect(() => {
-    if (!authLoading && user && (!profile || !subscription)) {
+    if (isInitialLoad && !authLoading && user && profile && subscription) {
       loadData();
-    } else if (!authLoading && user && profile && subscription) {
-      loadData();
+      setIsInitialLoad(false);
     }
+  }, [option, authLoading, user, profile, subscription, isInitialLoad]);
 
+  // Handle tab visibility changes
+  useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        console.log('Tab regained focus, reloading data');
-        loadData();
+        // Only reload if we're not in the middle of content generation and data isn't loaded
+        if (!showEditor && !isGenerating && generatedContents.length === 0 && !isDataLoaded) {
+          console.log('Tab regained focus, reloading data');
+          loadData();
+        }
       }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [option, authLoading, user, profile, subscription]);
+  }, [showEditor, isGenerating, generatedContents.length, isDataLoaded]);
+
+  // Reset data loaded state when option changes
+  useEffect(() => {
+    setIsDataLoaded(false);
+  }, [option]);
 
   const handleGenerateContent = async () => {
     if (!selectedArticle) return;
