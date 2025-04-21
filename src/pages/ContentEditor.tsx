@@ -1,4 +1,3 @@
-// frontend/src/pages/ContentEditor.tsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -24,63 +23,53 @@ const contentPrompts = [
 ];
 
 const generateNewsFeedData = async (option: string) => {
-  if (option === 'this-week') {
-    try {
-      const articles = await contentService.getMBSArticles();
-      return articles.map(article => ({
-        id: article.id,
-        category: article.category,
-        date: new Date(article.date).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' }),
-        title: article.title,
-        content: article.description,
-        url: article.url,
-        isGenerating: article.is_generating
-      }));
-    } catch (error) {
-      console.error('Error fetching MBS articles:', error);
-      throw error;
+  try {
+    switch (option) {
+      case 'this-week':
+        const mbsArticles = await contentService.getMBSArticles();
+        return mbsArticles.map(article => ({
+          id: article.id,
+          category: article.category,
+          date: new Date(article.date).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' }),
+          title: article.title,
+          content: article.description,
+          url: article.url,
+          isGenerating: article.is_generating
+        }));
+
+      case 'trending':
+        const trendingArticles = await contentService.getTrendingArticles();
+        return trendingArticles.map(article => ({
+          id: article.id,
+          category: article.category || 'Mortgage',
+          date: new Date(article.date).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' }),
+          title: article.title,
+          content: article.content,
+          url: article.url,
+          isGenerating: false
+        }));
+
+      case 'general':
+        const terms = await contentService.getMortgageTerms();
+        const shuffled = [...terms].sort(() => 0.5 - Math.random());
+        const selectedTerms = shuffled.slice(0, 25);
+        return selectedTerms.map((term, index) => ({
+          id: index + 1,
+          category: 'Term',
+          date: new Date().toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' }),
+          title: term.term,
+          content: term.definition,
+          mortgage_relevance: term.mortgage_relevance,
+          isGenerating: false,
+        }));
+
+      default:
+        return [];
     }
+  } catch (error) {
+    console.error(`Error fetching ${option} data:`, error);
+    throw error;
   }
-  
-  if (option === 'trending') {
-    try {
-      const articles = await contentService.getTrendingArticles();
-      return articles.map(article => ({
-        id: article.id,
-        category: article.category || 'Mortgage',
-        date: new Date(article.date).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' }),
-        title: article.title,
-        content: article.content,
-        url: article.url,
-        isGenerating: false
-      }));
-    } catch (error) {
-      console.error('Error fetching trending articles:', error);
-      throw error;
-    }
-  }
-  
-  if (option === 'general') {
-    try {
-      const terms = await contentService.getMortgageTerms();
-      const shuffled = [...terms].sort(() => 0.5 - Math.random());
-      const selectedTerms = shuffled.slice(0, 25);
-      return selectedTerms.map((term, index) => ({
-        id: index + 1,
-        category: 'Term',
-        date: new Date().toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' }),
-        title: term.term,
-        content: term.definition,
-        mortgage_relevance: term.mortgage_relevance,
-        isGenerating: false,
-      }));
-    } catch (error) {
-      console.error('Error fetching mortgage terms:', error);
-      throw error;
-    }
-  }
-  
-  return [];
 };
 
 const optionDetails = {
@@ -103,6 +92,7 @@ interface GeneratedContent {
 }
 
 const ITEMS_PER_PAGE = 12;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
 
 const ContentEditor: React.FC = () => {
   const { option } = useParams<{ option: string }>();
@@ -124,18 +114,7 @@ const ContentEditor: React.FC = () => {
   const [selectedPrompt, setSelectedPrompt] = useState(contentPrompts[Math.floor(Math.random() * contentPrompts.length)]);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
-  
-  // Reset pagination when changing tabs or options
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [activeTab, option]);
-
-  // Update selected prompt when component mounts or when chat messages are cleared
-  useEffect(() => {
-    if (option === 'custom' && chatMessages.length === 0) {
-      setSelectedPrompt(contentPrompts[Math.floor(Math.random() * contentPrompts.length)]);
-    }
-  }, [option, chatMessages.length]);
+  const [cache, setCache] = useState<{ [key: string]: { data: any[]; timestamp: number } }>({});
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
@@ -144,6 +123,15 @@ const ContentEditor: React.FC = () => {
 
   const loadData = async () => {
     if (!option || !user) {
+      setIsLoading(false);
+      return;
+    }
+
+    // Check cache
+    const cachedData = cache[option];
+    if (cachedData && (Date.now() - cachedData.timestamp) < CACHE_DURATION) {
+      setNewsFeed(cachedData.data);
+      setIsDataLoaded(true);
       setIsLoading(false);
       return;
     }
@@ -157,18 +145,14 @@ const ContentEditor: React.FC = () => {
     setError('');
     
     try {
-      // Show loading state immediately
-      setNewsFeed([]);
-      
       const data = await generateNewsFeedData(option);
-      
-      // Update state in a single batch
       setNewsFeed(data);
       setSelectedArticle(null);
       setShowEditor(false);
       setGeneratedContents([]);
       setIsDataLoaded(true);
-  
+      setCache(prev => ({ ...prev, [option]: { data, timestamp: Date.now() } }));
+      
       if (option === 'custom' && chatMessages.length === 0) {
         setChatMessages([
           {
@@ -199,7 +183,6 @@ const ContentEditor: React.FC = () => {
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        // Only reload if we're not in the middle of content generation and data isn't loaded
         if (!showEditor && !isGenerating && generatedContents.length === 0 && !isDataLoaded) {
           console.log('Tab regained focus, reloading data');
           loadData();
@@ -276,7 +259,6 @@ const ContentEditor: React.FC = () => {
   };
 
   const handleUseArticle = async (articleId: number) => {
-    console.log('Using article:', articleId);
     const article = newsFeed.find(item => item.id === articleId);
     if (article) {
       try {
@@ -298,10 +280,6 @@ const ContentEditor: React.FC = () => {
         }
         setShowEditor(true);
         setGeneratedContents([]);
-        setGeneratedContents([{ 
-          type: 'Original Article',
-          content: `${article.title}\n\n${article.content}`
-        }]);
       } catch (error) {
         console.error('Error fetching article content:', error);
         setError('Failed to fetch article content');
@@ -312,7 +290,6 @@ const ContentEditor: React.FC = () => {
   };
   
   const handleUseGeneralTerm = async (article: any) => {
-    console.log('Using general term:', article.id);
     try {
       setIsLoading(true);
       setSelectedArticle({
@@ -322,10 +299,6 @@ const ContentEditor: React.FC = () => {
       });
       setShowEditor(true);
       setGeneratedContents([]);
-      setGeneratedContents([{ 
-        type: 'Original Article',
-        content: `${article.title}\n\n${article.content}\n\n${article.mortgage_relevance}`
-      }]);
     } catch (error) {
       console.error('Error using general term:', error);
       setError('Failed to load term content');
@@ -492,6 +465,25 @@ const ContentEditor: React.FC = () => {
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const currentArticles = filteredNews.slice(startIndex, endIndex);
   
+  // Skeleton Card for loading state
+  const SkeletonCard = () => (
+    <div className="animate-pulse">
+      <Card className="overflow-hidden h-full flex flex-col">
+        <CardContent className="p-5 flex flex-col h-full">
+          <div className="flex justify-between items-center mb-3">
+            <div className="h-6 bg-gray-200 rounded w-1/4"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/6"></div>
+          </div>
+          <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
+          <div className="h-4 bg-gray-200 rounded w-full mb-4"></div>
+          <div className="mt-auto border-t border-gray-100 p-4 flex justify-between items-center bg-gray-50">
+            <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
   if (showEditor) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -970,27 +962,10 @@ const ContentEditor: React.FC = () => {
           </div>
 
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-              <motion.div 
-                animate={{
-                  scale: [1, 1.2, 1],
-                  rotate: [0, 360],
-                }}
-                transition={{
-                  duration: 1.5,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
-                className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full"
-              />
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-                className="text-lg text-muted-foreground"
-              >
-                {option === 'this-week' ? 'Loading MBS Commentary...' : 'Loading content...'}
-              </motion.p>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {[...Array(ITEMS_PER_PAGE)].map((_, index) => (
+                <SkeletonCard key={index} />
+              ))}
             </div>
           ) : error ? (
             <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
@@ -1020,12 +995,6 @@ const ContentEditor: React.FC = () => {
                             {option !== 'trending' && (
                               <div className="text-gray-600 text-sm mb-4">
                                 {article.content}
-                              </div>
-                            )}
-                            {article.generatedContent && option !== 'general' && (
-                              <div className="mt-4 p-3 bg-gray-50 rounded-md border border-gray-100 text-sm">
-                                <p className="font-medium mb-1 text-nextrend-600">Generated Content:</p>
-                                <p className="text-gray-600">{article.generatedContent}</p>
                               </div>
                             )}
                           </div>
@@ -1061,40 +1030,7 @@ const ContentEditor: React.FC = () => {
                               >
                                 Use this Mortgage Term
                               </Button>
-                            ) : (
-                              !article.generatedContent ? (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleGenerateContent()}
-                                  disabled={isGenerating || isLoading}
-                                  className="text-xs w-full"
-                                >
-                                  Generate Content
-                                </Button>
-                              ) : (
-                                <div className="flex w-full justify-between">
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleGenerateContent()}
-                                    className="text-xs"
-                                    disabled={isGenerating || isLoading}
-                                  >
-                                    Regenerate
-                                  </Button>
-                                  <Button
-                                    variant="default"
-                                    size="sm"
-                                    className="text-xs bg-nextrend-500 hover:bg-nextrend-600"
-                                    onClick={() => handleUseArticle(article.id)}
-                                    disabled={isLoading}
-                                  >
-                                    Use This
-                                  </Button>
-                                </div>
-                              )
-                            )}
+                            ) : null}
                           </div>
                         </CardContent>
                       </Card>
