@@ -1,35 +1,33 @@
 import { useState } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { ArrowLeft } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
-export default function Login() {
+export default function ForgotPassword() {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
-  const { signIn } = useAuth();
-
-  const from = location.state?.from?.pathname || '/dashboard';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const { error } = await signIn(email, password);
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      
       if (error) throw error;
-
-      toast.success('Logged in successfully');
-      navigate(from, { replace: true });
+      
+      toast.success('Password reset email sent! Please check your inbox.');
+      navigate('/login');
     } catch (error: any) {
-      toast.error(error.message || 'Failed to sign in');
+      toast.error(error.message || 'Failed to send reset email');
     } finally {
       setLoading(false);
     }
@@ -40,18 +38,20 @@ export default function Login() {
       <div className="p-4">
         <Button
           variant="ghost"
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/login')}
           className="flex items-center gap-2"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back
+          Back to Login
         </Button>
       </div>
       <div className="flex-1 flex items-center justify-center">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle>Welcome back</CardTitle>
-            <CardDescription>Sign in to your account to continue</CardDescription>
+            <CardTitle>Reset Password</CardTitle>
+            <CardDescription>
+              Enter your email address and we'll send you a link to reset your password.
+            </CardDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
@@ -66,31 +66,15 @@ export default function Login() {
                   required
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-                <div className="text-right">
-                  <Link to="/forgot-password" className="text-sm text-nextrend-500 hover:underline">
-                    Forgot password?
-                  </Link>
-                </div>
-              </div>
             </CardContent>
             <CardFooter className="flex flex-col space-y-4">
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Signing in...' : 'Sign in'}
+                {loading ? 'Sending...' : 'Send Reset Link'}
               </Button>
               <div className="text-center text-sm text-gray-600">
-                Don't have an account?{' '}
-                <Link to="/signup" className="text-nextrend-500 hover:underline">
-                  Sign up
+                Remember your password?{' '}
+                <Link to="/login" className="text-nextrend-500 hover:underline">
+                  Sign in
                 </Link>
               </div>
             </CardFooter>
