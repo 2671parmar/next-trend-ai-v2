@@ -31,18 +31,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isUpdating.current = true;
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
-        console.log('Session data:', session);
         if (error) throw error;
 
         setUser(session?.user ?? null);
         if (session?.user) {
-          console.log('User found, fetching profile and subscription...');
           await Promise.all([
             fetchProfile(session.user.id),
             fetchSubscription(session.user.id),
           ]);
         } else {
-          console.log('No user found in session');
           setProfile(null);
           setSubscription(null);
         }
@@ -61,7 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Real-time auth state subscription
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Auth state changed:', event, session?.user?.id);
+      console.log('Auth state changed (real-time):', event, session?.user?.id);
       if (isUpdating.current) return;
 
       isUpdating.current = true;
@@ -96,7 +93,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error('Error fetching profile:', error);
         return;
       }
-      console.log('Profile data fetched:', data);
       setProfile(data);
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -116,7 +112,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error('Error fetching subscription:', error);
         return;
       }
-      console.log('Subscription data fetched:', data);
       setSubscription(data);
     } catch (error) {
       console.error('Error fetching subscription:', error);

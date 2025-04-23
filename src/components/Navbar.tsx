@@ -107,6 +107,7 @@ const Navbar: React.FC = () => {
           {user ? (
             <>
               <NavLink to="/dashboard" current={location.pathname === "/dashboard"}>Dashboard</NavLink>
+              <NavLink to="/brand-voice" current={location.pathname === "/brand-voice"}>Brand Voice</NavLink>
               <NavLink to="/profile" current={location.pathname === "/profile"}>Settings</NavLink>
               <button
                 onClick={handleLogout}
@@ -155,6 +156,13 @@ const Navbar: React.FC = () => {
                   className="block px-4 py-2 text-gray-600 hover:text-nextrend-600 transition-colors"
                 >
                   Dashboard
+                </Link>
+                <Link 
+                  to="/brand-voice" 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="block px-4 py-2 text-gray-600 hover:text-nextrend-600 transition-colors"
+                >
+                  Brand Voice
                 </Link>
                 <Link 
                   to="/profile" 

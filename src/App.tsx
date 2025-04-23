@@ -12,6 +12,7 @@ import Signup from "./pages/Signup";
 import Profile from "./pages/Profile";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import BrandVoice from "./pages/BrandVoice";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -51,6 +52,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Profile />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/brand-voice" 
+              element={
+                <ProtectedRoute>
+                  <BrandVoice />
                 </ProtectedRoute>
               } 
             />
