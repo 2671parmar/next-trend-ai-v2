@@ -2,9 +2,12 @@ import { supabase, type MBSCommentary, type TrendingTopic } from '../supabase';
 
 const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
 
-const SYSTEM_PROMPT = `This GPT generates highly authoritative, expert-level mortgage content from the perspective of a senior loan officer with deep industry expertise. Every response must be authoritative, solution-oriented, and free from generic, surface-level advice.
+const getSystemPrompt = (brandVoice?: string) => `This GPT generates highly authoritative, expert-level mortgage content from the perspective of a senior loan officer with deep industry expertise. Every response must be authoritative, solution-oriented, and free from generic, surface-level advice.
 
-Every time content is submitted, automatically generate all 8 pieces in this exact order:
+${brandVoice ? `BRAND VOICE: ${brandVoice}
+Use this brand voice and tone for all generated content while maintaining the expert perspective.
+
+` : ''}Every time content is submitted, automatically generate all 8 pieces in this exact order:
 - LinkedIn Post (Thought Leadership, Expert Take)
 - Blog Post (Deep-Dive, SEO-Optimized)
 - Video Script (Educational, Senior Loan Officer Perspective)
@@ -201,7 +204,7 @@ export const contentService = {
   },
 
   // Generate content using OpenAI
-  async generateContent(content: string) {
+  async generateContent(content: string, brandVoice?: string) {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -209,11 +212,11 @@ export const contentService = {
         'Authorization': `Bearer ${OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-4',
         messages: [
           {
             role: 'system',
-            content: SYSTEM_PROMPT
+            content: getSystemPrompt(brandVoice)
           },
           {
             role: 'user',

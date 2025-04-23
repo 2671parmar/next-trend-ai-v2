@@ -19,6 +19,26 @@ try {
   console.error('Error initializing OpenAI:', error);
 }
 
+export const getBrandVoiceSummary = async (userId: string): Promise<string | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('brand_voice')
+      .select('summary')
+      .eq('user_id', userId)
+      .single();
+
+    if (error) {
+      console.error('Error fetching brand voice summary:', error);
+      return null;
+    }
+
+    return data?.summary || null;
+  } catch (error) {
+    console.error('Error in getBrandVoiceSummary:', error);
+    return null;
+  }
+};
+
 export default function BrandVoice() {
   const [isLoading, setIsLoading] = useState(false);
   const [content, setContent] = useState('');
