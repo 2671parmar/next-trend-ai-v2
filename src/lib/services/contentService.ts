@@ -202,35 +202,42 @@ export const contentService = {
 
   // Generate content using OpenAI
   async generateContent(content: string) {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o',
-        messages: [
-          {
-            role: 'system',
-            content: SYSTEM_PROMPT
-          },
-          {
-            role: 'user',
-            content: content
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 4000, // Increased to handle the larger response
-      }),
-    });
+    try {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o',
+          messages: [
+            {
+              role: 'system',
+              content: SYSTEM_PROMPT
+            },
+            {
+              role: 'user',
+              content: content
+            }
+          ],
+          temperature: 0.7,
+          max_tokens: 4000,
+        }),
+      });
 
-    if (!response.ok) {
-      throw new Error('Failed to generate content');
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('OpenAI API Error:', errorData);
+        throw new Error(errorData.error?.message || 'Failed to generate content');
+      }
+
+      const data = await response.json();
+      return data.choices[0].message.content;
+    } catch (error) {
+      console.error('Content generation error:', error);
+      throw error;
     }
-
-    const data = await response.json();
-    return data.choices[0].message.content;
   },
 
   // Add this method
