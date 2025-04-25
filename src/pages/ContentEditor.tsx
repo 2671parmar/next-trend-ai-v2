@@ -152,7 +152,7 @@ const ContentEditor: React.FC = () => {
   }, [option, user]);
 
   const handleGenerateContent = async () => {
-    if (!selectedArticle) return;
+    if (!selectedArticle || !user) return;
     
     setIsGenerating(true);
     setError('');
@@ -172,7 +172,8 @@ const ContentEditor: React.FC = () => {
         { type: 'Social Post', description: 'Engaging & Value-Driven' },
         { type: 'X/Twitter Post', description: 'Quick, Authority Take' },
         { type: 'SMS Broadcast - For Clients', description: 'Concise, CTA-Driven' },
-        { type: 'SMS Broadcast - For Realtor Partners', description: 'Concise, Informational, Value Driven' }
+        { type: 'SMS Broadcast - For Realtor Partners', description: 'Concise, Informational, Value Driven' },
+        { type: 'Motivational Quote', description: 'Uplifting, Short, Non-Salesy' }
       ];
 
       setGeneratedContents(contentTypes.map(type => ({
@@ -183,7 +184,7 @@ const ContentEditor: React.FC = () => {
 
       for (const [index, { type, description }] of contentTypes.entries()) {
         const prompt = `Generate a ${type} (${description}) for this ${articleData.category} article:\n\nTitle: ${articleData.title}\n\nContent: ${articleData.content}`;
-        const result = await contentService.generateContent(prompt);
+        const result = await contentService.generateContent(prompt, user.id);
         setGeneratedContents(prev => prev.map((c, i) => i === index ? { ...c, content: result, isGenerating: false } : c));
       }
     } catch (err) {
@@ -235,7 +236,7 @@ const ContentEditor: React.FC = () => {
   };
   
   const handleSendMessage = async () => {
-    if (!userInput.trim()) return;
+    if (!userInput.trim() || !user) return;
     
     setIsGenerating(true);
     try {
@@ -248,14 +249,15 @@ const ContentEditor: React.FC = () => {
         { type: 'Social Post', description: 'Engaging & Value-Driven' },
         { type: 'X/Twitter Post', description: 'Quick, Authority Take' },
         { type: 'SMS Broadcast - For Clients', description: 'Concise, CTA-Driven' },
-        { type: 'SMS Broadcast - For Realtor Partners', description: 'Concise, Informational, Value Driven' }
+        { type: 'SMS Broadcast - For Realtor Partners', description: 'Concise, Informational, Value Driven' },
+        { type: 'Motivational Quote', description: 'Uplifting, Short, Non-Salesy' }
       ];
 
       setGeneratedContents(contentTypes.map(type => ({ type: type.type, content: '', isGenerating: true })));
       
       for (const [index, { type, description }] of contentTypes.entries()) {
         const prompt = `Generate a ${type} (${description}) for this custom content:\n\nContent: ${customContent.content}`;
-        const result = await contentService.generateContent(prompt);
+        const result = await contentService.generateContent(prompt, user.id);
         setGeneratedContents(prev => prev.map((c, i) => i === index ? { ...c, content: result, isGenerating: false } : c));
       }
 
@@ -389,58 +391,7 @@ const ContentEditor: React.FC = () => {
                         setGeneratedContents(prev => {
                           const updated = prev.map(c => c.type === 'Original Article' ? { ...c, content: value } : c);
                           if (!updated.find(c => c.type === 'Original Article')) updated.unshift({ type: 'Original Article', content: value });
-                          return updated;
-                        });
-                      }} loading={isGenerating} placeholder="Click 'Generate Content' to create social media posts..." />
-                    </CardContent>
-                  </Card>
-                  {generatedContents.filter(content => content.type !== 'Original Article').map((content, index) => (
-                    <Card key={index} className="mt-6 overflow-hidden border-0 shadow-md hover:shadow-lg transition-shadow duration-200">
-                      <CardContent className="p-0">
-                        <div className="border-b border-gray-100 bg-gradient-to-r from-nextrend-50/50 to-white p-4 flex justify-between items-center">
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-nextrend-500"></div>
-                            <label className="font-medium text-gray-700">{content.type}</label>
-                            {content.isGenerating && <RefreshCw className="w-4 h-4 text-nextrend-500 animate-spin ml-2" />}
-                          </div>
-                          {!content.isGenerating && <Button variant="ghost" size="sm" onClick={() => copyToClipboard(content.content)} className="hover:bg-nextrend-100/50">
-                            <Copy className="w-4 h-4 text-gray-600" />
-                          </Button>}
-                        </div>
-                        <div className="p-6 bg-white">
-                          <div className="prose max-w-none">
-                            <div className="text-gray-600 text-sm leading-relaxed">
-                              {content.isGenerating ? <div className="flex items-center gap-2"><span className="text-nextrend-500">Generating {content.type}...</span></div> : <TypewriterText content={content.content} speed={15} />}
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </>
-              ) : (
-                <>
-                  {selectedArticle && (
-                    <Card className="mb-4">
-                      <CardContent className="p-5">
-                        <div className="flex justify-between items-center mb-3">
-                          <Badge variant="outline" className="bg-nextrend-50 text-nextrend-500 hover:bg-nextrend-100">{option === 'trending' ? 'Mortgage' : selectedArticle.category}</Badge>
-                          <span className="text-sm text-gray-500">{selectedArticle.date}</span>
-                        </div>
-                        <h3 className="text-lg font-semibold mb-2">{selectedArticle.title}</h3>
-                        {option !== 'trending' && <p className="text-gray-600 text-sm">{selectedArticle.description}</p>}
-                      </CardContent>
-                    </Card>
-                  )}
-                  <Card>
-                    <CardContent className="p-6">
-                      <div className="flex justify-end mb-4">
-                        <Button variant="outline" size="sm" onClick={handleGenerateContent} disabled={isGenerating} className="flex items-center">
-                          <RefreshCw className={`w-4 h-4 mr-2 ${isGenerating ? 'animate-spin' : ''}`} />
-                          {isGenerating ? 'Generating...' : 'Generate Content'}
-                        </Button>
-                      </div>
-                      <TextEditor content={selectedArticle?.content || ''} onContentChange={(value) => {
+                          return onContentChange={(value) => {
                         setSelectedArticle(prev => prev ? { ...prev, content: value } : null);
                         setGeneratedContents(prev => {
                           const updated = prev.map(c => c.type === 'Original Article' ? { ...c, content: value } : c);
