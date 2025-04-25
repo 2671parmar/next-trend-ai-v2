@@ -43,17 +43,14 @@ export default function BrandVoice() {
         .single();
 
       if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching brand voice:', error);
         return;
       }
 
       if (data) {
-        console.log('Fetched brand voice data:', data);
         setSavedContent(data);
         setContent(data.content);
       }
     } catch (error) {
-      console.error('Error in fetchBrandVoice:', error);
       setError('Failed to fetch brand voice data');
     }
   };
@@ -81,10 +78,8 @@ export default function BrandVoice() {
       if (!summary) {
         throw new Error('Failed to generate summary');
       }
-      console.log('Generated summary:', summary);
       return summary;
     } catch (error) {
-      console.error('Error in generateSummary:', error);
       throw error;
     }
   };
@@ -104,18 +99,11 @@ export default function BrandVoice() {
     setError(null);
     
     try {
-      console.log('Generating summary for content...');
       const summary = await generateSummary(content);
 
       if (!summary) {
         throw new Error('Failed to generate summary');
       }
-
-      console.log('Saving to Supabase...', {
-        user_id: user.id,
-        content: content,
-        summary: summary
-      });
 
       const { data, error } = await supabase
         .from('brand_voice')
@@ -125,24 +113,20 @@ export default function BrandVoice() {
           summary: summary,
           updated_at: new Date().toISOString()
         }, {
-          onConflict: 'user_id' // Update the row where user_id conflicts
+          onConflict: 'user_id'
         })
         .select()
         .single();
 
       if (error) {
-        console.error('Supabase error:', error);
         throw error;
       }
 
-      console.log('Save successful:', data);
       setSavedContent({ content, summary });
-      toast.success('Content and summary saved successfully');
+      toast.success('Content and summary saved successfully. Brand voice summary generated.');
       
-      // Refresh the data
       fetchBrandVoice();
     } catch (error: any) {
-      console.error('Error in handleSave:', error);
       setError(error.message || 'Failed to save content');
       toast.error(error.message || 'Failed to save content');
     } finally {
@@ -150,7 +134,6 @@ export default function BrandVoice() {
     }
   };
 
-  // Show loading state while auth is initializing
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
@@ -162,7 +145,6 @@ export default function BrandVoice() {
     );
   }
 
-  // Show error state if there's an error
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
@@ -202,10 +184,10 @@ export default function BrandVoice() {
                 {isLoading ? 'Saving...' : 'Save'}
               </Button>
 
-              {savedContent && (
+              {savedContent && savedContent.content && savedContent.summary && (
                 <div className="mt-8">
-                  <h3 className="text-lg font-medium mb-4">Brand Voice Summary</h3>
-                  <p className="text-gray-600">{savedContent.summary}</p>
+                  <h3 className="text-lg font-medium mb-4">Brand Voice Status</h3>
+                  <p className="text-gray-600">Brand voice summary exists.</p>
                 </div>
               )}
             </CardContent>
