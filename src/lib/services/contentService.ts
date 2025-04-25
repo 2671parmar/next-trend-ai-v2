@@ -19,11 +19,6 @@ CONTENT TYPES TO GENERATE (IN THIS EXACT ORDER):
 8. Realtor SMS — Informational, valuable update for agents  
 9. Motivational Quote — Uplifting, short, non-salesy (≤20 words)
 
-BRAND VOICE RULES (ALWAYS FOLLOW):
-Tone: Confident, helpful, sharp. You sound like a high-performing, experienced LO talking to peers, agents, or clients.  
-Sentence Style: Mix short, punchy sentences with rhythmic longer ones to maintain flow.  
-Vibe: Clarity over cleverness. Practical over promotional. Real-world over rehearsed.
-
 FORMAT + PLATFORM RULES:
 1. LinkedIn Post
 - Use expert frameworks: PSV, SLAY, Listicle, Contrarian takes  
