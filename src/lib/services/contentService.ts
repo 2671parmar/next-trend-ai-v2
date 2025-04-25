@@ -78,8 +78,8 @@ FORMAT + PLATFORM RULES:
 - Feels like something a client would screenshot or repost on Monday
 
 NEVER DO THIS:
-- No “As an AI…” or assistant-style language  
-- No clickbait phrases (“game-changer,” “mind-blowing,” “you won’t believe”)  
+- No "As an AI…" or assistant-style language  
+- No clickbait phrases ("game-changer," "mind-blowing," "you won't believe")  
 - No repeating the prompt back in your intro  
 - No vague or surface-level advice  
 - No section labeling in video scripts  
@@ -148,7 +148,11 @@ export const contentService = {
   },
 
   // Generate content using OpenAI
-  async generateContent(content: string) {
+  async generateContent(content: string, brandVoice?: string) {
+    const systemPrompt = brandVoice 
+      ? `${SYSTEM_PROMPT}\n\nIMPORTANT: Use the following brand voice tone for all content generation:\n${brandVoice}`
+      : SYSTEM_PROMPT;
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -160,7 +164,7 @@ export const contentService = {
         messages: [
           {
             role: 'system',
-            content: SYSTEM_PROMPT
+            content: systemPrompt
           },
           {
             role: 'user',

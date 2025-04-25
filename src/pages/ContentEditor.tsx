@@ -15,6 +15,7 @@ import { type MBSArticle, type MortgageTerm } from '@/lib/services/contentServic
 import TypewriterText from '@/components/TypewriterText';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { supabase } from '@/lib/supabase';
 
 const contentPrompts = [
   { headline: "What's the most important mortgage term for your clients?", hook: "Understanding this term can help them make better decisions when financing their homes." },
@@ -50,9 +51,9 @@ const generateNewsFeedData = async (option: string) => {
       case 'general':
         const terms = await contentService.getMortgageTerms();
         const selectedTerms = terms.slice(0, 25); // Remove shuffling to reduce CPU load
-        return selectedTerms.map((term, index) => ({
+    return selectedTerms.map((term, index) => ({
           id: term.id || index + 1,
-          category: 'Term',
+      category: 'Term',
           date: new Date().toISOString().split('T')[0],
           title: term.term,
           content: term.definition,
@@ -93,7 +94,8 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
 const ContentEditor: React.FC = () => {
   const { option } = useParams<{ option: string }>();
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth(); // Simplified auth dependencies
+  const { user, loading: authLoading } = useAuth();
+  const [brandVoice, setBrandVoice] = useState<string | null>(null);
   
   const [newsFeed, setNewsFeed] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState('all');
@@ -108,6 +110,33 @@ const ContentEditor: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>('');
   const [cache, setCache] = useState<{ [key: string]: { data: any[]; timestamp: number } }>({});
+  
+  useEffect(() => {
+    const fetchBrandVoice = async () => {
+      if (!user?.id) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('brand_voice')
+          .select('summary')
+          .eq('user_id', user.id)
+          .single();
+
+        if (error) {
+          console.error('Error fetching brand voice:', error);
+          return;
+        }
+
+        if (data?.summary) {
+          setBrandVoice(data.summary);
+        }
+      } catch (error) {
+        console.error('Error in fetchBrandVoice:', error);
+      }
+    };
+
+    fetchBrandVoice();
+  }, [user]);
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
@@ -150,9 +179,9 @@ const ContentEditor: React.FC = () => {
   useEffect(() => {
     loadData();
   }, [option, user]);
-
+  
   const handleGenerateContent = async () => {
-    if (!selectedArticle || !user) return;
+    if (!selectedArticle) return;
     
     setIsGenerating(true);
     setError('');
@@ -184,7 +213,7 @@ const ContentEditor: React.FC = () => {
 
       for (const [index, { type, description }] of contentTypes.entries()) {
         const prompt = `Generate a ${type} (${description}) for this ${articleData.category} article:\n\nTitle: ${articleData.title}\n\nContent: ${articleData.content}`;
-        const result = await contentService.generateContent(prompt, user.id);
+        const result = await contentService.generateContent(prompt, brandVoice || undefined);
         setGeneratedContents(prev => prev.map((c, i) => i === index ? { ...c, content: result, isGenerating: false } : c));
       }
     } catch (err) {
@@ -207,10 +236,10 @@ const ContentEditor: React.FC = () => {
           const fullArticle = await contentService.getMBSArticleContent(article.url);
           setSelectedArticle(fullArticle ? { ...article, content: fullArticle.content } : article);
         } else {
-          setSelectedArticle(article);
+      setSelectedArticle(article);
         }
-        setShowEditor(true);
-        setGeneratedContents([]);
+      setShowEditor(true);
+      setGeneratedContents([]);
       } catch (error) {
         setError('Failed to fetch article content');
       } finally {
@@ -236,7 +265,7 @@ const ContentEditor: React.FC = () => {
   };
   
   const handleSendMessage = async () => {
-    if (!userInput.trim() || !user) return;
+    if (!userInput.trim()) return;
     
     setIsGenerating(true);
     try {
@@ -252,12 +281,12 @@ const ContentEditor: React.FC = () => {
         { type: 'SMS Broadcast - For Realtor Partners', description: 'Concise, Informational, Value Driven' },
         { type: 'Motivational Quote', description: 'Uplifting, Short, Non-Salesy' }
       ];
-
+      
       setGeneratedContents(contentTypes.map(type => ({ type: type.type, content: '', isGenerating: true })));
       
       for (const [index, { type, description }] of contentTypes.entries()) {
         const prompt = `Generate a ${type} (${description}) for this custom content:\n\nContent: ${customContent.content}`;
-        const result = await contentService.generateContent(prompt, user.id);
+        const result = await contentService.generateContent(prompt, brandVoice || undefined);
         setGeneratedContents(prev => prev.map((c, i) => i === index ? { ...c, content: result, isGenerating: false } : c));
       }
 
@@ -341,7 +370,7 @@ const ContentEditor: React.FC = () => {
       </Card>
     </div>
   );
-
+  
   if (showEditor) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -372,11 +401,11 @@ const ContentEditor: React.FC = () => {
                         <div className="flex justify-between items-center mb-3">
                           <Badge variant="outline" className="bg-nextrend-50 text-nextrend-500 hover:bg-nextrend-100">{selectedArticle.category}</Badge>
                           <span className="text-sm text-gray-500">{selectedArticle.date}</span>
-                        </div>
+                    </div>
                         <h3 className="text-lg font-semibold mb-2">{selectedArticle.title}</h3>
                         <p className="text-gray-600 text-sm">{selectedArticle.description}</p>
                       </CardContent>
-                    </Card>
+                  </Card>
                   )}
                   <Card>
                     <CardContent className="p-6">
@@ -391,13 +420,64 @@ const ContentEditor: React.FC = () => {
                         setGeneratedContents(prev => {
                           const updated = prev.map(c => c.type === 'Original Article' ? { ...c, content: value } : c);
                           if (!updated.find(c => c.type === 'Original Article')) updated.unshift({ type: 'Original Article', content: value });
-                          return onContentChange={(value) => {
-                        setSelectedArticle(prev => prev ? { ...prev, content: value } : null);
-                        setGeneratedContents(prev => {
-                          const updated = prev.map(c => c.type === 'Original Article' ? { ...c, content: value } : c);
-                          if (!updated.find(c => c.type === 'Original Article')) updated.unshift({ type: 'Original Article', content: value });
                           return updated;
                         });
+                      }} loading={isGenerating} placeholder="Click 'Generate Content' to create social media posts..." />
+                    </CardContent>
+                  </Card>
+                  {generatedContents.filter(content => content.type !== 'Original Article').map((content, index) => (
+                    <Card key={index} className="mt-6 overflow-hidden border-0 shadow-md hover:shadow-lg transition-shadow duration-200">
+                      <CardContent className="p-0">
+                        <div className="border-b border-gray-100 bg-gradient-to-r from-nextrend-50/50 to-white p-4 flex justify-between items-center">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-nextrend-500"></div>
+                            <label className="font-medium text-gray-700">{content.type}</label>
+                            {content.isGenerating && <RefreshCw className="w-4 h-4 text-nextrend-500 animate-spin ml-2" />}
+                          </div>
+                          {!content.isGenerating && <Button variant="ghost" size="sm" onClick={() => copyToClipboard(content.content)} className="hover:bg-nextrend-100/50">
+                            <Copy className="w-4 h-4 text-gray-600" />
+                          </Button>}
+                        </div>
+                        <div className="p-6 bg-white">
+                          <div className="prose max-w-none">
+                            <div className="text-gray-600 text-sm leading-relaxed">
+                              {content.isGenerating ? <div className="flex items-center gap-2"><span className="text-nextrend-500">Generating {content.type}...</span></div> : <TypewriterText content={content.content} speed={15} />}
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </>
+              ) : (
+                <>
+                  {selectedArticle && (
+                    <Card className="mb-4">
+                      <CardContent className="p-5">
+                        <div className="flex justify-between items-center mb-3">
+                          <Badge variant="outline" className="bg-nextrend-50 text-nextrend-500 hover:bg-nextrend-100">{option === 'trending' ? 'Mortgage' : selectedArticle.category}</Badge>
+                          <span className="text-sm text-gray-500">{selectedArticle.date}</span>
+                        </div>
+                        <h3 className="text-lg font-semibold mb-2">{selectedArticle.title}</h3>
+                        {option !== 'trending' && <p className="text-gray-600 text-sm">{selectedArticle.description}</p>}
+                      </CardContent>
+                    </Card>
+                  )}
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex justify-end mb-4">
+                        <Button variant="outline" size="sm" onClick={handleGenerateContent} disabled={isGenerating} className="flex items-center">
+                          <RefreshCw className={`w-4 h-4 mr-2 ${isGenerating ? 'animate-spin' : ''}`} />
+                          {isGenerating ? 'Generating...' : 'Generate Content'}
+                        </Button>
+                      </div>
+                      <TextEditor content={selectedArticle?.content || ''} onContentChange={(value) => {
+                        setSelectedArticle(prev => prev ? { ...prev, content: value } : null);
+                          setGeneratedContents(prev => {
+                          const updated = prev.map(c => c.type === 'Original Article' ? { ...c, content: value } : c);
+                          if (!updated.find(c => c.type === 'Original Article')) updated.unshift({ type: 'Original Article', content: value });
+                            return updated;
+                          });
                       }} loading={isGenerating} placeholder="Click 'Generate Content' to create social media posts..." />
                     </CardContent>
                   </Card>
@@ -551,42 +631,42 @@ const ContentEditor: React.FC = () => {
             </div>
           ) : (
             <Tabs defaultValue="all" value={activeTab} onValueChange={handleTabChange}>
-              {tabsContent}
-              <TabsContent value={activeTab} className="mt-0">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {tabsContent}
+            <TabsContent value={activeTab} className="mt-0">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   {currentArticles.map((article) => (
                     <div key={article.id}>
-                      <Card className="overflow-hidden h-full flex flex-col">
-                        <CardContent className="p-0 flex flex-col h-full">
-                          <div className="p-5">
-                            <div className="flex justify-between items-center mb-3">
+                    <Card className="overflow-hidden h-full flex flex-col">
+                      <CardContent className="p-0 flex flex-col h-full">
+                        <div className="p-5">
+                          <div className="flex justify-between items-center mb-3">
                               <Badge variant="outline" className="bg-nextrend-50 text-nextrend-500 hover:bg-nextrend-100">{option === 'trending' ? 'Mortgage' : article.category}</Badge>
-                              <span className="text-sm text-gray-500">{article.date}</span>
-                            </div>
-                            <h3 className="text-lg font-semibold mb-2">{article.title}</h3>
+                            <span className="text-sm text-gray-500">{article.date}</span>
+                          </div>
+                          <h3 className="text-lg font-semibold mb-2">{article.title}</h3>
                             {option !== 'trending' && <div className="text-gray-600 text-sm mb-4">{article.content}</div>}
                           </div>
-                          <div className="mt-auto border-t border-gray-100 p-4 flex justify-between items-center bg-gray-50">
-                            {(option === 'this-week' || option === 'trending') ? (
-                              <div className="flex w-full gap-2">
+                        <div className="mt-auto border-t border-gray-100 p-4 flex justify-between items-center bg-gray-50">
+                          {(option === 'this-week' || option === 'trending') ? (
+                            <div className="flex w-full gap-2">
                                 <Button variant="outline" size="sm" onClick={() => handleReadArticle(article.id)} className="text-xs flex-1">
                                   <ExternalLink className="h-3 w-3 mr-1" /> Read Article
-                                </Button>
-                                <Button variant="default" size="sm" onClick={() => handleUseArticle(article.id)} className="text-xs flex-1 bg-nextrend-500 hover:bg-nextrend-600" disabled={isLoading}>
-                                  Use Article
-                                </Button>
-                              </div>
-                            ) : option === 'general' ? (
-                              <Button variant="outline" size="sm" onClick={() => handleUseGeneralTerm(article)} className="text-xs w-full" disabled={isLoading}>
-                                Use this Mortgage Term
                               </Button>
+                                <Button variant="default" size="sm" onClick={() => handleUseArticle(article.id)} className="text-xs flex-1 bg-nextrend-500 hover:bg-nextrend-600" disabled={isLoading}>
+                                Use Article
+                              </Button>
+                            </div>
+                          ) : option === 'general' ? (
+                              <Button variant="outline" size="sm" onClick={() => handleUseGeneralTerm(article)} className="text-xs w-full" disabled={isLoading}>
+                              Use this Mortgage Term
+                            </Button>
                             ) : null}
-                          </div>
-                        </CardContent>
-                      </Card>
+                        </div>
+                      </CardContent>
+                    </Card>
                     </div>
-                  ))}
-                </div>
+                ))}
+              </div>
                 <div className="flex justify-center items-center gap-2 mt-8">
                   <Button variant="outline" size="icon" onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))} disabled={currentPage === 1}>
                     <ChevronLeft className="h-4 w-4" />
@@ -595,9 +675,9 @@ const ContentEditor: React.FC = () => {
                   <Button variant="outline" size="icon" onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))} disabled={currentPage === totalPages}>
                     <ChevronRight className="h-4 w-4" />
                   </Button>
-                </div>
-              </TabsContent>
-            </Tabs>
+              </div>
+            </TabsContent>
+          </Tabs>
           )}
         </div>
       </main>

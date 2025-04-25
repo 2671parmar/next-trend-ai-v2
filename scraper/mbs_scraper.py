@@ -109,8 +109,8 @@ class MBSScraper:
                     # Get article title and URL
                     title_elem = article.find('div', class_='article-title').find('a')
                     if not title_elem:
-                        continue
-                        
+                    continue
+                    
                     title = title_elem.get_text(strip=True)
                     url = title_elem.get('href', '')
                     if not url.startswith('http'):
@@ -134,12 +134,12 @@ class MBSScraper:
                     
                     # Only append if we have both title and description
                     if title and description:
-                        articles.append({
-                            'title': title,
-                            'url': url,
+                articles.append({
+                    'title': title,
+                    'url': url,
                             'date': date_text,
-                            'description': description
-                        })
+                    'description': description
+                })
                 except Exception as e:
                     logger.error(f"Error processing individual article block: {e}")
                     continue
@@ -232,7 +232,7 @@ class MBSScraper:
                 except Exception as e:
                     logger.error(f"Error processing article {article['url']}: {e}")
                     continue
-                    
+                        
         except Exception as e:
             logger.error(f"Error updating database: {e}")
 
