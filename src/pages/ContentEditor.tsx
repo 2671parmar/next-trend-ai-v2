@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Newspaper, BarChart, FileText, MessageSquare, ArrowLeft, Save, ExternalLink, Send, RefreshCw, Copy, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Newspaper, BarChart, FileText, MessageSquare, ArrowLeft, Save, ExternalLink, Send, RefreshCw, Copy, ChevronLeft, ChevronRight, Pencil, Linkedin, Facebook, Twitter, Mail } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -86,6 +86,7 @@ interface GeneratedContent {
   type: string;
   content: string;
   isGenerating?: boolean;
+  isEditing?: boolean;
 }
 
 const ITEMS_PER_PAGE = 12;
@@ -344,6 +345,38 @@ const ContentEditor: React.FC = () => {
     }
   };
   
+  const handleEditContent = (index: number) => {
+    setGeneratedContents(prev => prev.map((c, i) => i === index ? { ...c, isEditing: !c.isEditing } : c));
+  };
+
+  const handleContentChange = (index: number, newContent: string) => {
+    setGeneratedContents(prev => prev.map((c, i) => i === index ? { ...c, content: newContent } : c));
+  };
+
+  const handleShareContent = (type: string, content: string) => {
+    const encodedContent = encodeURIComponent(content);
+    let shareUrl = '';
+    
+    switch (type) {
+      case 'LinkedIn Post':
+        shareUrl = `https://www.linkedin.com/feed/?shareActive=true&text=${encodedContent}`;
+        break;
+      case 'Social Post':
+        shareUrl = `https://www.facebook.com/sharer/sharer.php?quote=${encodedContent}`;
+        break;
+      case 'X/Twitter Post':
+        shareUrl = `https://twitter.com/intent/tweet?text=${encodedContent}`;
+        break;
+      case 'Email':
+        shareUrl = `https://mail.google.com/mail/u/0/#inbox?compose=new&body=${encodedContent}`;
+        break;
+      default:
+        return;
+    }
+    
+    window.open(shareUrl, '_blank');
+  };
+  
   if (!option || !optionDetails[option as keyof typeof optionDetails]) return <div>Invalid option</div>;
   
   const { title, icon } = optionDetails[option as keyof typeof optionDetails];
@@ -434,14 +467,56 @@ const ContentEditor: React.FC = () => {
                             <label className="font-medium text-gray-700">{content.type}</label>
                             {content.isGenerating && <RefreshCw className="w-4 h-4 text-nextrend-500 animate-spin ml-2" />}
                           </div>
-                          {!content.isGenerating && <Button variant="ghost" size="sm" onClick={() => copyToClipboard(content.content)} className="hover:bg-nextrend-100/50">
-                            <Copy className="w-4 h-4 text-gray-600" />
-                          </Button>}
+                          {!content.isGenerating && (
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEditContent(index)}
+                                className="hover:bg-nextrend-100/50"
+                              >
+                                <Pencil className="w-4 h-4 text-gray-600" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => copyToClipboard(content.content)}
+                                className="hover:bg-nextrend-100/50"
+                              >
+                                <Copy className="w-4 h-4 text-gray-600" />
+                              </Button>
+                              {['LinkedIn Post', 'Social Post', 'X/Twitter Post', 'Email'].includes(content.type) && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleShareContent(content.type, content.content)}
+                                  className="hover:bg-nextrend-100/50"
+                                >
+                                  {content.type === 'LinkedIn Post' && <Linkedin className="w-4 h-4 text-[#0077B5]" />}
+                                  {content.type === 'Social Post' && <Facebook className="w-4 h-4 text-[#1877F2]" />}
+                                  {content.type === 'X/Twitter Post' && <Twitter className="w-4 h-4 text-[#1DA1F2]" />}
+                                  {content.type === 'Email' && <Mail className="w-4 h-4 text-gray-600" />}
+                                </Button>
+                              )}
+                            </div>
+                          )}
                         </div>
                         <div className="p-6 bg-white">
                           <div className="prose max-w-none">
                             <div className="text-gray-600 text-sm leading-relaxed">
-                              {content.isGenerating ? <div className="flex items-center gap-2"><span className="text-nextrend-500">Generating {content.type}...</span></div> : <TypewriterText content={content.content} speed={15} />}
+                              {content.isGenerating ? (
+                                <div className="flex items-center gap-2">
+                                  <span className="text-nextrend-500">Generating {content.type}...</span>
+                                </div>
+                              ) : content.isEditing ? (
+                                <Textarea
+                                  value={content.content}
+                                  onChange={(e) => handleContentChange(index, e.target.value)}
+                                  className="min-h-[200px] w-full"
+                                />
+                              ) : (
+                                <TypewriterText content={content.content} speed={15} />
+                              )}
                             </div>
                           </div>
                         </div>
@@ -490,14 +565,56 @@ const ContentEditor: React.FC = () => {
                             <label className="font-medium text-gray-700">{content.type}</label>
                             {content.isGenerating && <RefreshCw className="w-4 h-4 text-nextrend-500 animate-spin ml-2" />}
                           </div>
-                          {!content.isGenerating && <Button variant="ghost" size="sm" onClick={() => copyToClipboard(content.content)} className="hover:bg-nextrend-100/50">
-                            <Copy className="w-4 h-4 text-gray-600" />
-                          </Button>}
+                          {!content.isGenerating && (
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEditContent(index)}
+                                className="hover:bg-nextrend-100/50"
+                              >
+                                <Pencil className="w-4 h-4 text-gray-600" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => copyToClipboard(content.content)}
+                                className="hover:bg-nextrend-100/50"
+                              >
+                                <Copy className="w-4 h-4 text-gray-600" />
+                              </Button>
+                              {['LinkedIn Post', 'Social Post', 'X/Twitter Post', 'Email'].includes(content.type) && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleShareContent(content.type, content.content)}
+                                  className="hover:bg-nextrend-100/50"
+                                >
+                                  {content.type === 'LinkedIn Post' && <Linkedin className="w-4 h-4 text-[#0077B5]" />}
+                                  {content.type === 'Social Post' && <Facebook className="w-4 h-4 text-[#1877F2]" />}
+                                  {content.type === 'X/Twitter Post' && <Twitter className="w-4 h-4 text-[#1DA1F2]" />}
+                                  {content.type === 'Email' && <Mail className="w-4 h-4 text-gray-600" />}
+                                </Button>
+                              )}
+                            </div>
+                          )}
                         </div>
                         <div className="p-6 bg-white">
                           <div className="prose max-w-none">
                             <div className="text-gray-600 text-sm leading-relaxed">
-                              {content.isGenerating ? <div className="flex items-center gap-2"><span className="text-nextrend-500">Generating {content.type}...</span></div> : <TypewriterText content={content.content} speed={15} />}
+                              {content.isGenerating ? (
+                                <div className="flex items-center gap-2">
+                                  <span className="text-nextrend-500">Generating {content.type}...</span>
+                                </div>
+                              ) : content.isEditing ? (
+                                <Textarea
+                                  value={content.content}
+                                  onChange={(e) => handleContentChange(index, e.target.value)}
+                                  className="min-h-[200px] w-full"
+                                />
+                              ) : (
+                                <TypewriterText content={content.content} speed={15} />
+                              )}
                             </div>
                           </div>
                         </div>
@@ -579,14 +696,56 @@ const ContentEditor: React.FC = () => {
                           <label className="font-medium text-gray-700">{content.type}</label>
                           {content.isGenerating && <RefreshCw className="w-4 h-4 text-nextrend-500 animate-spin ml-2" />}
                         </div>
-                        {!content.isGenerating && <Button variant="ghost" size="sm" onClick={() => copyToClipboard(content.content)} className="hover:bg-nextrend-100/50">
-                          <Copy className="w-4 h-4 text-gray-600" />
-                        </Button>}
+                        {!content.isGenerating && (
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEditContent(index)}
+                              className="hover:bg-nextrend-100/50"
+                            >
+                              <Pencil className="w-4 h-4 text-gray-600" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => copyToClipboard(content.content)}
+                              className="hover:bg-nextrend-100/50"
+                            >
+                              <Copy className="w-4 h-4 text-gray-600" />
+                            </Button>
+                            {['LinkedIn Post', 'Social Post', 'X/Twitter Post', 'Email'].includes(content.type) && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleShareContent(content.type, content.content)}
+                                className="hover:bg-nextrend-100/50"
+                              >
+                                {content.type === 'LinkedIn Post' && <Linkedin className="w-4 h-4 text-[#0077B5]" />}
+                                {content.type === 'Social Post' && <Facebook className="w-4 h-4 text-[#1877F2]" />}
+                                {content.type === 'X/Twitter Post' && <Twitter className="w-4 h-4 text-[#1DA1F2]" />}
+                                {content.type === 'Email' && <Mail className="w-4 h-4 text-gray-600" />}
+                              </Button>
+                            )}
+                          </div>
+                        )}
                       </div>
                       <div className="p-6 bg-white">
                         <div className="prose max-w-none">
                           <div className="text-gray-600 text-sm leading-relaxed">
-                            {content.isGenerating ? <div className="flex items-center gap-2"><span className="text-nextrend-500">Generating {content.type}...</span></div> : <TypewriterText content={content.content} speed={15} />}
+                            {content.isGenerating ? (
+                              <div className="flex items-center gap-2">
+                                <span className="text-nextrend-500">Generating {content.type}...</span>
+                              </div>
+                            ) : content.isEditing ? (
+                              <Textarea
+                                value={content.content}
+                                onChange={(e) => handleContentChange(index, e.target.value)}
+                                className="min-h-[200px] w-full"
+                              />
+                            ) : (
+                              <TypewriterText content={content.content} speed={15} />
+                            )}
                           </div>
                         </div>
                       </div>
