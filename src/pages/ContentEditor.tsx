@@ -368,12 +368,17 @@ const ContentEditor: React.FC = () => {
         shareUrl = `https://twitter.com/intent/tweet?text=${encodedContent}`;
         break;
       case 'Email':
-        shareUrl = `https://mail.google.com/mail/u/0/#inbox?compose=new&body=${encodedContent}`;
+        // Extract first line as subject, rest as body
+        const lines = content.split('\n');
+        const subject = encodeURIComponent(lines[0].trim());
+        const body = encodeURIComponent(lines.slice(1).join('\n').trim());
+        shareUrl = `https://mail.google.com/mail/?view=cm&fs=1&tf=1&su=${subject}&body=${body}`;
         break;
       default:
         return;
     }
-    
+    // Attempt to copy to clipboard before opening the URL
+    copyToClipboard(content);
     window.open(shareUrl, '_blank');
   };
   
