@@ -12,8 +12,8 @@ CONTENT TO GENERATE (IN THIS EXACT ORDER):
 4. Marketing Email — 2–3 short paragraphs, friendly expert tone, human-sounding subject line, soft CTA (e.g., reply, click)
 5. Social Post — Engaging insight (Hero-Hub-Hygiene model), 2–3 hashtags max, platform-flexible
 6. X/Twitter Post — Bold insight, max 125 characters, 1–3 hashtags
-7. Client SMS — Informative, max 150 characters, ends with an open question (e.g., "Know anyone interested?")
-8. Realtor SMS — Market update, max 150 characters, value-driven for agents
+7. Client SMS — Informative, you MUST return output that is no longer than 150 characters, including spaces and punctuation. Do not exceed this limit under any circumstances, ends with an open question (e.g., "Know anyone interested?")
+8. Realtor SMS — Market update, you MUST return output that is no longer than 150 characters, including spaces and punctuation. Do not exceed this limit under any circumstances, value-driven for agents
 9. Motivational Quote — Uplifting, max 25 words, natural, non-salesy
 
 BRAND VOICE RULES (ALWAYS FOLLOW):
