@@ -31,7 +31,7 @@ const generateNewsFeedData = async (option: string) => {
         return mbsArticles.map(article => ({
           id: article.id,
           category: article.category,
-          date: new Date(article.date).toISOString().split('T')[0], // Faster date format
+          date: new Date(article.date).toISOString().split('T')[0],
           title: article.title,
           content: article.description,
           url: article.url,
@@ -50,10 +50,10 @@ const generateNewsFeedData = async (option: string) => {
         }));
       case 'general':
         const terms = await contentService.getMortgageTerms();
-        const selectedTerms = terms.slice(0, 25); // Remove shuffling to reduce CPU load
-    return selectedTerms.map((term, index) => ({
+        const selectedTerms = terms.slice(0, 25);
+        return selectedTerms.map((term, index) => ({
           id: term.id || index + 1,
-      category: 'Term',
+          category: 'Term',
           date: new Date().toISOString().split('T')[0],
           title: term.term,
           content: term.definition,
@@ -64,7 +64,6 @@ const generateNewsFeedData = async (option: string) => {
         return [];
     }
   } catch (error) {
-    console.error(`Error fetching ${option} data:`, error);
     throw error;
   }
 };
@@ -124,7 +123,6 @@ const ContentEditor: React.FC = () => {
           .single();
 
         if (error) {
-          console.error('Error fetching brand voice:', error);
           return;
         }
 
@@ -132,7 +130,7 @@ const ContentEditor: React.FC = () => {
           setBrandVoice(data.summary);
         }
       } catch (error) {
-        console.error('Error in fetchBrandVoice:', error);
+        setError('Failed to fetch brand voice');
       }
     };
 
@@ -168,7 +166,6 @@ const ContentEditor: React.FC = () => {
       setGeneratedContents([]);
       setCache(prev => ({ ...prev, [option]: { data, timestamp: Date.now() } }));
     } catch (error) {
-      console.error('Error loading data:', error);
       setError('Failed to load data. Please try again.');
       toast.error('Failed to load content. Please try again.');
     } finally {
@@ -176,7 +173,6 @@ const ContentEditor: React.FC = () => {
     }
   };
   
-  // Load data immediately on mount, reduce dependency on auth
   useEffect(() => {
     loadData();
   }, [option, user]);
@@ -237,10 +233,10 @@ const ContentEditor: React.FC = () => {
           const fullArticle = await contentService.getMBSArticleContent(article.url);
           setSelectedArticle(fullArticle ? { ...article, content: fullArticle.content } : article);
         } else {
-      setSelectedArticle(article);
+          setSelectedArticle(article);
         }
-      setShowEditor(true);
-      setGeneratedContents([]);
+        setShowEditor(true);
+        setGeneratedContents([]);
       } catch (error) {
         setError('Failed to fetch article content');
       } finally {
@@ -341,7 +337,7 @@ const ContentEditor: React.FC = () => {
     try {
       await navigator.clipboard.writeText(content);
     } catch (err) {
-      console.error('Failed to copy:', err);
+      // Silent fail
     }
   };
   
@@ -368,7 +364,6 @@ const ContentEditor: React.FC = () => {
         shareUrl = `https://twitter.com/intent/tweet?text=${encodedContent}`;
         break;
       case 'Email':
-        // Extract first line as subject, rest as body
         const lines = content.split('\n');
         const subject = encodeURIComponent(lines[0].trim());
         const body = encodeURIComponent(lines.slice(1).join('\n').trim());
@@ -377,7 +372,6 @@ const ContentEditor: React.FC = () => {
       default:
         return;
     }
-    // Attempt to copy to clipboard before opening the URL
     copyToClipboard(content);
     window.open(shareUrl, '_blank');
   };
@@ -439,11 +433,11 @@ const ContentEditor: React.FC = () => {
                         <div className="flex justify-between items-center mb-3">
                           <Badge variant="outline" className="bg-nextrend-50 text-nextrend-500 hover:bg-nextrend-100">{selectedArticle.category}</Badge>
                           <span className="text-sm text-gray-500">{selectedArticle.date}</span>
-                    </div>
+                        </div>
                         <h3 className="text-lg font-semibold mb-2">{selectedArticle.title}</h3>
                         <p className="text-gray-600 text-sm">{selectedArticle.description}</p>
                       </CardContent>
-                  </Card>
+                    </Card>
                   )}
                   <Card>
                     <CardContent className="p-6">
@@ -553,11 +547,11 @@ const ContentEditor: React.FC = () => {
                       </div>
                       <TextEditor content={selectedArticle?.content || ''} onContentChange={(value) => {
                         setSelectedArticle(prev => prev ? { ...prev, content: value } : null);
-                          setGeneratedContents(prev => {
+                        setGeneratedContents(prev => {
                           const updated = prev.map(c => c.type === 'Original Article' ? { ...c, content: value } : c);
                           if (!updated.find(c => c.type === 'Original Article')) updated.unshift({ type: 'Original Article', content: value });
-                            return updated;
-                          });
+                          return updated;
+                        });
                       }} loading={isGenerating} placeholder="Click 'Generate Content' to create social media posts..." />
                     </CardContent>
                   </Card>
@@ -795,42 +789,42 @@ const ContentEditor: React.FC = () => {
             </div>
           ) : (
             <Tabs defaultValue="all" value={activeTab} onValueChange={handleTabChange}>
-            {tabsContent}
-            <TabsContent value={activeTab} className="mt-0">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {tabsContent}
+              <TabsContent value={activeTab} className="mt-0">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   {currentArticles.map((article) => (
                     <div key={article.id}>
-                    <Card className="overflow-hidden h-full flex flex-col">
-                      <CardContent className="p-0 flex flex-col h-full">
-                        <div className="p-5">
-                          <div className="flex justify-between items-center mb-3">
+                      <Card className="overflow-hidden h-full flex flex-col">
+                        <CardContent className="p-0 flex flex-col h-full">
+                          <div className="p-5">
+                            <div className="flex justify-between items-center mb-3">
                               <Badge variant="outline" className="bg-nextrend-50 text-nextrend-500 hover:bg-nextrend-100">{option === 'trending' ? 'Mortgage' : article.category}</Badge>
-                            <span className="text-sm text-gray-500">{article.date}</span>
-                          </div>
-                          <h3 className="text-lg font-semibold mb-2">{article.title}</h3>
+                              <span className="text-sm text-gray-500">{article.date}</span>
+                            </div>
+                            <h3 className="text-lg font-semibold mb-2">{article.title}</h3>
                             {option !== 'trending' && <div className="text-gray-600 text-sm mb-4">{article.content}</div>}
                           </div>
-                        <div className="mt-auto border-t border-gray-100 p-4 flex justify-between items-center bg-gray-50">
-                          {(option === 'this-week' || option === 'trending') ? (
-                            <div className="flex w-full gap-2">
+                          <div className="mt-auto border-t border-gray-100 p-4 flex justify-between items-center bg-gray-50">
+                            {(option === 'this-week' || option === 'trending') ? (
+                              <div className="flex w-full gap-2">
                                 <Button variant="outline" size="sm" onClick={() => handleReadArticle(article.id)} className="text-xs flex-1">
                                   <ExternalLink className="h-3 w-3 mr-1" /> Read Article
-                              </Button>
+                                </Button>
                                 <Button variant="default" size="sm" onClick={() => handleUseArticle(article.id)} className="text-xs flex-1 bg-nextrend-500 hover:bg-nextrend-600" disabled={isLoading}>
-                                Use Article
-                              </Button>
-                            </div>
-                          ) : option === 'general' ? (
+                                  Use Article
+                                </Button>
+                              </div>
+                            ) : option === 'general' ? (
                               <Button variant="outline" size="sm" onClick={() => handleUseGeneralTerm(article)} className="text-xs w-full" disabled={isLoading}>
-                              Use this Mortgage Term
-                            </Button>
+                                Use this Mortgage Term
+                              </Button>
                             ) : null}
-                        </div>
-                      </CardContent>
-                    </Card>
+                          </div>
+                        </CardContent>
+                      </Card>
                     </div>
-                ))}
-              </div>
+                  ))}
+                </div>
                 <div className="flex justify-center items-center gap-2 mt-8">
                   <Button variant="outline" size="icon" onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))} disabled={currentPage === 1}>
                     <ChevronLeft className="h-4 w-4" />
@@ -839,9 +833,9 @@ const ContentEditor: React.FC = () => {
                   <Button variant="outline" size="icon" onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))} disabled={currentPage === totalPages}>
                     <ChevronRight className="h-4 w-4" />
                   </Button>
-              </div>
-            </TabsContent>
-          </Tabs>
+                </div>
+              </TabsContent>
+            </Tabs>
           )}
         </div>
       </main>
