@@ -214,7 +214,7 @@ const ContentEditor: React.FC = () => {
 
       for (const [index, { type, description }] of contentTypes.entries()) {
         const prompt = `Generate a ${type} (${description}) for this ${articleData.category} article:\n\nTitle: ${articleData.title}\n\nContent: ${articleData.content}`;
-        const result = await contentService.generateContent(prompt, brandVoice || undefined);
+        const result = await contentService.generateContent(prompt, brandVoice);
         setGeneratedContents(prev => prev.map((c, i) => i === index ? { ...c, content: result, isGenerating: false } : c));
       }
     } catch (err) {
@@ -287,7 +287,7 @@ const ContentEditor: React.FC = () => {
       
       for (const [index, { type, description }] of contentTypes.entries()) {
         const prompt = `Generate a ${type} (${description}) for this custom content:\n\nContent: ${customContent.content}`;
-        const result = await contentService.generateContent(prompt, brandVoice || undefined);
+        const result = await contentService.generateContent(prompt, brandVoice);
         setGeneratedContents(prev => prev.map((c, i) => i === index ? { ...c, content: result, isGenerating: false } : c));
       }
 
