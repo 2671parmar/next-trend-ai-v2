@@ -62,7 +62,7 @@ export default function BrandVoice() {
 
     try {
       const response = await openai.chat.completions.create({
-        model: "gpt-4o",
+        model: "chatgpt-4o-latest",
         messages: [{
           role: "system",
           content: "You are a brand voice analyzer. Create a concise summary that captures the essence of the brand's tone and style, similar to: 'Professional, approachable, and client-focused with a conversational tone'"
@@ -70,7 +70,7 @@ export default function BrandVoice() {
           role: "user",
           content: `Summarize the following text into a concise brand voice description (200 words or less) that will be used in a different prompt to generate content: ${text}`
         }],
-        temperature: 0.5,
+        temperature: 0.7,
         max_tokens: 150
       });
 
