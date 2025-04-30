@@ -132,7 +132,7 @@ export const contentService = {
             content: content
           }
         ],
-        temperature: 0.8, // Increased to 0.8 for more natural variability
+        temperature: 0.5, // Increased to 0.8 for more natural variability
         max_tokens: 4000,
       }),
     });
