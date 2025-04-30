@@ -39,13 +39,13 @@ No repeating the prompt or input at the beginning of outputs
 No vague or surface-level advice
 No section labeling in video scripts
 NO PLAGIARISM. All content must be original and written from scratch.
-SMS messages should NEVER exceed 150 characters
 
 ALWAYS DO THIS:
 Write like a seasoned high-performing loan officer
 Vary sentence length for natural rhythm and pacing
 Deliver real value, clear insights, and actionable takeaways
 Incorporate a mix of short, medium, and long sentences to keep readers engaged naturally
+Always keep the SMS Broadcast - For Clients & SMS Broadcast - For Realtor Partners UNDER 150 characters. This is critical.
 `;
 
 export interface MBSArticle {
