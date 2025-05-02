@@ -33,7 +33,8 @@ const generateNewsFeedData = async (option: string) => {
           category: article.category,
           date: new Date(article.date).toISOString().split('T')[0],
           title: article.title,
-          content: article.description,
+          description: article.description,
+          content: article.content,
           url: article.url,
           isGenerating: article.is_generating
         }));
@@ -532,7 +533,7 @@ const ContentEditor: React.FC = () => {
                           <span className="text-sm text-gray-500">{selectedArticle.date}</span>
                         </div>
                         <h3 className="text-lg font-semibold mb-2">{selectedArticle.title}</h3>
-                        {option !== 'trending' && <p className="text-gray-600 text-sm">{selectedArticle.description}</p>}
+                        {option !== 'trending' && option !== 'general' && <div className="text-gray-600 text-sm mb-4">{selectedArticle.description}</div>}
                       </CardContent>
                     </Card>
                   )}
@@ -803,7 +804,7 @@ const ContentEditor: React.FC = () => {
                               <span className="text-sm text-gray-500">{article.date}</span>
                             </div>
                             <h3 className="text-lg font-semibold mb-2">{article.title}</h3>
-                            {option !== 'trending' && <div className="text-gray-600 text-sm mb-4">{article.content}</div>}
+                            {option !== 'trending' && option !== 'general' && <div className="text-gray-600 text-sm mb-4">{article.description}</div>}
                           </div>
                           <div className="mt-auto border-t border-gray-100 p-4 flex justify-between items-center bg-gray-50">
                             {(option === 'this-week' || option === 'trending') ? (
