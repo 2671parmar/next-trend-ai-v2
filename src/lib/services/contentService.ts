@@ -42,13 +42,13 @@ CONTENT TO GENERATE (IN THIS EXACT ORDER):
 7. Client SMS:
  – Informative, you MUST return output that is no longer than 135 characters, including spaces and punctuation. Do not exceed this limit under any circumstances, ends with an open question (e.g., "Know anyone interested?")
  – Share a mortgage topic + ask if they know someone it applies to
- – Never ask if they’re interested themselves
- Example: “New first-time buyer programs launched. Know anyone interested?”
+ – Never ask if they're interested themselves
+ Example: "New first-time buyer programs launched. Know anyone interested?"
 
 8. Realtor SMS:
  – Market update, you MUST return output that is no longer than 135 characters, including spaces and punctuation. Do not exceed this limit under any circumstances, value-driven for agents
  – Share a quick update agents can pass to clients
- Example: “Bonds shifted slightly lower today. Just keeping you in the know so you can keep your clients in the loop.”
+ Example: "Bonds shifted slightly lower today. Just keeping you in the know so you can keep your clients in the loop."
 
 9. Motivational Quote:
 – Uplifting, natural
@@ -56,7 +56,7 @@ CONTENT TO GENERATE (IN THIS EXACT ORDER):
 – Never salesy
 
 BRAND VOICE RULES (ALWAYS FOLLOW):
-- Tone: Confident, helpful, sharp, as defined by the user’s brand voice.
+- Tone: Confident, helpful, sharp, as defined by the user's brand voice.
 - Style: Mix short bursts (e.g., "This works!") with longer, wandering thoughts (e.g., "I once spent an hour explaining this to a client, and it clicked"). Avoid robotic rhythm.
 - Focus: Clarity and practicality over cleverness; weave in real-world examples or personal tangents over generic advice.
 
@@ -65,15 +65,15 @@ BRAND VOICE PROFILE:
 
 REALISM ENFORCEMENT:
 - Write like a human: Add casual asides (e.g., "Oops, I almost forgot this point"), mild stumbles (e.g., repeating a key idea differently), or personal reactions (e.g., "This always surprises me").
-- Include storytelling: Drop in a brief, imagined scenario (e.g., "Last month, I helped a family tweak their rate—saved them a bundle") or a reflective note (e.g., "I’ve seen this play out a dozen times").
+- Include storytelling: Drop in a brief, imagined scenario (e.g., "Last month, I helped a family tweak their rate—saved them a bundle") or a reflective note (e.g., "I've seen this play out a dozen times").
 - Avoid rigid structure: Let thoughts flow naturally, like a chat—skip formal transitions ("Furthermore") and embrace incomplete sentences for effect.
-- Use everyday language: Contractions (e.g., "you’re," "it’s"), rhetorical questions (e.g., "Why does this matter?"), and occasional filler (e.g., "well, here’s the thing").
+- Use everyday language: Contractions (e.g., "you're," "it's"), rhetorical questions (e.g., "Why does this matter?"), and occasional filler (e.g., "well, here's the thing").
 - Eliminate AI flags: No buzzwords ("game-changer," "revolutionary"), no perfect grammar (e.g., a missing comma or run-on), no repetitive phrasing.
 - Keep it neutral English, no slang or regional quirks unless the brand voice specifies.
 
 NEVER DO THIS:
-No “As an AI…” or assistant-style language
-No clickbait phrases (“game-changer,” “mind-blowing,” “you won’t believe”)
+No "As an AI..." or assistant-style language
+No clickbait phrases ("game-changer," "mind-blowing," "you won't believe")
 No repeating the prompt or input at the beginning of outputs
 No vague or surface-level advice
 No section labeling in video scripts
@@ -88,7 +88,7 @@ Incorporate a mix of short, medium, and long sentences to keep readers engaged n
 COMPLIANCE RULES (ALWAYS FOLLOW):
 All output must comply with TILA, RESPA, and UDAAP regulations
 Do not use misleading claims, superlatives, or trigger terms like:
- “low rates,” “easy approval,” “guaranteed,” “instant,” or “no documents” unless clearly and factually substantiated
+ "low rates," "easy approval," "guaranteed," "instant," or "no documents" unless clearly and factually substantiated
 Never quote rates, payments, or timelines
 Never imply universal qualification or certainty of loan approval
 Avoid language that could be construed as deceptive, unfair, or overly promotional
@@ -153,7 +153,7 @@ export const contentService = {
 
   // Generate content using OpenAI
   async generateContent(content: string, brandVoice?: string) {
-    const defaultBrandVoice = `User's voice: confident, professional, yet warm and approachable. Sounds like a seasoned loan officer chatting with a client—uses contractions (e.g., 'you’re,' 'it’s'), tosses in casual asides (e.g., 'Oops, almost forgot this!'), and shares quick stories (e.g., 'Last week, I helped a couple adjust their loan—saved them cash'). Varies sentence length, adds rhetorical questions (e.g., 'Ever thought about this?'), and keeps it practical with a touch of personality. Avoids jargon or sales pitches.`;
+    const defaultBrandVoice = `User's voice: confident, professional, yet warm and approachable. Sounds like a seasoned loan officer chatting with a client—uses contractions (e.g., 'you're,' 'it's'), tosses in casual asides (e.g., 'Oops, almost forgot this!'), and shares quick stories (e.g., 'Last week, I helped a couple adjust their loan—saved them cash'). Varies sentence length, adds rhetorical questions (e.g., 'Ever thought about this?'), and keeps it practical with a touch of personality. Avoids jargon or sales pitches.`;
     
     const brandVoiceToUse = brandVoice || defaultBrandVoice;
     const systemPrompt = SYSTEM_PROMPT.replace(
@@ -238,6 +238,8 @@ export const contentService = {
       throw error;
     }
 
-    return data || [];
+    // Shuffle the array in JavaScript
+    const shuffled = (data || []).sort(() => Math.random() - 0.5);
+    return shuffled;
   },
 };

@@ -50,8 +50,7 @@ const generateNewsFeedData = async (option: string) => {
         }));
       case 'general':
         const terms = await contentService.getMortgageTerms();
-        const selectedTerms = terms.slice(0, 25);
-        return selectedTerms.map((term, index) => ({
+        return terms.map((term, index) => ({
           id: term.id || index + 1,
           category: 'Term',
           date: new Date().toISOString().split('T')[0],
@@ -761,6 +760,8 @@ const ContentEditor: React.FC = () => {
   
   const tabsContent = option === 'general' 
     ? <TabsList className="mb-6"><TabsTrigger value="all">All Terms</TabsTrigger></TabsList>
+    : option === 'this-week'
+    ? <TabsList className="mb-6"><TabsTrigger value="all">All</TabsTrigger><TabsTrigger value="daily">Daily</TabsTrigger><TabsTrigger value="weekly">Weekly</TabsTrigger><TabsTrigger value="monthly">Monthly</TabsTrigger></TabsList>
     : <TabsList className="mb-6"><TabsTrigger value="all">All</TabsTrigger><TabsTrigger value="mortgage">Mortgage</TabsTrigger><TabsTrigger value="housing">Housing</TabsTrigger><TabsTrigger value="economy">Economy</TabsTrigger></TabsList>;
   
   return (
@@ -807,15 +808,15 @@ const ContentEditor: React.FC = () => {
                           <div className="mt-auto border-t border-gray-100 p-4 flex justify-between items-center bg-gray-50">
                             {(option === 'this-week' || option === 'trending') ? (
                               <div className="flex w-full gap-2">
-                                <Button variant="outline" size="sm" onClick={() => handleReadArticle(article.id)} className="text-xs flex-1">
+                                {/* <Button variant="outline" size="sm" onClick={() => handleReadArticle(article.id)} className="text-xs flex-1">
                                   <ExternalLink className="h-3 w-3 mr-1" /> Read Article
-                                </Button>
+                                </Button> */}
                                 <Button variant="default" size="sm" onClick={() => handleUseArticle(article.id)} className="text-xs flex-1 bg-nextrend-500 hover:bg-nextrend-600" disabled={isLoading}>
                                   Use Article
                                 </Button>
                               </div>
                             ) : option === 'general' ? (
-                              <Button variant="outline" size="sm" onClick={() => handleUseGeneralTerm(article)} className="text-xs w-full" disabled={isLoading}>
+                              <Button variant="default" size="sm" onClick={() => handleUseGeneralTerm(article)} className="text-xs flex-1 bg-nextrend-500 hover:bg-nextrend-600" disabled={isLoading}>
                                 Use this Mortgage Term
                               </Button>
                             ) : null}
