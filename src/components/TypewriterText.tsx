@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
 
 interface TypewriterTextProps {
   content: string;
@@ -41,8 +42,8 @@ const TypewriterText: React.FC<TypewriterTextProps> = ({
   }, [content, speed, onComplete]);
 
   return (
-    <div className="whitespace-pre-wrap">
-      {displayedContent}
+    <div className="prose prose-sm max-w-none">
+      <ReactMarkdown>{displayedContent}</ReactMarkdown>
       {!isComplete && (
         <span className="inline-block w-2 h-4 ml-1 bg-nextrend-500 animate-pulse" />
       )}
