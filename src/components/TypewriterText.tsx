@@ -42,7 +42,7 @@ const TypewriterText: React.FC<TypewriterTextProps> = ({
   }, [content, speed, onComplete]);
 
   return (
-    <div className="prose prose-sm max-w-none">
+    <div className="prose prose-sm max-w-none prose-headings:font-bold prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg prose-p:text-base prose-strong:font-bold">
       <ReactMarkdown>{displayedContent}</ReactMarkdown>
       {!isComplete && (
         <span className="inline-block w-2 h-4 ml-1 bg-nextrend-500 animate-pulse" />
