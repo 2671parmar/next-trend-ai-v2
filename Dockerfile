@@ -1,8 +1,8 @@
 # Use Node.js as the base image
 FROM node:20-alpine
 
-# Install Python and pip
-RUN apk add --no-cache python3 py3-pip
+# Install Python, pip, and virtualenv
+RUN apk add --no-cache python3 py3-pip python3-dev gcc musl-dev
 
 # Set working directory
 WORKDIR /app
@@ -16,9 +16,11 @@ RUN npm install
 # Copy the rest of the application
 COPY . .
 
-# Install Python dependencies
+# Set up Python virtual environment and install dependencies
 WORKDIR /app/scraper
-RUN pip3 install -r requirements.txt
+RUN python3 -m venv venv && \
+    . venv/bin/activate && \
+    pip install --no-cache-dir -r requirements.txt
 
 # Set back to main directory
 WORKDIR /app
