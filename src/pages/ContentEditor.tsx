@@ -42,9 +42,10 @@ const generateNewsFeedData = async (option: string) => {
         const trendingArticles = await contentService.getTrendingArticles();
         return trendingArticles.map(article => ({
           id: article.id,
-          category: article.category || 'Mortgage',
+          category: article.category || 'Trending',
           date: new Date(article.date).toISOString().split('T')[0],
           title: article.title,
+          description: article.description,
           content: article.content,
           url: article.url,
           isGenerating: false
@@ -435,7 +436,9 @@ const ContentEditor: React.FC = () => {
                           <span className="text-sm text-gray-500">{selectedArticle.date}</span>
                         </div>
                         <h3 className="text-lg font-semibold mb-2">{selectedArticle.title}</h3>
-                        <p className="text-gray-600 text-sm">{selectedArticle.description}</p>
+                        {selectedArticle.description && (
+                          <div className="text-gray-600 text-sm mb-4">{selectedArticle.description}</div>
+                        )}
                       </CardContent>
                     </Card>
                   )}
@@ -529,11 +532,13 @@ const ContentEditor: React.FC = () => {
                     <Card className="mb-4">
                       <CardContent className="p-5">
                         <div className="flex justify-between items-center mb-3">
-                          <Badge variant="outline" className="bg-nextrend-50 text-nextrend-500 hover:bg-nextrend-100">{option === 'trending' ? 'Mortgage' : selectedArticle.category}</Badge>
+                          <Badge variant="outline" className="bg-nextrend-50 text-nextrend-500 hover:bg-nextrend-100">{selectedArticle.category}</Badge>
                           <span className="text-sm text-gray-500">{selectedArticle.date}</span>
                         </div>
                         <h3 className="text-lg font-semibold mb-2">{selectedArticle.title}</h3>
-                        {option !== 'trending' && option !== 'general' && <div className="text-gray-600 text-sm mb-4">{selectedArticle.description}</div>}
+                        {selectedArticle.description && (
+                          <div className="text-gray-600 text-sm mb-4">{selectedArticle.description}</div>
+                        )}
                       </CardContent>
                     </Card>
                   )}
@@ -763,7 +768,7 @@ const ContentEditor: React.FC = () => {
     ? <TabsList className="mb-6"><TabsTrigger value="all">All Terms</TabsTrigger></TabsList>
     : option === 'this-week'
     ? <TabsList className="mb-6"><TabsTrigger value="all">All</TabsTrigger><TabsTrigger value="daily">Daily</TabsTrigger><TabsTrigger value="weekly">Weekly</TabsTrigger><TabsTrigger value="monthly">Monthly</TabsTrigger></TabsList>
-    : <TabsList className="mb-6"><TabsTrigger value="all">All</TabsTrigger><TabsTrigger value="mortgage">Mortgage</TabsTrigger><TabsTrigger value="housing">Housing</TabsTrigger><TabsTrigger value="economy">Economy</TabsTrigger></TabsList>;
+    : <TabsList className="mb-6"><TabsTrigger value="all">All</TabsTrigger><TabsTrigger value="trending">Trending</TabsTrigger><TabsTrigger value="mortgage">Mortgage</TabsTrigger><TabsTrigger value="housing">Housing</TabsTrigger><TabsTrigger value="economy">Economy</TabsTrigger></TabsList>;
   
   return (
     <div className="min-h-screen bg-gray-50">
@@ -800,11 +805,13 @@ const ContentEditor: React.FC = () => {
                         <CardContent className="p-0 flex flex-col h-full">
                           <div className="p-5">
                             <div className="flex justify-between items-center mb-3">
-                              <Badge variant="outline" className="bg-nextrend-50 text-nextrend-500 hover:bg-nextrend-100">{option === 'trending' ? 'Mortgage' : article.category}</Badge>
+                              <Badge variant="outline" className="bg-nextrend-50 text-nextrend-500 hover:bg-nextrend-100">{article.category}</Badge>
                               <span className="text-sm text-gray-500">{article.date}</span>
                             </div>
                             <h3 className="text-lg font-semibold mb-2">{article.title}</h3>
-                            {option !== 'trending' && option !== 'general' && <div className="text-gray-600 text-sm mb-4">{article.description}</div>}
+                            {(option === 'this-week' || option === 'trending') && article.description && (
+                              <div className="text-gray-600 text-sm mb-4">{article.description}</div>
+                            )}
                           </div>
                           <div className="mt-auto border-t border-gray-100 p-4 flex justify-between items-center bg-gray-50">
                             {(option === 'this-week' || option === 'trending') ? (

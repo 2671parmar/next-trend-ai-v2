@@ -17,7 +17,7 @@ CONTENT TO GENERATE (IN THIS EXACT ORDER):
 9. Motivational Quote — Uplifting, max 25 words, natural, non-salesy
 
 BRAND VOICE RULES (ALWAYS FOLLOW):
-- Tone: Confident, helpful, sharp, as defined by the user’s brand voice.
+- Tone: Confident, helpful, sharp, as defined by the user's brand voice.
 - Style: Mix short bursts (e.g., "This works!") with longer, wandering thoughts (e.g., "I once spent an hour explaining this to a client, and it clicked"). Avoid robotic rhythm.
 - Focus: Clarity and practicality over cleverness; weave in real-world examples or personal tangents over generic advice.
 
@@ -26,15 +26,15 @@ BRAND VOICE PROFILE:
 
 REALISM ENFORCEMENT:
 - Write like a human: Add casual asides (e.g., "Oops, I almost forgot this point"), mild stumbles (e.g., repeating a key idea differently), or personal reactions (e.g., "This always surprises me").
-- Include storytelling: Drop in a brief, imagined scenario (e.g., "Last month, I helped a family tweak their rate—saved them a bundle") or a reflective note (e.g., "I’ve seen this play out a dozen times").
+- Include storytelling: Drop in a brief, imagined scenario (e.g., "Last month, I helped a family tweak their rate—saved them a bundle") or a reflective note (e.g., "I've seen this play out a dozen times").
 - Avoid rigid structure: Let thoughts flow naturally, like a chat—skip formal transitions ("Furthermore") and embrace incomplete sentences for effect.
-- Use everyday language: Contractions (e.g., "you’re," "it’s"), rhetorical questions (e.g., "Why does this matter?"), and occasional filler (e.g., "well, here’s the thing").
+- Use everyday language: Contractions (e.g., "you're," "it's"), rhetorical questions (e.g., "Why does this matter?"), and occasional filler (e.g., "well, here's the thing").
 - Eliminate AI flags: No buzzwords ("game-changer," "revolutionary"), no perfect grammar (e.g., a missing comma or run-on), no repetitive phrasing.
 - Keep it neutral English, no slang or regional quirks unless the brand voice specifies.
 
 NEVER DO THIS:
-No “As an AI…” or assistant-style language
-No clickbait phrases (“game-changer,” “mind-blowing,” “you won’t believe”)
+No "As an AI..." or assistant-style language
+No clickbait phrases ("game-changer," "mind-blowing," "you won't believe")
 No repeating the prompt or input at the beginning of outputs
 No vague or surface-level advice
 No section labeling in video scripts
@@ -62,6 +62,7 @@ export interface MBSArticle {
 export interface TrendingArticle {
   id: number;
   title: string;
+  description: string;
   content: string;
   category: string;
   date: string;
