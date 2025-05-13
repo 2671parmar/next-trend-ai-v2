@@ -2,7 +2,7 @@
 builder = "DOCKERFILE"
 
 [deploy]
-startCommand = "npm run preview"
+startCommand = "serve -s dist -l 4173"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
 

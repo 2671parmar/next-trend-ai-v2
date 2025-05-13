@@ -28,8 +28,11 @@ WORKDIR /app
 # Build the application
 RUN npm run build
 
+# Install serve to serve the static files
+RUN npm install -g serve
+
 # Expose the port the app runs on
 EXPOSE 4173
 
-# Start the application
-CMD ["npm", "run", "preview"] 
+# Start the application using serve
+CMD ["serve", "-s", "dist", "-l", "4173"] 
