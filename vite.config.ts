@@ -36,5 +36,8 @@ export default defineConfig({
         }
       }
     }
-  }
+  },
+  preview: {
+    allowedHosts: ['next-trend-ai-v2.up.railway.app'],
+  },
 });
