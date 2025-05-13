@@ -17,11 +17,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 
-const contentPrompts = [
-  { headline: "What's the most important mortgage term for your clients?", hook: "Understanding this term can help them make better decisions when financing their homes." },
-  { headline: "How can you explain the difference between a fixed-rate and adjustable-rate mortgage?", hook: "This can help clients choose the right loan for their needs." },
-  { headline: "What are some common mortgage terms that clients often ask about?", hook: "This can help you provide more personalized and helpful responses." }
-];
+interface ContentPrompt {
+  id: number;
+  headline: string;
+  hook: string;
+  category?: string;
+  is_active: boolean;
+}
 
 const generateNewsFeedData = async (option: string) => {
   try {
@@ -110,6 +112,7 @@ const ContentEditor: React.FC = () => {
   const [showEditor, setShowEditor] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>('');
+  const [selectedPrompt, setSelectedPrompt] = useState<ContentPrompt | null>(null);
   const [cache, setCache] = useState<{ [key: string]: { data: any[]; timestamp: number } }>({});
   
   useEffect(() => {
@@ -137,6 +140,36 @@ const ContentEditor: React.FC = () => {
 
     fetchBrandVoice();
   }, [user]);
+
+  // Fetch content prompts
+  useEffect(() => {
+    const fetchContentPrompts = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('content_prompts')
+          .select('*')
+          .eq('is_active', true)
+          .order('id');
+
+        if (error) {
+          console.error('Error fetching content prompts:', error);
+          return;
+        }
+
+        if (data && data.length > 0) {
+          // Randomly select a prompt
+          const randomIndex = Math.floor(Math.random() * data.length);
+          setSelectedPrompt(data[randomIndex]);
+        }
+      } catch (error) {
+        console.error('Error in fetchContentPrompts:', error);
+      }
+    };
+
+    if (option === 'custom') {
+      fetchContentPrompts();
+    }
+  }, [option]);
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
@@ -654,34 +687,23 @@ const ContentEditor: React.FC = () => {
               </div>
               <h1 className="text-2xl font-bold">Your Custom Content</h1>
             </motion.div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6">
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-                <Card className="overflow-hidden">
-                  <CardContent className="p-6">
-                    <h2 className="text-lg font-semibold mb-4">Upload an article or document</h2>
-                    <div className={`bg-gray-50 border border-gray-100 rounded-lg p-4 mb-4 h-[300px] overflow-y-auto flex flex-col gap-3 ${dragActive ? 'border-nextrend-500 bg-nextrend-50' : ''}`} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}>
-                      <div className="text-center border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center h-full cursor-pointer" onClick={() => document.getElementById('file-upload')?.click()}>
-                        <FileText className="w-16 h-16 text-gray-400 mb-3" />
-                        <p className="text-gray-600 mb-2">Drag and drop your document here</p>
-                        <p className="text-gray-500 text-sm">or click to browse files</p>
-                        <input id="file-upload" type="file" accept=".txt,.pdf,.doc,.docx,.md" className="hidden" onChange={handleFileUpload} />
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-center">
-                      <Button variant="outline" onClick={() => document.getElementById('file-upload')?.click()} className="flex-1 max-w-xs">
-                        <FileText className="w-4 h-4 mr-2" /> Upload New Document
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.1 }}>
                 <Card className="overflow-hidden h-full">
                   <CardContent className="p-6 h-full flex flex-col">
                     <h2 className="text-lg font-semibold mb-4">Create Custom Content</h2>
                     <div className="flex-1 flex flex-col gap-4">
-                      <Textarea value={userInput} onChange={(e) => setUserInput(e.target.value)} placeholder="Type your message here..." className="resize-none h-32 flex-grow" />
-                      <Button className="h-12 bg-nextrend-500 hover:bg-nextrend-600 w-full flex items-center justify-center" disabled={isGenerating || !userInput?.trim()} onClick={handleSendMessage}>
+                      <Textarea 
+                        value={userInput || (selectedPrompt?.headline || '')} 
+                        onChange={(e) => setUserInput(e.target.value)} 
+                        placeholder="Type your message here..." 
+                        className="resize-none flex-grow min-h-[300px] text-lg" 
+                      />
+                      <Button 
+                        className="h-12 bg-nextrend-500 hover:bg-nextrend-600 w-full flex items-center justify-center" 
+                        disabled={isGenerating || !userInput?.trim()} 
+                        onClick={handleSendMessage}
+                      >
                         <Send className="h-5 w-5 mr-2" /> Send Message
                       </Button>
                     </div>
@@ -758,6 +780,23 @@ const ContentEditor: React.FC = () => {
                 ))}
               </div>
             )}
+            <div className="text-sm p-4 bg-nextrend-50 border border-nextrend-100 rounded-md mt-2">
+              {chatMessages.length > 0 && chatMessages[0].role === 'assistant' && (
+                <div className="mb-4 text-gray-700">
+                  {chatMessages[0].content}
+                </div>
+              )}
+              
+              <div className="content-prompt">
+                {selectedPrompt && (
+                  <>
+                    <p className="text-gray-600 italic mt-1">
+                      {selectedPrompt.hook}
+                    </p>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
         </main>
       </div>
