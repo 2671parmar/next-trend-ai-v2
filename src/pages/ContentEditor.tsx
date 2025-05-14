@@ -706,7 +706,7 @@ const ContentEditor: React.FC = () => {
                   <CardContent className="p-6 h-full flex flex-col">
                     <div className="flex-1 flex flex-col gap-4">
                       <div className="flex justify-end mb-4">
-                        <Button 
+                      <Button 
                           variant="default" 
                           size="sm" 
                           onClick={handleSendMessage} 
@@ -715,7 +715,7 @@ const ContentEditor: React.FC = () => {
                         >
                           <RefreshCw className={`w-4 h-4 mr-2 ${isGenerating ? 'animate-spin' : ''}`} />
                           {isGenerating ? 'Generating...' : 'Generate Content'}
-                        </Button>
+                      </Button>
                       </div>
                       <TextEditor 
                         content={userInput || (selectedPrompt?.headline || '')} 
@@ -756,14 +756,14 @@ const ContentEditor: React.FC = () => {
                             >
                               <Pencil className="w-4 h-4 text-gray-600" />
                             </Button>
-                            <Button
+                      <Button 
                               variant="ghost"
                               size="sm"
                               onClick={() => copyToClipboard(content.content)}
                               className="hover:bg-nextrend-100/50"
                             >
                               <Copy className="w-4 h-4 text-gray-600" />
-                            </Button>
+                      </Button>
                             {['LinkedIn Post', 'Social Post', 'X/Twitter Post', 'Email'].includes(content.type) && (
                               <Button
                                 variant="ghost"
@@ -777,16 +777,16 @@ const ContentEditor: React.FC = () => {
                                 {content.type === 'Email' && <Mail className="w-4 h-4 text-gray-600" />}
                               </Button>
                             )}
+                            </div>
+                            )}
                           </div>
-                        )}
-                      </div>
                       <div className="p-6 bg-white">
                         <div className="prose max-w-none">
                           <div className="text-gray-600 text-sm leading-relaxed">
                             {content.isGenerating ? (
                               <div className="flex items-center gap-2">
                                 <span className="text-nextrend-500">Generating {content.type}...</span>
-                              </div>
+                        </div>
                             ) : content.isEditing ? (
                               <Textarea
                                 value={content.content}
@@ -796,13 +796,13 @@ const ContentEditor: React.FC = () => {
                             ) : (
                               <TypewriterText content={content.content} speed={15} />
                             )}
-                          </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                        </div>
+                    </div>
+                  </CardContent>
+                </Card>
                 ))}
-              </div>
+            </div>
             )}
           </div>
         </main>
