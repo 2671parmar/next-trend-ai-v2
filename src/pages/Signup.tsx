@@ -138,12 +138,14 @@ export default function Signup() {
               >
                 {isLoading ? 'Creating account...' : 'Create account'}
               </Button>
+              {/* Temporarily hidden sign-in link
               <div className="text-center text-sm text-gray-600">
                 Already have an account?{' '}
                 <Link to="/login" className="text-nextrend-500 hover:underline">
                   Sign in
                 </Link>
               </div>
+              */}
             </CardFooter>
           </form>
         </Card>

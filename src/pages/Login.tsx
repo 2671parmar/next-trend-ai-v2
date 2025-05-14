@@ -87,12 +87,14 @@ export default function Login() {
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? 'Signing in...' : 'Sign in'}
               </Button>
+              {/* Temporarily hidden sign-up link
               <div className="text-center text-sm text-gray-600">
                 Don't have an account?{' '}
                 <Link to="/signup" className="text-nextrend-500 hover:underline">
                   Sign up
                 </Link>
               </div>
+              */}
             </CardFooter>
           </form>
         </Card>
