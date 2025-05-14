@@ -57,7 +57,7 @@ const generateNewsFeedData = async (option: string) => {
         const terms = await contentService.getMortgageTerms();
         return terms.map((term, index) => ({
           id: term.id || index + 1,
-          category: 'Term',
+      category: 'Term',
           date: new Date().toISOString().split('T')[0],
           title: term.term,
           content: term.definition,
@@ -297,11 +297,12 @@ const ContentEditor: React.FC = () => {
   };
   
   const handleSendMessage = async () => {
-    if (!userInput.trim()) return;
+    const contentToUse = userInput.trim();
+    if (!contentToUse) return;
     
     setIsGenerating(true);
     try {
-      const customContent = { title: "Custom Content", content: userInput, category: "Custom" };
+      const customContent = { title: "Custom Content", content: contentToUse, category: "Custom" };
       const contentTypes = [
         { type: 'LinkedIn Post', description: 'Thought Leadership, Expert Take' },
         { type: 'Blog Post', description: 'Deep-Dive, SEO-Optimized' },
@@ -322,8 +323,7 @@ const ContentEditor: React.FC = () => {
         setGeneratedContents(prev => prev.map((c, i) => i === index ? { ...c, content: result, isGenerating: false } : c));
       }
 
-      setChatMessages(prev => [...prev, { role: 'user', content: userInput, timestamp: new Date() }, { role: 'assistant', content: 'Content generated.', timestamp: new Date() }]);
-      setUserInput('');
+      setChatMessages(prev => [...prev, { role: 'user', content: contentToUse, timestamp: new Date() }, { role: 'assistant', content: 'Content generated.', timestamp: new Date() }]);
     } catch (err) {
       setError('Failed to generate content');
     } finally {
@@ -479,7 +479,13 @@ const ContentEditor: React.FC = () => {
                   <Card>
                     <CardContent className="p-6">
                       <div className="flex justify-end mb-4">
-                        <Button variant="outline" size="sm" onClick={handleGenerateContent} disabled={isGenerating} className="flex items-center">
+                        <Button 
+                          variant="default" 
+                          size="sm" 
+                          onClick={handleGenerateContent} 
+                          disabled={isGenerating} 
+                          className="flex items-center bg-nextrend-500 hover:bg-nextrend-600"
+                        >
                           <RefreshCw className={`w-4 h-4 mr-2 ${isGenerating ? 'animate-spin' : ''}`} />
                           {isGenerating ? 'Generating...' : 'Generate Content'}
                         </Button>
@@ -505,22 +511,22 @@ const ContentEditor: React.FC = () => {
                           </div>
                           {!content.isGenerating && (
                             <div className="flex items-center gap-2">
-                              <Button
-                                variant="ghost"
+              <Button 
+                variant="ghost" 
                                 size="sm"
                                 onClick={() => handleEditContent(index)}
                                 className="hover:bg-nextrend-100/50"
-                              >
+              >
                                 <Pencil className="w-4 h-4 text-gray-600" />
-                              </Button>
-                              <Button
+              </Button>
+              <Button 
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => copyToClipboard(content.content)}
                                 className="hover:bg-nextrend-100/50"
                               >
                                 <Copy className="w-4 h-4 text-gray-600" />
-                              </Button>
+              </Button>
                               {['LinkedIn Post', 'Social Post', 'X/Twitter Post', 'Email'].includes(content.type) && (
                                 <Button
                                   variant="ghost"
@@ -534,7 +540,7 @@ const ContentEditor: React.FC = () => {
                                   {content.type === 'Email' && <Mail className="w-4 h-4 text-gray-600" />}
                                 </Button>
                               )}
-                            </div>
+              </div>
                           )}
                         </div>
                         <div className="p-6 bg-white">
@@ -562,24 +568,30 @@ const ContentEditor: React.FC = () => {
                 </>
               ) : (
                 <>
-                  {selectedArticle && (
-                    <Card className="mb-4">
-                      <CardContent className="p-5">
-                        <div className="flex justify-between items-center mb-3">
+              {selectedArticle && (
+                <Card className="mb-4">
+                  <CardContent className="p-5">
+                    <div className="flex justify-between items-center mb-3">
                           <Badge variant="outline" className="bg-nextrend-50 text-nextrend-500 hover:bg-nextrend-100">{selectedArticle.category}</Badge>
-                          <span className="text-sm text-gray-500">{selectedArticle.date}</span>
-                        </div>
-                        <h3 className="text-lg font-semibold mb-2">{selectedArticle.title}</h3>
+                      <span className="text-sm text-gray-500">{selectedArticle.date}</span>
+                    </div>
+                    <h3 className="text-lg font-semibold mb-2">{selectedArticle.title}</h3>
                         {selectedArticle.description && (
                           <div className="text-gray-600 text-sm mb-4">{selectedArticle.description}</div>
                         )}
-                      </CardContent>
-                    </Card>
-                  )}
-                  <Card>
-                    <CardContent className="p-6">
+                  </CardContent>
+                </Card>
+              )}
+              <Card>
+                <CardContent className="p-6">
                       <div className="flex justify-end mb-4">
-                        <Button variant="outline" size="sm" onClick={handleGenerateContent} disabled={isGenerating} className="flex items-center">
+                        <Button 
+                          variant="default" 
+                          size="sm" 
+                          onClick={handleGenerateContent} 
+                          disabled={isGenerating} 
+                          className="flex items-center bg-nextrend-500 hover:bg-nextrend-600"
+                        >
                           <RefreshCw className={`w-4 h-4 mr-2 ${isGenerating ? 'animate-spin' : ''}`} />
                           {isGenerating ? 'Generating...' : 'Generate Content'}
                         </Button>
@@ -656,8 +668,8 @@ const ContentEditor: React.FC = () => {
                             </div>
                           </div>
                         </div>
-                      </CardContent>
-                    </Card>
+                </CardContent>
+              </Card>
                   ))}
                 </>
               )}
@@ -692,25 +704,36 @@ const ContentEditor: React.FC = () => {
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
                 <Card className="overflow-hidden h-full">
                   <CardContent className="p-6 h-full flex flex-col">
-                    <h2 className="text-lg font-semibold mb-4">Create Custom Content</h2>
                     <div className="flex-1 flex flex-col gap-4">
-                      <Textarea 
-                        value={userInput || (selectedPrompt?.headline || '')} 
-                        onChange={(e) => setUserInput(e.target.value)} 
-                        placeholder="Type your message here..." 
-                        className="resize-none flex-grow min-h-[300px] text-lg" 
+                      <div className="flex justify-end mb-4">
+                        <Button 
+                          variant="default" 
+                          size="sm" 
+                          onClick={handleSendMessage} 
+                          disabled={isGenerating} 
+                          className="flex items-center bg-nextrend-500 hover:bg-nextrend-600"
+                        >
+                          <RefreshCw className={`w-4 h-4 mr-2 ${isGenerating ? 'animate-spin' : ''}`} />
+                          {isGenerating ? 'Generating...' : 'Generate Content'}
+                        </Button>
+                      </div>
+                      <TextEditor 
+                        content={userInput || (selectedPrompt?.headline || '')} 
+                        onContentChange={(value) => setUserInput(value)}
+                        loading={isGenerating}
+                        placeholder="Type your message here..."
                       />
-                      <Button 
-                        className="h-12 bg-nextrend-500 hover:bg-nextrend-600 w-full flex items-center justify-center" 
-                        disabled={isGenerating || !userInput?.trim()} 
-                        onClick={handleSendMessage}
-                      >
-                        <Send className="h-5 w-5 mr-2" /> Send Message
-                      </Button>
                     </div>
                   </CardContent>
                 </Card>
               </motion.div>
+            </div>
+            <div className="text-sm p-4 bg-nextrend-50 border border-nextrend-100 rounded-md mt-2">
+              {selectedPrompt && (
+                <p className="text-gray-600 italic">
+                  {selectedPrompt.hook}
+                </p>
+              )}
             </div>
             {generatedContents.length > 0 && (
               <div className="mt-8 grid grid-cols-1 gap-6">
@@ -781,23 +804,6 @@ const ContentEditor: React.FC = () => {
                 ))}
               </div>
             )}
-            <div className="text-sm p-4 bg-nextrend-50 border border-nextrend-100 rounded-md mt-2">
-              {chatMessages.length > 0 && chatMessages[0].role === 'assistant' && (
-                <div className="mb-4 text-gray-700">
-                  {chatMessages[0].content}
-                </div>
-              )}
-              
-              <div className="content-prompt">
-                {selectedPrompt && (
-                  <>
-                    <p className="text-gray-600 italic mt-1">
-                      {selectedPrompt.hook}
-                    </p>
-                  </>
-                )}
-              </div>
-            </div>
           </div>
         </main>
       </div>
@@ -836,44 +842,44 @@ const ContentEditor: React.FC = () => {
             </div>
           ) : (
             <Tabs defaultValue="all" value={activeTab} onValueChange={handleTabChange}>
-              {tabsContent}
-              <TabsContent value={activeTab} className="mt-0">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {tabsContent}
+            <TabsContent value={activeTab} className="mt-0">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   {currentArticles.map((article) => (
                     <div key={article.id}>
-                      <Card className="overflow-hidden h-full flex flex-col">
-                        <CardContent className="p-0 flex flex-col h-full">
-                          <div className="p-5">
-                            <div className="flex justify-between items-center mb-3">
+                    <Card className="overflow-hidden h-full flex flex-col">
+                      <CardContent className="p-0 flex flex-col h-full">
+                        <div className="p-5">
+                          <div className="flex justify-between items-center mb-3">
                               <Badge variant="outline" className="bg-nextrend-50 text-nextrend-500 hover:bg-nextrend-100">{article.category}</Badge>
-                              <span className="text-sm text-gray-500">{article.date}</span>
-                            </div>
-                            <h3 className="text-lg font-semibold mb-2">{article.title}</h3>
+                            <span className="text-sm text-gray-500">{article.date}</span>
+                          </div>
+                          <h3 className="text-lg font-semibold mb-2">{article.title}</h3>
                             {(option === 'this-week' || option === 'trending') && article.description && (
                               <div className="text-gray-600 text-sm mb-4">{article.description}</div>
-                            )}
-                          </div>
-                          <div className="mt-auto border-t border-gray-100 p-4 flex justify-between items-center bg-gray-50">
-                            {(option === 'this-week' || option === 'trending') ? (
-                              <div className="flex w-full gap-2">
+                          )}
+                        </div>
+                        <div className="mt-auto border-t border-gray-100 p-4 flex justify-between items-center bg-gray-50">
+                          {(option === 'this-week' || option === 'trending') ? (
+                            <div className="flex w-full gap-2">
                                 {/* <Button variant="outline" size="sm" onClick={() => handleReadArticle(article.id)} className="text-xs flex-1">
                                   <ExternalLink className="h-3 w-3 mr-1" /> Read Article
                                 </Button> */}
                                 <Button variant="default" size="sm" onClick={() => handleUseArticle(article.id)} className="text-xs flex-1 bg-nextrend-500 hover:bg-nextrend-600" disabled={isLoading}>
-                                  Use Article
-                                </Button>
-                              </div>
-                            ) : option === 'general' ? (
+                                Use Article
+                              </Button>
+                            </div>
+                          ) : option === 'general' ? (
                               <Button variant="default" size="sm" onClick={() => handleUseGeneralTerm(article)} className="text-xs flex-1 bg-nextrend-500 hover:bg-nextrend-600" disabled={isLoading}>
                                 Use this Mortgage Term
-                              </Button>
+                            </Button>
                             ) : null}
-                          </div>
-                        </CardContent>
-                      </Card>
+                        </div>
+                      </CardContent>
+                    </Card>
                     </div>
-                  ))}
-                </div>
+                ))}
+              </div>
                 <div className="flex justify-center items-center gap-2 mt-8">
                   <Button variant="outline" size="icon" onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))} disabled={currentPage === 1}>
                     <ChevronLeft className="h-4 w-4" />
@@ -882,9 +888,9 @@ const ContentEditor: React.FC = () => {
                   <Button variant="outline" size="icon" onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))} disabled={currentPage === totalPages}>
                     <ChevronRight className="h-4 w-4" />
                   </Button>
-                </div>
-              </TabsContent>
-            </Tabs>
+              </div>
+            </TabsContent>
+          </Tabs>
           )}
         </div>
       </main>

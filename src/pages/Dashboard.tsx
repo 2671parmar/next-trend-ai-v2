@@ -70,14 +70,14 @@ const Dashboard: React.FC = () => {
           </div>
           
           {/* Recent Content */}
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+          {/* <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
             <h2 className="text-xl font-semibold mb-4">Recent Content</h2>
             
             <div className="text-center py-8 text-gray-500">
               <p>You haven't created any content yet.</p>
               <p className="text-sm mt-2">Select a content source above to get started.</p>
             </div>
-          </div>
+          </div> */}
         </div>
       </main>
     </div>
