@@ -814,7 +814,15 @@ const ContentEditor: React.FC = () => {
     ? <TabsList className="mb-6"><TabsTrigger value="all">All Terms</TabsTrigger></TabsList>
     : option === 'this-week'
     ? <TabsList className="mb-6"><TabsTrigger value="all">All</TabsTrigger><TabsTrigger value="daily">Daily</TabsTrigger><TabsTrigger value="weekly">Weekly</TabsTrigger><TabsTrigger value="monthly">Monthly</TabsTrigger></TabsList>
-    : <TabsList className="mb-6"><TabsTrigger value="all">All</TabsTrigger><TabsTrigger value="trending">Trending</TabsTrigger><TabsTrigger value="mortgage">Mortgage</TabsTrigger><TabsTrigger value="housing">Housing</TabsTrigger><TabsTrigger value="economy">Economy</TabsTrigger></TabsList>;
+    : <TabsList className="mb-6">
+        <TabsTrigger value="all">All</TabsTrigger>
+        <TabsTrigger value="trending">Trending</TabsTrigger>
+        {/* Temporarily hidden for feature testing
+        <TabsTrigger value="mortgage">Mortgage</TabsTrigger>
+        <TabsTrigger value="housing">Housing</TabsTrigger>
+        <TabsTrigger value="economy">Economy</TabsTrigger>
+        */}
+      </TabsList>;
   
   return (
     <div className="min-h-screen bg-gray-50">
