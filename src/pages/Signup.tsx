@@ -68,7 +68,7 @@ export default function Signup() {
       <div className="p-4">
         <Button
           variant="ghost"
-          onClick={() => navigate('/')}
+          onClick={() => window.location.href = 'https://nextrend.ai'}
           className="flex items-center gap-2"
         >
           <ArrowLeft className="h-4 w-4" />
