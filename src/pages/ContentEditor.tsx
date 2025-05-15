@@ -448,9 +448,9 @@ const ContentEditor: React.FC = () => {
               <Button variant="ghost" className="flex items-center text-gray-600" onClick={() => navigate('/dashboard')}>
                 <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
               </Button>
-              <Button variant="default" className="bg-nextrend-500 hover:bg-nextrend-600" onClick={handleSave} disabled={!generatedContents.length}>
+              {/* <Button variant="default" className="bg-nextrend-500 hover:bg-nextrend-600" onClick={handleSave} disabled={!generatedContents.length}>
                 <Save className="w-4 h-4 mr-2" /> Save Content
-              </Button>
+              </Button> */}
             </motion.div>
             {error && <div className="bg-red-50 border border-red-200 text-red-600 rounded-md p-4 mb-6">{error}</div>}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex items-center mb-6">
@@ -690,9 +690,9 @@ const ContentEditor: React.FC = () => {
               <Button variant="ghost" className="flex items-center text-gray-600" onClick={() => navigate('/dashboard')}>
                 <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
               </Button>
-              <Button variant="default" className="bg-nextrend-500 hover:bg-nextrend-600" onClick={handleSave} disabled={!generatedContents.length}>
+              {/* <Button variant="default" className="bg-nextrend-500 hover:bg-nextrend-600" onClick={handleSave} disabled={!generatedContents.length}>
                 <Save className="w-4 h-4 mr-2" /> Save Content
-              </Button>
+              </Button> */}
             </motion.div>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex items-center mb-6">
               <div className="w-10 h-10 rounded-lg bg-nextrend-50 text-nextrend-500 flex items-center justify-center mr-3">

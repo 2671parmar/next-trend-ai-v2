@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -19,8 +18,8 @@ const Dashboard: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       
-      <main className="pt-24 pb-16 px-6">
-        <div className="max-w-6xl mx-auto">
+      <main className="min-h-[calc(100vh-64px)] flex items-center justify-center py-12 px-6">
+        <div className="max-w-6xl w-full">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
