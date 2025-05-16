@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
@@ -6,7 +5,7 @@ import { ArrowRight } from 'lucide-react';
 interface ContentOptionProps {
   icon: React.ReactNode;
   title: string;
-  description: string;
+  description: React.ReactNode;
   onClick: () => void;
   delay?: number;
 }
@@ -34,7 +33,7 @@ const ContentOption: React.FC<ContentOptionProps> = ({
         </div>
         <div className="flex-1">
           <h3 className="text-xl font-semibold mb-2">{title}</h3>
-          <p className="text-gray-600 mb-4">{description}</p>
+          <div className="text-gray-600 mb-4">{description}</div>
           <div className="flex justify-end">
             <div className="text-nextrend-500 font-medium flex items-center">
               Select
