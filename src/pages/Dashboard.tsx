@@ -24,7 +24,7 @@ const Dashboard: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="text-center pt-12 mb-4"
+            className="text-center mt-12 pt-12 mb-4 pb-4"
           >
             <h1 className="text-3xl md:text-4xl font-bold mb-4">
             Create High-Trust Content in Just a Few Clicks
