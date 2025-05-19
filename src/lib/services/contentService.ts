@@ -39,7 +39,6 @@ Count characters explicitly before finalizing. If over 150, trim (e.g., remove w
 Avoid rate/payment/term promises (e.g., “3% rates,” “$500/month”) or words like “guaranteed,” “best,” “pre-approved.” Focus on loan types or general advice (e.g., “FHA loans may help”).
 Use short, direct sentences. Avoid asides, fillers, or complex phrases in SMS.
 If the message cannot convey the core idea within 150 characters, generate a simpler alternative (e.g., “Buyers may qualify. Know anyone?”).
-Include a comment with character count for transparency (e.g., “// Character count: 46”), but not in the SMS itself.
 Aim for 140 characters or fewer as a safety buffer, then verify final count.
 
 Never Do:
