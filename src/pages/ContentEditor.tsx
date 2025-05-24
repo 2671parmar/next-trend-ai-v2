@@ -229,11 +229,14 @@ const ContentEditor: React.FC = () => {
         { type: 'LinkedIn Post', description: 'Thought Leadership, Expert Take' },
         { type: 'Blog Post', description: 'Deep-Dive, SEO-Optimized' },
         { type: 'Video Script', description: 'Educational, Senior Loan Officer Perspective' },
-        { type: 'Email', description: 'Client-Focused, Trust-Building' },
+        { type: 'Client Marketing Email', description: 'Client-Focused, Trust-Building' },
+        { type: 'Real Estate Agent Partner Marketing Email', description: 'Informational, Value-Driven' },
         { type: 'Social Post', description: 'Engaging & Value-Driven' },
         { type: 'X/Twitter Post', description: 'Quick, Authority Take' },
-        { type: 'SMS Broadcast - For Clients', description: 'Concise, CTA-Driven' },
-        { type: 'SMS Broadcast - For Realtor Partners', description: 'Concise, Informational, Value Driven' },
+        { type: 'Short Client SMS', description: 'Concise, CTA-Driven' },
+        { type: 'Short Real Estate Agent SMS', description: 'Concise, Informational' },
+        { type: 'Long Client SMS', description: 'Detailed, CTA-Driven' },
+        { type: 'Long Real Estate Agent SMS', description: 'Detailed, Informational' },
         { type: 'Motivational Quote', description: 'Uplifting, Short, Non-Salesy' }
       ];
 
@@ -307,11 +310,14 @@ const ContentEditor: React.FC = () => {
         { type: 'LinkedIn Post', description: 'Thought Leadership, Expert Take' },
         { type: 'Blog Post', description: 'Deep-Dive, SEO-Optimized' },
         { type: 'Video Script', description: 'Educational, Senior Loan Officer Perspective' },
-        { type: 'Email', description: 'Client-Focused, Trust-Building' },
+        { type: 'Client Marketing Email', description: 'Client-Focused, Trust-Building' },
+        { type: 'Real Estate Agent Partner Marketing Email', description: 'Informational, Value-Driven' },
         { type: 'Social Post', description: 'Engaging & Value-Driven' },
         { type: 'X/Twitter Post', description: 'Quick, Authority Take' },
-        { type: 'SMS Broadcast - For Clients', description: 'Concise, CTA-Driven' },
-        { type: 'SMS Broadcast - For Realtor Partners', description: 'Concise, Informational, Value Driven' },
+        { type: 'Short Client SMS', description: 'Concise, CTA-Driven' },
+        { type: 'Short Real Estate Agent SMS', description: 'Concise, Informational' },
+        { type: 'Long Client SMS', description: 'Detailed, CTA-Driven' },
+        { type: 'Long Real Estate Agent SMS', description: 'Detailed, Informational' },
         { type: 'Motivational Quote', description: 'Uplifting, Short, Non-Salesy' }
       ];
       
