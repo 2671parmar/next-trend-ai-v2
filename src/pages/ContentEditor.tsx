@@ -233,10 +233,8 @@ const ContentEditor: React.FC = () => {
         { type: 'Real Estate Agent Partner Marketing Email', description: 'Informational, Value-Driven' },
         { type: 'Social Post', description: 'Engaging & Value-Driven' },
         { type: 'X/Twitter Post', description: 'Quick, Authority Take' },
-        { type: 'Short Client SMS', description: 'Concise, CTA-Driven' },
-        { type: 'Short Real Estate Agent SMS', description: 'Concise, Informational' },
-        { type: 'Long Client SMS', description: 'Detailed, CTA-Driven' },
-        { type: 'Long Real Estate Agent SMS', description: 'Detailed, Informational' },
+        { type: 'Client SMS', description: 'Concise, CTA-Driven (150 chars)' },
+        { type: 'Realtor SMS', description: 'Concise, Informational (150 chars)' },
         { type: 'Motivational Quote', description: 'Uplifting, Short, Non-Salesy' }
       ];
 
@@ -314,10 +312,8 @@ const ContentEditor: React.FC = () => {
         { type: 'Real Estate Agent Partner Marketing Email', description: 'Informational, Value-Driven' },
         { type: 'Social Post', description: 'Engaging & Value-Driven' },
         { type: 'X/Twitter Post', description: 'Quick, Authority Take' },
-        { type: 'Short Client SMS', description: 'Concise, CTA-Driven' },
-        { type: 'Short Real Estate Agent SMS', description: 'Concise, Informational' },
-        { type: 'Long Client SMS', description: 'Detailed, CTA-Driven' },
-        { type: 'Long Real Estate Agent SMS', description: 'Detailed, Informational' },
+        { type: 'Client SMS', description: 'Concise, CTA-Driven (150 chars)' },
+        { type: 'Realtor SMS', description: 'Concise, Informational (150 chars)' },
         { type: 'Motivational Quote', description: 'Uplifting, Short, Non-Salesy' }
       ];
       
@@ -792,7 +788,7 @@ const ContentEditor: React.FC = () => {
                             {content.isGenerating ? (
                               <div className="flex items-center gap-2">
                                 <span className="text-nextrend-500">Generating {content.type}...</span>
-                        </div>
+                              </div>
                             ) : content.isEditing ? (
                               <Textarea
                                 value={content.content}
@@ -802,13 +798,13 @@ const ContentEditor: React.FC = () => {
                             ) : (
                               <TypewriterText content={content.content} speed={15} />
                             )}
+                          </div>
                         </div>
-                        </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                      </div>
+                    </CardContent>
+                  </Card>
                 ))}
-            </div>
+              </div>
             )}
           </div>
         </main>
