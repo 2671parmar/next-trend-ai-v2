@@ -130,8 +130,98 @@ export const contentService = {
     return data as TrendingTopic[];
   },
 
+  // Track content generation usage
+  async trackContentGeneration(contentType: string) {
+    try {
+      // Get the current user's session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error('Error getting session:', sessionError);
+        return;
+      }
+
+      if (!session?.user?.id) {
+        console.error('No user session found');
+        return;
+      }
+
+      // Check if there's already an entry for this user in the last minute
+      // This prevents duplicate tracking if the function is called multiple times
+      const { data: recentUsage, error: checkError } = await supabase
+        .from('content_generation_usage')
+        .select('id')
+        .eq('user_id', session.user.id)
+        .eq('content_type', contentType)
+        .gte('generated_at', new Date(Date.now() - 60000).toISOString()) // Last minute
+        .limit(1);
+
+      if (checkError) {
+        console.error('Error checking recent usage:', checkError);
+        return;
+      }
+
+      // If there's no recent usage, create a new entry
+      if (!recentUsage || recentUsage.length === 0) {
+        const { error } = await supabase
+          .from('content_generation_usage')
+          .insert({
+            user_id: session.user.id,
+            content_type: contentType,
+          });
+
+        if (error) {
+          console.error('Error inserting usage record:', error);
+          throw error;
+        }
+        console.log('Successfully tracked content generation for type:', contentType);
+      } else {
+        console.log('Skipping duplicate usage tracking for type:', contentType);
+      }
+    } catch (error) {
+      console.error('Error tracking content generation:', error);
+      // Don't throw the error to prevent disrupting the content generation flow
+    }
+  },
+
+  // Get usage count for a user
+  async getContentGenerationUsage(days: number = 7) {
+    try {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error('Error getting session:', sessionError);
+        return 0;
+      }
+
+      if (!session?.user?.id) {
+        console.error('No user session found');
+        return 0;
+      }
+
+      const { data, error } = await supabase
+        .from('content_generation_usage')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .gte('generated_at', new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString());
+
+      if (error) {
+        console.error('Error getting content generation usage:', error);
+        return 0;
+      }
+
+      console.log('Usage data:', data);
+      return data?.length || 0;
+    } catch (error) {
+      console.error('Error getting content generation usage:', error);
+      return 0;
+    }
+  },
+
   // Generate content using OpenAI
-  async generateContent(content: string, brandVoice?: string) {
+  async generateContent(content: string, brandVoice?: string, contentType: string = 'custom') {
+    console.log('Generating content with type:', contentType);
+    
     const defaultBrandVoice = `As a seasoned loan officer with several years of experience, your voice is confident, empathetic, and approachable, like a trusted guide helping clients navigate mortgages. You speak with authority, weaving in compliant insights (e.g., loan programs, refinancing benefits) to educate and empower, avoiding rate/payment/term promises or words like "guaranteed," "best," "pre-approved." Your tone is warm yet professional, balancing expertise with a human touch—think a mentor sharing advice over coffee. You're thoughtful, reflecting on client stories or market shifts to ground content in relevance, using cautious language like "you may qualify." Short, punchy sentences ("This matters!") mix with longer, conversational thoughts ("I was just telling a client how loan programs can open doors—it's amazing!") to engage. You prioritize clarity and practicality, using terms like "pre-qual" or "escrow" naturally but sparingly in SMS to save space. Your audience—homebuyers, realtors, and referral partners—feels inspired and informed, never sold to. A subtle, optimistic wit shines through, uplifting without being cheesy (e.g., "Tough market? Your home's still out there!"). You're proactive, offering actionable, compliant tips and soft CTAs ("Let's chat!") to build trust. Storytelling adds authenticity: brief, compliant scenarios (e.g., "Helped a couple explore VA loans—what a win!") resonate. Your content feels maximally human, with occasional asides ("Oh, one thing!") and minor quirks (e.g., a run-on sentence) to reflect real dialogue, but SMS stays concise, compliant, and warm.`;
     
     const brandVoiceToUse = brandVoice || defaultBrandVoice;
@@ -139,6 +229,18 @@ export const contentService = {
       '{Insert user-specific 250-word brand voice summary here.}',
       brandVoiceToUse
     );
+
+    // Track content generation usage for the first content type only
+    // This ensures we track the button click, not individual content generations
+    if (content.includes('LinkedIn Post')) {
+      console.log('Tracking content generation for type:', contentType);
+      try {
+        await this.trackContentGeneration(contentType);
+        console.log('Successfully tracked content generation for type:', contentType);
+      } catch (error) {
+        console.error('Failed to track content generation:', error);
+      }
+    }
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',

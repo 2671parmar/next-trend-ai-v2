@@ -115,6 +115,8 @@ const ContentEditor: React.FC = () => {
   const [error, setError] = useState<string>('');
   const [selectedPrompt, setSelectedPrompt] = useState<ContentPrompt | null>(null);
   const [cache, setCache] = useState<{ [key: string]: { data: any[]; timestamp: number } }>({});
+  const [usageCount, setUsageCount] = useState<number>(0);
+  const [isLoadingUsage, setIsLoadingUsage] = useState(false);
   
   useEffect(() => {
     const fetchBrandVoice = async () => {
@@ -172,6 +174,26 @@ const ContentEditor: React.FC = () => {
     }
   }, [option]);
 
+  // Add effect to fetch usage data
+  useEffect(() => {
+    const fetchUsageData = async () => {
+      if (!user?.id) return;
+      
+      setIsLoadingUsage(true);
+      try {
+        const usage = await contentService.getContentGenerationUsage(7); // Last 7 days
+        console.log('Fetched usage count:', usage);
+        setUsageCount(usage);
+      } catch (error) {
+        console.error('Error fetching usage data:', error);
+      } finally {
+        setIsLoadingUsage(false);
+      }
+    };
+
+    fetchUsageData();
+  }, [user]);
+
   const handleTabChange = (value: string) => {
     setActiveTab(value);
     setCurrentPage(1);
@@ -224,6 +246,14 @@ const ContentEditor: React.FC = () => {
         content: selectedArticle.content,
         category: selectedArticle.category
       };
+
+      // Map the option to the correct content type
+      const contentType = option === 'this-week' ? 'mbs_commentary' :
+                         option === 'trending' ? 'trending_topics' :
+                         option === 'general' ? 'general_terms' :
+                         'custom';
+      
+      console.log('Content type for tracking:', contentType);
       
       const contentTypes = [
         { type: 'LinkedIn Post', description: 'Thought Leadership, Expert Take' },
@@ -246,9 +276,15 @@ const ContentEditor: React.FC = () => {
 
       for (const [index, { type, description }] of contentTypes.entries()) {
         const prompt = `Generate a ${type} (${description}) for this ${articleData.category} article:\n\nTitle: ${articleData.title}\n\nContent: ${articleData.content}`;
-        const result = await contentService.generateContent(prompt, brandVoice);
+        console.log('Generating content for type:', type, 'with content type:', contentType);
+        const result = await contentService.generateContent(prompt, brandVoice, contentType);
         setGeneratedContents(prev => prev.map((c, i) => i === index ? { ...c, content: result, isGenerating: false } : c));
       }
+      
+      // Refresh usage count after generation
+      const usage = await contentService.getContentGenerationUsage(7);
+      console.log('Updated usage count after generation:', usage);
+      setUsageCount(usage);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to generate content');
     } finally {
@@ -321,11 +357,16 @@ const ContentEditor: React.FC = () => {
       
       for (const [index, { type, description }] of contentTypes.entries()) {
         const prompt = `Generate a ${type} (${description}) for this custom content:\n\nContent: ${customContent.content}`;
-        const result = await contentService.generateContent(prompt, brandVoice);
+        const result = await contentService.generateContent(prompt, brandVoice, 'custom');
         setGeneratedContents(prev => prev.map((c, i) => i === index ? { ...c, content: result, isGenerating: false } : c));
       }
 
       setChatMessages(prev => [...prev, { role: 'user', content: contentToUse, timestamp: new Date() }, { role: 'assistant', content: 'Content generated.', timestamp: new Date() }]);
+      
+      // Refresh usage count after generation
+      const usage = await contentService.getContentGenerationUsage(7);
+      console.log('Updated usage count after custom generation:', usage);
+      setUsageCount(usage);
     } catch (err) {
       setError('Failed to generate content');
     } finally {
@@ -480,7 +521,17 @@ const ContentEditor: React.FC = () => {
                   )}
                   <Card>
                     <CardContent className="p-6">
-                      <div className="flex justify-end mb-4">
+                      <div className="flex justify-between items-center mb-4">
+                        <div className="text-sm text-gray-600">
+                          {isLoadingUsage ? (
+                            <span className="flex items-center">
+                              <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                              Loading usage...
+                            </span>
+                          ) : (
+                            <span>Content generated in last 7 days: <span className="font-semibold text-nextrend-600">{usageCount}</span></span>
+                          )}
+                        </div>
                         <Button 
                           variant="default" 
                           size="sm" 
@@ -586,7 +637,17 @@ const ContentEditor: React.FC = () => {
               )}
               <Card>
                 <CardContent className="p-6">
-                      <div className="flex justify-end mb-4">
+                      <div className="flex justify-between items-center mb-4">
+                        <div className="text-sm text-gray-600">
+                          {isLoadingUsage ? (
+                            <span className="flex items-center">
+                              <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                              Loading usage...
+                            </span>
+                          ) : (
+                            <span>Content generated in last 7 days: <span className="font-semibold text-nextrend-600">{usageCount}</span></span>
+                          )}
+                        </div>
                         <Button 
                           variant="default" 
                           size="sm" 
@@ -692,9 +753,6 @@ const ContentEditor: React.FC = () => {
               <Button variant="ghost" className="flex items-center text-gray-600" onClick={() => navigate('/dashboard')}>
                 <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
               </Button>
-              {/* <Button variant="default" className="bg-nextrend-500 hover:bg-nextrend-600" onClick={handleSave} disabled={!generatedContents.length}>
-                <Save className="w-4 h-4 mr-2" /> Save Content
-              </Button> */}
             </motion.div>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex items-center mb-6">
               <div className="w-10 h-10 rounded-lg bg-nextrend-50 text-nextrend-500 flex items-center justify-center mr-3">
@@ -707,8 +765,18 @@ const ContentEditor: React.FC = () => {
                 <Card className="overflow-hidden h-full">
                   <CardContent className="p-6 h-full flex flex-col">
                     <div className="flex-1 flex flex-col gap-4">
-                      <div className="flex justify-end mb-4">
-                      <Button 
+                      <div className="flex justify-between items-center mb-4">
+                        <div className="text-sm text-gray-600">
+                          {isLoadingUsage ? (
+                            <span className="flex items-center">
+                              <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                              Loading usage...
+                            </span>
+                          ) : (
+                            <span>Content generated in last 7 days: <span className="font-semibold text-nextrend-600">{usageCount}</span></span>
+                          )}
+                        </div>
+                        <Button 
                           variant="default" 
                           size="sm" 
                           onClick={handleSendMessage} 
@@ -717,7 +785,7 @@ const ContentEditor: React.FC = () => {
                         >
                           <RefreshCw className={`w-4 h-4 mr-2 ${isGenerating ? 'animate-spin' : ''}`} />
                           {isGenerating ? 'Generating...' : 'Generate Content'}
-                      </Button>
+                        </Button>
                       </div>
                       <TextEditor 
                         content={userInput || (selectedPrompt?.headline || '')} 
