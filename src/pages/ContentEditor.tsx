@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Newspaper, BarChart, FileText, MessageSquare, ArrowLeft, Save, ExternalLink, Send, RefreshCw, Copy, ChevronLeft, ChevronRight, Pencil, Linkedin, Facebook, Twitter, Mail } from 'lucide-react';
+import { Newspaper, BarChart, FileText, MessageSquare, ArrowLeft, Save, ExternalLink, Send, RefreshCw, Copy, ChevronLeft, ChevronRight, Pencil, Linkedin, Facebook, Mail } from 'lucide-react';
+import { X } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -94,6 +95,15 @@ interface GeneratedContent {
 
 const ITEMS_PER_PAGE = 12;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
+
+// Custom icon components
+const XIcon = () => (
+  <img src="/x_icon.png" alt="X" className="w-4 h-4" />
+);
+
+const ThreadsIcon = () => (
+  <img src="/threads_icon.png" alt="Threads" className="w-4 h-4" />
+);
 
 const ContentEditor: React.FC = () => {
   const { option } = useParams<{ option: string }>();
@@ -305,10 +315,10 @@ const ContentEditor: React.FC = () => {
           const fullArticle = await contentService.getMBSArticleContent(article.url);
           setSelectedArticle(fullArticle ? { ...article, content: fullArticle.content } : article);
         } else {
-          setSelectedArticle(article);
+      setSelectedArticle(article);
         }
-        setShowEditor(true);
-        setGeneratedContents([]);
+      setShowEditor(true);
+      setGeneratedContents([]);
       } catch (error) {
         setError('Failed to fetch article content');
       } finally {
@@ -441,6 +451,11 @@ const ContentEditor: React.FC = () => {
       case 'X/Twitter Post':
         shareUrl = `https://twitter.com/intent/tweet?text=${encodedContent}`;
         break;
+      case 'Threads':
+        shareUrl = `https://www.threads.com/`;
+        break;
+      case 'Client Marketing Email':
+      case 'Real Estate Agent Partner Marketing Email':
       case 'Email':
         const lines = content.split('\n');
         const subject = encodeURIComponent(lines[0].trim());
@@ -511,13 +526,13 @@ const ContentEditor: React.FC = () => {
                         <div className="flex justify-between items-center mb-3">
                           <Badge variant="outline" className="bg-nextrend-50 text-nextrend-500 hover:bg-nextrend-100">{selectedArticle.category}</Badge>
                           <span className="text-sm text-gray-500">{selectedArticle.date}</span>
-                        </div>
+                    </div>
                         <h3 className="text-lg font-semibold mb-2">{selectedArticle.title}</h3>
                         {selectedArticle.description && (
                           <div className="text-gray-600 text-sm mb-4">{selectedArticle.description}</div>
                         )}
                       </CardContent>
-                    </Card>
+                  </Card>
                   )}
                   <Card>
                     <CardContent className="p-6">
@@ -564,36 +579,87 @@ const ContentEditor: React.FC = () => {
                           </div>
                           {!content.isGenerating && (
                             <div className="flex items-center gap-2">
-              <Button 
-                variant="ghost" 
+                              <Button
+                                variant="ghost"
                                 size="sm"
                                 onClick={() => handleEditContent(index)}
                                 className="hover:bg-nextrend-100/50"
-              >
+                              >
                                 <Pencil className="w-4 h-4 text-gray-600" />
-              </Button>
-              <Button 
+                              </Button>
+                              <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => copyToClipboard(content.content)}
                                 className="hover:bg-nextrend-100/50"
                               >
-                                <Copy className="w-4 h-4 text-gray-600" />
-              </Button>
-                              {['LinkedIn Post', 'Social Post', 'X/Twitter Post', 'Email'].includes(content.type) && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleShareContent(content.type, content.content)}
-                                  className="hover:bg-nextrend-100/50"
-                                >
-                                  {content.type === 'LinkedIn Post' && <Linkedin className="w-4 h-4 text-[#0077B5]" />}
-                                  {content.type === 'Social Post' && <Facebook className="w-4 h-4 text-[#1877F2]" />}
-                                  {content.type === 'X/Twitter Post' && <Twitter className="w-4 h-4 text-[#1DA1F2]" />}
-                                  {content.type === 'Email' && <Mail className="w-4 h-4 text-gray-600" />}
-                                </Button>
+                            <Copy className="w-4 h-4 text-gray-600" />
+                              </Button>
+                              {['LinkedIn Post', 'Social Post', 'X/Twitter Post', 'Threads', 'Client Marketing Email', 'Real Estate Agent Partner Marketing Email'].includes(content.type) && (
+                                <div className="flex gap-1">
+                                  {content.type === 'LinkedIn Post' && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => handleShareContent(content.type, content.content)}
+                                      className="hover:bg-nextrend-100/50"
+                                    >
+                                      <Linkedin className="w-4 h-4 text-[#0077B5]" />
+                                    </Button>
+                                  )}
+                                  {content.type === 'Social Post' && (
+                                    <>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleShareContent(content.type, content.content)}
+                                        className="hover:bg-nextrend-100/50"
+                                      >
+                                        <Facebook className="w-4 h-4 text-[#1877F2]" />
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleShareContent('Threads', content.content)}
+                                        className="hover:bg-nextrend-100/50"
+                                      >
+                                        <ThreadsIcon />
+                                      </Button>
+                                    </>
+                                  )}
+                                  {content.type === 'X/Twitter Post' && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => handleShareContent(content.type, content.content)}
+                                      className="hover:bg-nextrend-100/50"
+                                    >
+                                      <XIcon />
+                                    </Button>
+                                  )}
+                                  {content.type === 'Client Marketing Email' && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => handleShareContent('Email', content.content)}
+                                      className="hover:bg-nextrend-100/50"
+                                    >
+                                      <Mail className="w-4 h-4 text-gray-600" />
+                                    </Button>
+                                  )}
+                                  {content.type === 'Real Estate Agent Partner Marketing Email' && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => handleShareContent('Email', content.content)}
+                                      className="hover:bg-nextrend-100/50"
+                                    >
+                                      <Mail className="w-4 h-4 text-gray-600" />
+                                    </Button>
+                                  )}
+                                </div>
                               )}
-              </div>
+                            </div>
                           )}
                         </div>
                         <div className="p-6 bg-white">
@@ -621,22 +687,22 @@ const ContentEditor: React.FC = () => {
                 </>
               ) : (
                 <>
-              {selectedArticle && (
-                <Card className="mb-4">
-                  <CardContent className="p-5">
-                    <div className="flex justify-between items-center mb-3">
+                  {selectedArticle && (
+                    <Card className="mb-4">
+                      <CardContent className="p-5">
+                        <div className="flex justify-between items-center mb-3">
                           <Badge variant="outline" className="bg-nextrend-50 text-nextrend-500 hover:bg-nextrend-100">{selectedArticle.category}</Badge>
-                      <span className="text-sm text-gray-500">{selectedArticle.date}</span>
-                    </div>
-                    <h3 className="text-lg font-semibold mb-2">{selectedArticle.title}</h3>
+                          <span className="text-sm text-gray-500">{selectedArticle.date}</span>
+                        </div>
+                        <h3 className="text-lg font-semibold mb-2">{selectedArticle.title}</h3>
                         {selectedArticle.description && (
                           <div className="text-gray-600 text-sm mb-4">{selectedArticle.description}</div>
                         )}
-                  </CardContent>
-                </Card>
-              )}
-              <Card>
-                <CardContent className="p-6">
+                      </CardContent>
+                    </Card>
+                  )}
+                  <Card>
+                    <CardContent className="p-6">
                       <div className="flex justify-between items-center mb-4">
                         <div className="text-sm text-gray-600">
                           {isLoadingUsage ? (
@@ -661,11 +727,11 @@ const ContentEditor: React.FC = () => {
                       </div>
                       <TextEditor content={selectedArticle?.content || ''} onContentChange={(value) => {
                         setSelectedArticle(prev => prev ? { ...prev, content: value } : null);
-                        setGeneratedContents(prev => {
+                          setGeneratedContents(prev => {
                           const updated = prev.map(c => c.type === 'Original Article' ? { ...c, content: value } : c);
                           if (!updated.find(c => c.type === 'Original Article')) updated.unshift({ type: 'Original Article', content: value });
-                          return updated;
-                        });
+                            return updated;
+                          });
                       }} loading={isGenerating} placeholder="Click 'Generate Content' to create social media posts..." />
                     </CardContent>
                   </Card>
@@ -694,20 +760,71 @@ const ContentEditor: React.FC = () => {
                                 onClick={() => copyToClipboard(content.content)}
                                 className="hover:bg-nextrend-100/50"
                               >
-                                <Copy className="w-4 h-4 text-gray-600" />
+                            <Copy className="w-4 h-4 text-gray-600" />
                               </Button>
-                              {['LinkedIn Post', 'Social Post', 'X/Twitter Post', 'Email'].includes(content.type) && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleShareContent(content.type, content.content)}
-                                  className="hover:bg-nextrend-100/50"
-                                >
-                                  {content.type === 'LinkedIn Post' && <Linkedin className="w-4 h-4 text-[#0077B5]" />}
-                                  {content.type === 'Social Post' && <Facebook className="w-4 h-4 text-[#1877F2]" />}
-                                  {content.type === 'X/Twitter Post' && <Twitter className="w-4 h-4 text-[#1DA1F2]" />}
-                                  {content.type === 'Email' && <Mail className="w-4 h-4 text-gray-600" />}
-                                </Button>
+                              {['LinkedIn Post', 'Social Post', 'X/Twitter Post', 'Threads', 'Client Marketing Email', 'Real Estate Agent Partner Marketing Email'].includes(content.type) && (
+                                <div className="flex gap-1">
+                                  {content.type === 'LinkedIn Post' && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => handleShareContent(content.type, content.content)}
+                                      className="hover:bg-nextrend-100/50"
+                                    >
+                                      <Linkedin className="w-4 h-4 text-[#0077B5]" />
+                                    </Button>
+                                  )}
+                                  {content.type === 'Social Post' && (
+                                    <>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleShareContent(content.type, content.content)}
+                                        className="hover:bg-nextrend-100/50"
+                                      >
+                                        <Facebook className="w-4 h-4 text-[#1877F2]" />
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleShareContent('Threads', content.content)}
+                                        className="hover:bg-nextrend-100/50"
+                                      >
+                                        <ThreadsIcon />
+                                      </Button>
+                                    </>
+                                  )}
+                                  {content.type === 'X/Twitter Post' && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => handleShareContent(content.type, content.content)}
+                                      className="hover:bg-nextrend-100/50"
+                                    >
+                                      <XIcon />
+                                    </Button>
+                                  )}
+                                  {content.type === 'Client Marketing Email' && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => handleShareContent('Email', content.content)}
+                                      className="hover:bg-nextrend-100/50"
+                                    >
+                                      <Mail className="w-4 h-4 text-gray-600" />
+                                    </Button>
+                                  )}
+                                  {content.type === 'Real Estate Agent Partner Marketing Email' && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => handleShareContent('Email', content.content)}
+                                      className="hover:bg-nextrend-100/50"
+                                    >
+                                      <Mail className="w-4 h-4 text-gray-600" />
+                                    </Button>
+                                  )}
+                                </div>
                               )}
                             </div>
                           )}
@@ -731,8 +848,8 @@ const ContentEditor: React.FC = () => {
                             </div>
                           </div>
                         </div>
-                </CardContent>
-              </Card>
+                      </CardContent>
+                    </Card>
                   ))}
                 </>
               )}
@@ -785,7 +902,7 @@ const ContentEditor: React.FC = () => {
                         >
                           <RefreshCw className={`w-4 h-4 mr-2 ${isGenerating ? 'animate-spin' : ''}`} />
                           {isGenerating ? 'Generating...' : 'Generate Content'}
-                        </Button>
+                      </Button>
                       </div>
                       <TextEditor 
                         content={userInput || (selectedPrompt?.headline || '')} 
@@ -826,30 +943,77 @@ const ContentEditor: React.FC = () => {
                             >
                               <Pencil className="w-4 h-4 text-gray-600" />
                             </Button>
-                      <Button 
+                            <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => copyToClipboard(content.content)}
                               className="hover:bg-nextrend-100/50"
                             >
-                              <Copy className="w-4 h-4 text-gray-600" />
-                      </Button>
-                            {['LinkedIn Post', 'Social Post', 'X/Twitter Post', 'Email'].includes(content.type) && (
+                          <Copy className="w-4 h-4 text-gray-600" />
+                            </Button>
+                            {content.type === 'LinkedIn Post' && (
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handleShareContent(content.type, content.content)}
                                 className="hover:bg-nextrend-100/50"
                               >
-                                {content.type === 'LinkedIn Post' && <Linkedin className="w-4 h-4 text-[#0077B5]" />}
-                                {content.type === 'Social Post' && <Facebook className="w-4 h-4 text-[#1877F2]" />}
-                                {content.type === 'X/Twitter Post' && <Twitter className="w-4 h-4 text-[#1DA1F2]" />}
-                                {content.type === 'Email' && <Mail className="w-4 h-4 text-gray-600" />}
+                                <Linkedin className="w-4 h-4 text-[#0077B5]" />
                               </Button>
                             )}
-                            </div>
+                            {content.type === 'Social Post' && (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleShareContent(content.type, content.content)}
+                                  className="hover:bg-nextrend-100/50"
+                                >
+                                  <Facebook className="w-4 h-4 text-[#1877F2]" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleShareContent('Threads', content.content)}
+                                  className="hover:bg-nextrend-100/50"
+                                >
+                                  <ThreadsIcon />
+                                </Button>
+                              </>
+                            )}
+                            {content.type === 'X/Twitter Post' && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleShareContent(content.type, content.content)}
+                                className="hover:bg-nextrend-100/50"
+                              >
+                                <XIcon />
+                              </Button>
+                            )}
+                            {content.type === 'Client Marketing Email' && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleShareContent('Email', content.content)}
+                                className="hover:bg-nextrend-100/50"
+                              >
+                                <Mail className="w-4 h-4 text-gray-600" />
+                              </Button>
+                            )}
+                            {content.type === 'Real Estate Agent Partner Marketing Email' && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleShareContent('Email', content.content)}
+                                className="hover:bg-nextrend-100/50"
+                              >
+                                <Mail className="w-4 h-4 text-gray-600" />
+                              </Button>
                             )}
                           </div>
+                        )}
+                      </div>
                       <div className="p-6 bg-white">
                         <div className="prose max-w-none">
                           <div className="text-gray-600 text-sm leading-relaxed">
@@ -936,7 +1100,7 @@ const ContentEditor: React.FC = () => {
                             {(option === 'this-week' || option === 'trending') && article.description && (
                               <div className="text-gray-600 text-sm mb-4">{article.description}</div>
                           )}
-                        </div>
+                          </div>
                         <div className="mt-auto border-t border-gray-100 p-4 flex justify-between items-center bg-gray-50">
                           {(option === 'this-week' || option === 'trending') ? (
                             <div className="flex w-full gap-2">
@@ -949,7 +1113,7 @@ const ContentEditor: React.FC = () => {
                             </div>
                           ) : option === 'general' ? (
                               <Button variant="default" size="sm" onClick={() => handleUseGeneralTerm(article)} className="text-xs flex-1 bg-nextrend-500 hover:bg-nextrend-600" disabled={isLoading}>
-                                Use this Mortgage Term
+                              Use this Mortgage Term
                             </Button>
                             ) : null}
                         </div>
