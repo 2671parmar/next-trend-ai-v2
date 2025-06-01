@@ -278,7 +278,7 @@ const ContentEditor: React.FC = () => {
         { type: 'Client Marketing Email', description: 'Client-Focused, Trust-Building' },
         { type: 'Real Estate Agent Partner Marketing Email', description: 'Informational, Value-Driven' },
         { type: 'Social Post', description: 'Engaging & Value-Driven' },
-        { type: 'X/Twitter Post', description: 'Quick, Authority Take' },
+        { type: 'Twitter / X / Threads Post', description: 'Quick, Authority Take' },
         { type: 'Client SMS', description: 'Concise, CTA-Driven (150 chars)' },
         { type: 'Realtor SMS', description: 'Concise, Informational (150 chars)' },
         { type: 'Motivational Quote', description: 'Uplifting, Short, Non-Salesy' }
@@ -363,7 +363,7 @@ const ContentEditor: React.FC = () => {
         { type: 'Client Marketing Email', description: 'Client-Focused, Trust-Building' },
         { type: 'Real Estate Agent Partner Marketing Email', description: 'Informational, Value-Driven' },
         { type: 'Social Post', description: 'Engaging & Value-Driven' },
-        { type: 'X/Twitter Post', description: 'Quick, Authority Take' },
+        { type: 'Twitter / X / Threads Post', description: 'Quick, Authority Take' },
         { type: 'Client SMS', description: 'Concise, CTA-Driven (150 chars)' },
         { type: 'Realtor SMS', description: 'Concise, Informational (150 chars)' },
         { type: 'Motivational Quote', description: 'Uplifting, Short, Non-Salesy' }
@@ -454,7 +454,7 @@ const ContentEditor: React.FC = () => {
       case 'Social Post':
         shareUrl = `https://www.facebook.com/sharer/sharer.php?quote=${encodedContent}`;
         break;
-      case 'X/Twitter Post':
+      case 'Twitter / X / Threads Post':
         shareUrl = `https://twitter.com/intent/tweet?text=${encodedContent}`;
         break;
       case 'Threads':
@@ -601,7 +601,7 @@ const ContentEditor: React.FC = () => {
                               >
                             <Copy className="w-4 h-4 text-gray-600" />
                               </Button>
-                              {['LinkedIn Post', 'Social Post', 'X/Twitter Post', 'Threads', 'Client Marketing Email', 'Real Estate Agent Partner Marketing Email'].includes(content.type) && (
+                              {['LinkedIn Post', 'Social Post', 'Twitter / X / Threads Post', 'Client Marketing Email', 'Real Estate Agent Partner Marketing Email'].includes(content.type) && (
                                 <div className="flex gap-1">
                                   {content.type === 'LinkedIn Post' && (
                                     <Button
@@ -614,14 +614,24 @@ const ContentEditor: React.FC = () => {
                                     </Button>
                                   )}
                                   {content.type === 'Social Post' && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => handleShareContent(content.type, content.content)}
+                                      className="hover:bg-nextrend-100/50"
+                                    >
+                                      <Facebook className="w-4 h-4 text-[#1877F2]" />
+                                    </Button>
+                                  )}
+                                  {content.type === 'Twitter / X / Threads Post' && (
                                     <>
                                       <Button
                                         variant="ghost"
                                         size="sm"
-                                        onClick={() => handleShareContent(content.type, content.content)}
+                                        onClick={() => handleShareContent('X/Twitter Post', content.content)}
                                         className="hover:bg-nextrend-100/50"
                                       >
-                                        <Facebook className="w-4 h-4 text-[#1877F2]" />
+                                        <XIcon />
                                       </Button>
                                       <Button
                                         variant="ghost"
@@ -632,16 +642,6 @@ const ContentEditor: React.FC = () => {
                                         <ThreadsIcon />
                                       </Button>
                                     </>
-                                  )}
-                                  {content.type === 'X/Twitter Post' && (
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => handleShareContent(content.type, content.content)}
-                                      className="hover:bg-nextrend-100/50"
-                                    >
-                                      <XIcon />
-                                    </Button>
                                   )}
                                   {content.type === 'Client Marketing Email' && (
                                     <Button
@@ -768,7 +768,7 @@ const ContentEditor: React.FC = () => {
                               >
                             <Copy className="w-4 h-4 text-gray-600" />
                               </Button>
-                              {['LinkedIn Post', 'Social Post', 'X/Twitter Post', 'Threads', 'Client Marketing Email', 'Real Estate Agent Partner Marketing Email'].includes(content.type) && (
+                              {['LinkedIn Post', 'Social Post', 'Twitter / X / Threads Post', 'Client Marketing Email', 'Real Estate Agent Partner Marketing Email'].includes(content.type) && (
                                 <div className="flex gap-1">
                                   {content.type === 'LinkedIn Post' && (
                                     <Button
@@ -781,14 +781,24 @@ const ContentEditor: React.FC = () => {
                                     </Button>
                                   )}
                                   {content.type === 'Social Post' && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => handleShareContent(content.type, content.content)}
+                                      className="hover:bg-nextrend-100/50"
+                                    >
+                                      <Facebook className="w-4 h-4 text-[#1877F2]" />
+                                    </Button>
+                                  )}
+                                  {content.type === 'Twitter / X / Threads Post' && (
                                     <>
                                       <Button
                                         variant="ghost"
                                         size="sm"
-                                        onClick={() => handleShareContent(content.type, content.content)}
+                                        onClick={() => handleShareContent('X/Twitter Post', content.content)}
                                         className="hover:bg-nextrend-100/50"
                                       >
-                                        <Facebook className="w-4 h-4 text-[#1877F2]" />
+                                        <XIcon />
                                       </Button>
                                       <Button
                                         variant="ghost"
@@ -799,16 +809,6 @@ const ContentEditor: React.FC = () => {
                                         <ThreadsIcon />
                                       </Button>
                                     </>
-                                  )}
-                                  {content.type === 'X/Twitter Post' && (
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => handleShareContent(content.type, content.content)}
-                                      className="hover:bg-nextrend-100/50"
-                                    >
-                                      <XIcon />
-                                    </Button>
                                   )}
                                   {content.type === 'Client Marketing Email' && (
                                     <Button
@@ -968,14 +968,24 @@ const ContentEditor: React.FC = () => {
                               </Button>
                             )}
                             {content.type === 'Social Post' && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleShareContent(content.type, content.content)}
+                                className="hover:bg-nextrend-100/50"
+                              >
+                                <Facebook className="w-4 h-4 text-[#1877F2]" />
+                              </Button>
+                            )}
+                            {content.type === 'Twitter / X / Threads Post' && (
                               <>
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() => handleShareContent(content.type, content.content)}
+                                  onClick={() => handleShareContent('X/Twitter Post', content.content)}
                                   className="hover:bg-nextrend-100/50"
                                 >
-                                  <Facebook className="w-4 h-4 text-[#1877F2]" />
+                                  <XIcon />
                                 </Button>
                                 <Button
                                   variant="ghost"
@@ -986,16 +996,6 @@ const ContentEditor: React.FC = () => {
                                   <ThreadsIcon />
                                 </Button>
                               </>
-                            )}
-                            {content.type === 'X/Twitter Post' && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleShareContent(content.type, content.content)}
-                                className="hover:bg-nextrend-100/50"
-                              >
-                                <XIcon />
-                              </Button>
                             )}
                             {content.type === 'Client Marketing Email' && (
                               <Button
