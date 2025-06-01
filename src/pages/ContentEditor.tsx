@@ -18,6 +18,7 @@ import TypewriterText from '@/components/TypewriterText';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
+import { useContentStore } from '@/store/contentStore';
 
 interface ContentPrompt {
   id: number;
@@ -117,9 +118,7 @@ const ContentEditor: React.FC = () => {
   const [userInput, setUserInput] = useState('');
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedContents, setGeneratedContents] = useState<GeneratedContent[]>([]);
   const [dragActive, setDragActive] = useState(false);
-  const [selectedArticle, setSelectedArticle] = useState<any | null>(null);
   const [showEditor, setShowEditor] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>('');
@@ -128,6 +127,13 @@ const ContentEditor: React.FC = () => {
   const [usageCount, setUsageCount] = useState<number>(0);
   const [isLoadingUsage, setIsLoadingUsage] = useState(false);
   
+  const { 
+    generatedContents, 
+    selectedArticle,
+    setGeneratedContents,
+    setSelectedArticle 
+  } = useContentStore();
+
   useEffect(() => {
     const fetchBrandVoice = async () => {
       if (!user?.id) return;
@@ -288,7 +294,7 @@ const ContentEditor: React.FC = () => {
         const prompt = `Generate a ${type} (${description}) for this ${articleData.category} article:\n\nTitle: ${articleData.title}\n\nContent: ${articleData.content}`;
         console.log('Generating content for type:', type, 'with content type:', contentType);
         const result = await contentService.generateContent(prompt, brandVoice, contentType);
-        setGeneratedContents(prev => prev.map((c, i) => i === index ? { ...c, content: result, isGenerating: false } : c));
+        setGeneratedContents((prev: GeneratedContent[]) => prev.map((c, i) => i === index ? { ...c, content: result, isGenerating: false } : c));
       }
       
       // Refresh usage count after generation
@@ -368,7 +374,7 @@ const ContentEditor: React.FC = () => {
       for (const [index, { type, description }] of contentTypes.entries()) {
         const prompt = `Generate a ${type} (${description}) for this custom content:\n\nContent: ${customContent.content}`;
         const result = await contentService.generateContent(prompt, brandVoice, 'custom');
-        setGeneratedContents(prev => prev.map((c, i) => i === index ? { ...c, content: result, isGenerating: false } : c));
+        setGeneratedContents((prev: GeneratedContent[]) => prev.map((c, i) => i === index ? { ...c, content: result, isGenerating: false } : c));
       }
 
       setChatMessages(prev => [...prev, { role: 'user', content: contentToUse, timestamp: new Date() }, { role: 'assistant', content: 'Content generated.', timestamp: new Date() }]);
@@ -430,11 +436,11 @@ const ContentEditor: React.FC = () => {
   };
   
   const handleEditContent = (index: number) => {
-    setGeneratedContents(prev => prev.map((c, i) => i === index ? { ...c, isEditing: !c.isEditing } : c));
+    setGeneratedContents((prev: GeneratedContent[]) => prev.map((c, i) => i === index ? { ...c, isEditing: !c.isEditing } : c));
   };
 
   const handleContentChange = (index: number, newContent: string) => {
-    setGeneratedContents(prev => prev.map((c, i) => i === index ? { ...c, content: newContent } : c));
+    setGeneratedContents((prev: GeneratedContent[]) => prev.map((c, i) => i === index ? { ...c, content: newContent } : c));
   };
 
   const handleShareContent = (type: string, content: string) => {
@@ -559,8 +565,8 @@ const ContentEditor: React.FC = () => {
                         </Button>
                       </div>
                       <TextEditor content={selectedArticle?.content || ''} onContentChange={(value) => {
-                        setSelectedArticle(prev => prev ? { ...prev, content: value } : null);
-                        setGeneratedContents(prev => {
+                        setSelectedArticle((prev: any | null) => prev ? { ...prev, content: value } : null);
+                        setGeneratedContents((prev: GeneratedContent[]) => {
                           const updated = prev.map(c => c.type === 'Original Article' ? { ...c, content: value } : c);
                           if (!updated.find(c => c.type === 'Original Article')) updated.unshift({ type: 'Original Article', content: value });
                           return updated;
@@ -726,12 +732,12 @@ const ContentEditor: React.FC = () => {
                         </Button>
                       </div>
                       <TextEditor content={selectedArticle?.content || ''} onContentChange={(value) => {
-                        setSelectedArticle(prev => prev ? { ...prev, content: value } : null);
-                          setGeneratedContents(prev => {
+                        setSelectedArticle((prev: any | null) => prev ? { ...prev, content: value } : null);
+                        setGeneratedContents((prev: GeneratedContent[]) => {
                           const updated = prev.map(c => c.type === 'Original Article' ? { ...c, content: value } : c);
                           if (!updated.find(c => c.type === 'Original Article')) updated.unshift({ type: 'Original Article', content: value });
-                            return updated;
-                          });
+                          return updated;
+                        });
                       }} loading={isGenerating} placeholder="Click 'Generate Content' to create social media posts..." />
                     </CardContent>
                   </Card>
