@@ -454,7 +454,7 @@ const ContentEditor: React.FC = () => {
       case 'Social Post':
         shareUrl = `https://www.facebook.com/sharer/sharer.php?quote=${encodedContent}`;
         break;
-      case 'Twitter / X / Threads Post':
+      case 'X/Twitter Post':
         shareUrl = `https://twitter.com/intent/tweet?text=${encodedContent}`;
         break;
       case 'Threads':
