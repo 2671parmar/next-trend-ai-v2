@@ -10,7 +10,7 @@ LinkedIn Post: Should be a thought leadership style post (~350 words, 1–2 emoj
 
 Blog Post: SEO-optimized (750–850 words). Format with true Markdown headings (e.g., # H1, ## H2, ### H3, no "H1:" labels). Educational, case-driven, actionable. No emojis or labels.
 
-Video Script: Talking head format (3–5 points, direct-to-camera). Start with a strong hook, end with a clear CTA. Conversational, human, no section labels.
+Video Script: Talking head format (3–5 points, direct-to-camera). Start with a strong hook, end with a clear CTA. Conversational, human, no section labels. Should be 30 seconds or less.
 
 Client Marketing Email: 2–3 short paragraphs, friendly expert tone. Human-sounding subject line, soft CTA (e.g., reply, click).
 
