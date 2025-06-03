@@ -37,7 +37,7 @@ const Dashboard: React.FC = () => {
           <div className="grid md:grid-cols-2 gap-6 mb-12">
             <ContentOption
               icon={<Newspaper className="w-6 h-6" />}
-              title="MBS Commentary Today"
+              title="MBS Commentary"
               description={
                 <>
                   <p className="font-semibold">Explain the Market Like a Pro.</p>

@@ -1,6 +1,7 @@
 import { supabase, type MBSCommentary, type TrendingTopic } from '../supabase';
 
 const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
+const USAGE_DAYS: number = 30; // Number of days to track usage
 
 const SYSTEM_PROMPT = `You are a seasoned loan officer with several years of experience, creating content for clients, referral partners, and your professional network. Your writing must be maximally authentic, human, and natural—like a trusted expert sharing insights over coffee or in a quick email. Output must align with the user's brand voice profile (or the default below if none provided), blending short, punchy sentences with longer, conversational ones to mimic real dialogue, not a polished or robotic script. All content must avoid rate/payment/term promises and words like "guaranteed," "best," or "pre-approved" to ensure mortgage compliance. The generated output content should always be post ready so a user could cut and paste without deleting or changing any copy whatsoever (it should not call out SMS character counts or content types in the output, for example). Client SMS and Realtor SMS MUST be 150 characters or fewer, including spaces and punctuation, with no exceptions.
 
@@ -185,7 +186,7 @@ export const contentService = {
   },
 
   // Get usage count for a user
-  async getContentGenerationUsage(days: number = 7) {
+  async getContentGenerationUsage(days: number = USAGE_DAYS) {
     try {
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
@@ -199,11 +200,14 @@ export const contentService = {
         return 0;
       }
 
+      const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+      console.log('Counting usage from:', startDate.toISOString(), 'to now');
+
       const { data, error } = await supabase
         .from('content_generation_usage')
         .select('*')
         .eq('user_id', session.user.id)
-        .gte('generated_at', new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString());
+        .gte('generated_at', startDate.toISOString());
 
       if (error) {
         console.error('Error getting content generation usage:', error);

@@ -96,6 +96,7 @@ interface GeneratedContent {
 
 const ITEMS_PER_PAGE = 12;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
+const USAGE_DAYS: number = 30; // Number of days to track usage
 
 // Custom icon components
 const XIcon = () => (
@@ -197,7 +198,7 @@ const ContentEditor: React.FC = () => {
       
       setIsLoadingUsage(true);
       try {
-        const usage = await contentService.getContentGenerationUsage(7); // Last 7 days
+        const usage = await contentService.getContentGenerationUsage(USAGE_DAYS); // Use the constant
         console.log('Fetched usage count:', usage);
         setUsageCount(usage);
       } catch (error) {
@@ -298,7 +299,7 @@ const ContentEditor: React.FC = () => {
       }
       
       // Refresh usage count after generation
-      const usage = await contentService.getContentGenerationUsage(7);
+      const usage = await contentService.getContentGenerationUsage(USAGE_DAYS);
       console.log('Updated usage count after generation:', usage);
       setUsageCount(usage);
     } catch (err) {
@@ -380,7 +381,7 @@ const ContentEditor: React.FC = () => {
       setChatMessages(prev => [...prev, { role: 'user', content: contentToUse, timestamp: new Date() }, { role: 'assistant', content: 'Content generated.', timestamp: new Date() }]);
       
       // Refresh usage count after generation
-      const usage = await contentService.getContentGenerationUsage(7);
+      const usage = await contentService.getContentGenerationUsage(USAGE_DAYS);
       console.log('Updated usage count after custom generation:', usage);
       setUsageCount(usage);
     } catch (err) {
@@ -550,7 +551,7 @@ const ContentEditor: React.FC = () => {
                               Loading usage...
                             </span>
                           ) : (
-                            <span>Content generated in last 7 days: <span className="font-semibold text-nextrend-600">{usageCount}</span></span>
+                            <span>Content generated in last {USAGE_DAYS} {USAGE_DAYS === 1 ? 'day' : 'days'}: <span className="font-semibold text-nextrend-600">{usageCount}</span></span>
                           )}
                         </div>
                         <Button 
@@ -717,7 +718,7 @@ const ContentEditor: React.FC = () => {
                               Loading usage...
                             </span>
                           ) : (
-                            <span>Content generated in last 7 days: <span className="font-semibold text-nextrend-600">{usageCount}</span></span>
+                            <span>Content generated in last {USAGE_DAYS} {USAGE_DAYS === 1 ? 'day' : 'days'}: <span className="font-semibold text-nextrend-600">{usageCount}</span></span>
                           )}
                         </div>
                         <Button 
@@ -896,7 +897,7 @@ const ContentEditor: React.FC = () => {
                               Loading usage...
                             </span>
                           ) : (
-                            <span>Content generated in last 7 days: <span className="font-semibold text-nextrend-600">{usageCount}</span></span>
+                            <span>Content generated in last {USAGE_DAYS} {USAGE_DAYS === 1 ? 'day' : 'days'}: <span className="font-semibold text-nextrend-600">{usageCount}</span></span>
                           )}
                         </div>
                         <Button 
