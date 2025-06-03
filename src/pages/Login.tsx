@@ -47,7 +47,16 @@ export default function Login() {
           Back
         </Button>
       </div>
-      <div className="flex-1 flex items-center justify-center">
+
+      {/* Center logo and card together */}
+      <div className="flex flex-1 flex-col items-center justify-center">
+        <div className="flex justify-center mb-6">
+          <img 
+            src="/logo.png" 
+            alt="NEXTREND.AI Logo" 
+            className="h-10"
+          />
+        </div>
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle>Welcome back</CardTitle>
@@ -98,6 +107,9 @@ export default function Login() {
             </CardFooter>
           </form>
         </Card>
+        <p className="text-center text-xs text-gray-500 mt-4">
+          &copy; {new Date().getFullYear()} NEXTREND.AI. All rights reserved.
+        </p>
       </div>
     </div>
   );
