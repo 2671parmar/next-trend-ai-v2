@@ -76,39 +76,47 @@ export default function Profile() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Profile Information */}
-          <div className="space-y-6">
-            <h2 className="text-2xl font-semibold">Profile Information</h2>
-            <form onSubmit={handleProfileUpdate} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  value={formData.email}
-                  disabled
-                  className="bg-gray-100"
-                />
-                <p className="text-sm text-gray-500">Email cannot be changed</p>
-              </div>
-              <Button 
-                type="submit" 
-                className=""
-                disabled={isLoading}
-              >
-                Update Profile
-              </Button>
-            </form>
+          <Card>
+            <CardHeader>
+              <CardTitle>Profile Information</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleProfileUpdate} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Name</Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    value={formData.email}
+                    disabled
+                    className="bg-gray-100"
+                  />
+                  <p className="text-sm text-gray-500">Email cannot be changed</p>
+                </div>
+                <Button 
+                  type="submit" 
+                  className="w-full"
+                  disabled={isLoading}
+                >
+                  Update Profile
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
 
-            {/* Change Password */}
-            <div className="pt-6">
-              <h2 className="text-2xl font-semibold mb-4">Change Password</h2>
+          {/* Change Password */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Change Password</CardTitle>
+            </CardHeader>
+            <CardContent>
               <form onSubmit={handlePasswordChange} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="currentPassword">Current Password</Label>
@@ -142,15 +150,22 @@ export default function Profile() {
                 </div>
                 <Button 
                   type="submit" 
-                  className=""
+                  className="w-full"
                   disabled={isLoading}
                 >
                   Change Password
                 </Button>
               </form>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
+
+        <p className="text-center text-sm text-gray-500 mt-8">
+          Incase of any query please reach out to {' '}
+          <a href="mailto:support@agencynext.com" className="text-nextrend-500 hover:underline">
+            support@agencynext.com
+          </a>
+        </p>
       </main>
     </div>
   );
