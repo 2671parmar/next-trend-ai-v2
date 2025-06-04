@@ -162,8 +162,8 @@ export default function Profile() {
 
         <p className="text-center text-sm text-gray-500 mt-8">
           Incase of any query please reach out to {' '}
-          <a href="mailto:support@agencynext.com" className="text-nextrend-500 hover:underline">
-            support@agencynext.com
+          <a href="mailto:info@agencynext.com" className="text-nextrend-500 hover:underline">
+          info@agencynext.com
           </a>
         </p>
       </main>
