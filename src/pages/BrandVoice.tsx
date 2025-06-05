@@ -6,18 +6,8 @@ import { toast } from 'sonner';
 import Navbar from '@/components/Navbar';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
-import OpenAI from 'openai';
 
-// Initialize OpenAI with error handling
-let openai: OpenAI | null = null;
-try {
-  openai = new OpenAI({
-    apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-    dangerouslyAllowBrowser: true
-  });
-} catch (error) {
-  console.error('Error initializing OpenAI:', error);
-}
+const CLAUDE_API_KEY = import.meta.env.VITE_CLAUDE_API_KEY;
 
 export default function BrandVoice() {
   const [isLoading, setIsLoading] = useState(false);
@@ -56,30 +46,41 @@ export default function BrandVoice() {
   };
 
   const generateSummary = async (text: string): Promise<string> => {
-    if (!openai) {
-      throw new Error('OpenAI client not initialized');
-    }
-
     try {
-      const response = await openai.chat.completions.create({
-        model: "chatgpt-4o-latest",
-        messages: [{
-          role: "system",
-          content: "You are a brand voice analyzer. Create a concise summary that captures the essence of the brand's tone and style, similar to: 'Professional, approachable, and client-focused with a conversational tone'"
-        }, {
-          role: "user",
-          content: `Summarize the following text into a concise brand voice description (200 words or less) that will be used in a different prompt to generate content: ${text}`
-        }],
-        temperature: 0.7,
-        max_tokens: 150
+      const response = await fetch('/api/generate-content', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'claude-3-7-sonnet-20250219',
+          max_tokens: 150,
+          messages: [{
+            role: 'user',
+            content: `Summarize this brand voice description in 250 words or less, maintaining the key personality traits and tone:\n\n${text}`
+          }],
+          temperature: 0.7
+        }),
       });
 
-      const summary = response.choices[0].message.content;
-      if (!summary) {
+      if (!response.ok) {
         throw new Error('Failed to generate summary');
       }
-      return summary;
+
+      const data = await response.json();
+      if (!data.content) {
+        throw new Error('Invalid response format');
+      }
+
+      // Extract the text content from the response
+      const responseText = data.content[0]?.text || data.content;
+      if (!responseText) {
+        throw new Error('No content found in response');
+      }
+
+      return responseText;
     } catch (error) {
+      console.error('Error generating summary:', error);
       throw error;
     }
   };

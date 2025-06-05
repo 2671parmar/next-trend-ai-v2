@@ -134,7 +134,7 @@ const ContentEditor: React.FC = () => {
     setGeneratedContents,
     setSelectedArticle 
   } = useContentStore();
-
+  
   useEffect(() => {
     const fetchBrandVoice = async () => {
       if (!user?.id) return;
@@ -292,10 +292,17 @@ const ContentEditor: React.FC = () => {
       })));
 
       for (const [index, { type, description }] of contentTypes.entries()) {
-        const prompt = `Generate a ${type} (${description}) for this ${articleData.category} article:\n\nTitle: ${articleData.title}\n\nContent: ${articleData.content}`;
-        console.log('Generating content for type:', type, 'with content type:', contentType);
-        const result = await contentService.generateContent(prompt, brandVoice, contentType);
-        setGeneratedContents((prev: GeneratedContent[]) => prev.map((c, i) => i === index ? { ...c, content: result, isGenerating: false } : c));
+        try {
+          console.log(`Generating content for type: ${type}`);
+          const prompt = `Generate a ${type} (${description}) for this ${articleData.category} article:\n\nTitle: ${articleData.title}\n\nContent: ${articleData.content}`;
+          console.log('Sending prompt to contentService:', prompt);
+          const result = await contentService.generateContent(prompt, brandVoice, contentType);
+          console.log(`Successfully generated content for ${type}`);
+          setGeneratedContents((prev: GeneratedContent[]) => prev.map((c, i) => i === index ? { ...c, content: result, isGenerating: false } : c));
+        } catch (error) {
+          console.error(`Error generating content for ${type}:`, error);
+          setGeneratedContents((prev: GeneratedContent[]) => prev.map((c, i) => i === index ? { ...c, content: 'Failed to generate content. Please try again.', isGenerating: false } : c));
+        }
       }
       
       // Refresh usage count after generation
@@ -303,7 +310,9 @@ const ContentEditor: React.FC = () => {
       console.log('Updated usage count after generation:', usage);
       setUsageCount(usage);
     } catch (err) {
+      console.error('Error in handleGenerateContent:', err);
       setError(err instanceof Error ? err.message : 'Failed to generate content');
+      toast.error('Failed to generate content. Please try again.');
     } finally {
       setIsGenerating(false);
     }
@@ -586,22 +595,22 @@ const ContentEditor: React.FC = () => {
                           </div>
                           {!content.isGenerating && (
                             <div className="flex items-center gap-2">
-                              <Button
-                                variant="ghost"
+              <Button 
+                variant="ghost" 
                                 size="sm"
                                 onClick={() => handleEditContent(index)}
                                 className="hover:bg-nextrend-100/50"
-                              >
+              >
                                 <Pencil className="w-4 h-4 text-gray-600" />
-                              </Button>
-                              <Button
+              </Button>
+              <Button 
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => copyToClipboard(content.content)}
                                 className="hover:bg-nextrend-100/50"
                               >
                             <Copy className="w-4 h-4 text-gray-600" />
-                              </Button>
+              </Button>
                               {['LinkedIn Post', 'Social Post', 'Twitter / X / Threads Post', 'Client Marketing Email', 'Real Estate Agent Partner Marketing Email'].includes(content.type) && (
                                 <div className="flex gap-1">
                                   {content.type === 'LinkedIn Post' && (
@@ -664,7 +673,7 @@ const ContentEditor: React.FC = () => {
                                       <Mail className="w-4 h-4 text-gray-600" />
                                     </Button>
                                   )}
-                                </div>
+              </div>
                               )}
                             </div>
                           )}
@@ -694,22 +703,22 @@ const ContentEditor: React.FC = () => {
                 </>
               ) : (
                 <>
-                  {selectedArticle && (
-                    <Card className="mb-4">
-                      <CardContent className="p-5">
-                        <div className="flex justify-between items-center mb-3">
+              {selectedArticle && (
+                <Card className="mb-4">
+                  <CardContent className="p-5">
+                    <div className="flex justify-between items-center mb-3">
                           <Badge variant="outline" className="bg-nextrend-50 text-nextrend-500 hover:bg-nextrend-100">{selectedArticle.category}</Badge>
-                          <span className="text-sm text-gray-500">{selectedArticle.date}</span>
-                        </div>
-                        <h3 className="text-lg font-semibold mb-2">{selectedArticle.title}</h3>
+                      <span className="text-sm text-gray-500">{selectedArticle.date}</span>
+                    </div>
+                    <h3 className="text-lg font-semibold mb-2">{selectedArticle.title}</h3>
                         {selectedArticle.description && (
                           <div className="text-gray-600 text-sm mb-4">{selectedArticle.description}</div>
                         )}
-                      </CardContent>
-                    </Card>
-                  )}
-                  <Card>
-                    <CardContent className="p-6">
+                  </CardContent>
+                </Card>
+              )}
+              <Card>
+                <CardContent className="p-6">
                       <div className="flex justify-between items-center mb-4">
                         <div className="text-sm text-gray-600">
                           {isLoadingUsage ? (
@@ -855,8 +864,8 @@ const ContentEditor: React.FC = () => {
                             </div>
                           </div>
                         </div>
-                      </CardContent>
-                    </Card>
+                </CardContent>
+              </Card>
                   ))}
                 </>
               )}
@@ -899,8 +908,8 @@ const ContentEditor: React.FC = () => {
                           ) : (
                             <span>Content generated in last {USAGE_DAYS} {USAGE_DAYS === 1 ? 'day' : 'days'}: <span className="font-semibold text-nextrend-600">{usageCount}</span></span>
                           )}
-                        </div>
-                        <Button 
+                      </div>
+                      <Button 
                           variant="default" 
                           size="sm" 
                           onClick={handleSendMessage} 
@@ -950,14 +959,14 @@ const ContentEditor: React.FC = () => {
                             >
                               <Pencil className="w-4 h-4 text-gray-600" />
                             </Button>
-                            <Button
+                      <Button 
                               variant="ghost"
                               size="sm"
                               onClick={() => copyToClipboard(content.content)}
                               className="hover:bg-nextrend-100/50"
                             >
                           <Copy className="w-4 h-4 text-gray-600" />
-                            </Button>
+                      </Button>
                             {content.type === 'LinkedIn Post' && (
                               <Button
                                 variant="ghost"
@@ -1018,9 +1027,9 @@ const ContentEditor: React.FC = () => {
                                 <Mail className="w-4 h-4 text-gray-600" />
                               </Button>
                             )}
-                          </div>
-                        )}
-                      </div>
+                        </div>
+                      )}
+                        </div>
                       <div className="p-6 bg-white">
                         <div className="prose max-w-none">
                           <div className="text-gray-600 text-sm leading-relaxed">
@@ -1039,11 +1048,11 @@ const ContentEditor: React.FC = () => {
                             )}
                           </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </CardContent>
+                </Card>
                 ))}
-              </div>
+            </div>
             )}
           </div>
         </main>
@@ -1107,7 +1116,7 @@ const ContentEditor: React.FC = () => {
                             {(option === 'this-week' || option === 'trending') && article.description && (
                               <div className="text-gray-600 text-sm mb-4">{article.description}</div>
                           )}
-                          </div>
+                        </div>
                         <div className="mt-auto border-t border-gray-100 p-4 flex justify-between items-center bg-gray-50">
                           {(option === 'this-week' || option === 'trending') ? (
                             <div className="flex w-full gap-2">

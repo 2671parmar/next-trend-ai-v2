@@ -1,6 +1,7 @@
 import { supabase, type MBSCommentary, type TrendingTopic } from '../supabase';
 
 const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
+const CLAUDE_API_KEY = import.meta.env.VITE_CLAUDE_API_KEY;
 const USAGE_DAYS: number = 30; // Number of days to track usage
 
 const SYSTEM_PROMPT = `You are a seasoned loan officer with several years of experience, creating content for clients, referral partners, and your professional network. Your writing must be maximally authentic, human, and natural—like a trusted expert sharing insights over coffee or in a quick email. Output must align with the user's brand voice profile (or the default below if none provided), blending short, punchy sentences with longer, conversational ones to mimic real dialogue, not a polished or robotic script. All content must avoid rate/payment/term promises and words like "guaranteed," "best," or "pre-approved" to ensure mortgage compliance. The generated output content should always be post ready so a user could cut and paste without deleting or changing any copy whatsoever (it should not call out SMS character counts or content types in the output, for example). Client SMS and Realtor SMS MUST be 150 characters or fewer, including spaces and punctuation, with no exceptions.
@@ -222,7 +223,7 @@ export const contentService = {
     }
   },
 
-  // Generate content using OpenAI
+  // Generate content using Claude
   async generateContent(content: string, brandVoice?: string, contentType: string = 'custom') {
     console.log('Generating content with type:', contentType);
     
@@ -235,7 +236,6 @@ export const contentService = {
     );
 
     // Track content generation usage for the first content type only
-    // This ensures we track the button click, not individual content generations
     if (content.includes('LinkedIn Post')) {
       console.log('Tracking content generation for type:', contentType);
       try {
@@ -246,35 +246,56 @@ export const contentService = {
       }
     }
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'chatgpt-4o-latest',
-        messages: [
-          {
-            role: 'system',
-            content: systemPrompt
-          },
-          {
-            role: 'user',
-            content: content
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 4000,
-      }),
-    });
+    try {
+      console.log('Making API request to backend proxy...');
+      const response = await fetch('/api/generate-content', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'claude-3-7-sonnet-20250219',
+          max_tokens: 4000,
+          system: systemPrompt,
+          messages: [
+            {
+              role: 'user',
+              content: content
+            }
+          ],
+          temperature: 0.7
+        }),
+      });
 
-    if (!response.ok) {
-      throw new Error('Failed to generate content');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        console.error('Backend proxy error:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorData
+        });
+        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      if (!data.content) {
+        console.error('Unexpected API response format:', data);
+        throw new Error('Invalid response format from backend proxy');
+      }
+
+      // Extract the text content from the response
+      const responseText = data.content[0]?.text || data.content;
+      if (!responseText) {
+        console.error('No content found in response:', data);
+        throw new Error('No content found in response');
+      }
+
+      return responseText;
+    } catch (error) {
+      console.error('Error in generateContent:', error);
+      throw error;
     }
-
-    const data = await response.json();
-    return data.choices[0].message.content;
   },
 
   // Add this method
