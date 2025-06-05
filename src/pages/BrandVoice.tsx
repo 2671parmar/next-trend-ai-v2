@@ -47,11 +47,27 @@ export default function BrandVoice() {
 
   const generateSummary = async (text: string): Promise<string> => {
     try {
-      const response = await fetch('/api/generate-content', {
+      const isDevelopment = import.meta.env.DEV;
+      const apiUrl = isDevelopment ? '/api/generate-content' : 'https://api.anthropic.com/v1/messages';
+      
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+
+      // Only add API key in production
+      if (!isDevelopment) {
+        const apiKey = import.meta.env.VITE_CLAUDE_API_KEY;
+        if (!apiKey) {
+          throw new Error('API key not configured');
+        }
+        headers['x-api-key'] = apiKey;
+        headers['anthropic-version'] = '2023-06-01';
+        headers['anthropic-dangerous-direct-browser-access'] = 'true';
+      }
+
+      const response = await fetch(apiUrl, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({
           model: 'claude-3-7-sonnet-20250219',
           max_tokens: 150,

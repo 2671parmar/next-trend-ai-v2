@@ -247,12 +247,28 @@ export const contentService = {
     }
 
     try {
-      console.log('Making API request to backend proxy...');
-      const response = await fetch('/api/generate-content', {
+      console.log('Making API request to Claude...');
+      const isDevelopment = import.meta.env.DEV;
+      const apiUrl = isDevelopment ? '/api/generate-content' : 'https://api.anthropic.com/v1/messages';
+      
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+
+      // Only add API key in production
+      if (!isDevelopment) {
+        const apiKey = import.meta.env.VITE_CLAUDE_API_KEY;
+        if (!apiKey) {
+          throw new Error('API key not configured');
+        }
+        headers['x-api-key'] = apiKey;
+        headers['anthropic-version'] = '2023-06-01';
+        headers['anthropic-dangerous-direct-browser-access'] = 'true';
+      }
+
+      const response = await fetch(apiUrl, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({
           model: 'claude-3-7-sonnet-20250219',
           max_tokens: 4000,
@@ -269,7 +285,7 @@ export const contentService = {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
-        console.error('Backend proxy error:', {
+        console.error('Claude API error:', {
           status: response.status,
           statusText: response.statusText,
           errorData
@@ -281,7 +297,7 @@ export const contentService = {
       
       if (!data.content) {
         console.error('Unexpected API response format:', data);
-        throw new Error('Invalid response format from backend proxy');
+        throw new Error('Invalid response format from Claude API');
       }
 
       // Extract the text content from the response
