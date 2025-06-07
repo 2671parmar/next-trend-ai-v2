@@ -15,6 +15,7 @@ import ResetPassword from "./pages/ResetPassword";
 import BrandVoice from "./pages/BrandVoice";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { AuthCallback } from "./components/auth/AuthCallback";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,8 @@ const App = () => (
               <Route path="/signup" element={<Navigate to="/login" replace />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
+              <Route path="/auth/reset-password" element={<ResetPassword />} />
               <Route 
                 path="/dashboard" 
                 element={
